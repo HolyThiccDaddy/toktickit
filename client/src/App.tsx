@@ -17,7 +17,7 @@ export default function App() {
       setCategories(result.categories);
       setState("success");
     } catch (err: any) {
-      setErrorMsg("Unable to connect to TokTickIT API");
+      setErrorMsg(err.message ?? "Unable to connect to TokTickIT API");
       setState("error");
     }
   }
@@ -28,25 +28,25 @@ export default function App() {
         TokTickIT <span className="text-success">IT Service Desk</span>
       </h1>
 
-      <button className="btn btn-success mb-3" onClick={handleCheck} disabled={state === "loading"}>
+      <button
+        className="btn btn-success mb-3"
+        onClick={handleCheck}
+        disabled={state === "loading"}
+      >
         {state === "loading" ? "Loading…" : "Check System"}
       </button>
 
       {state === "success" && (
         <div className="mt-3">
           <p className="fw-bold text-success">System Status: Online</p>
-          {categories.length > 0 && (
-            <div>
-              <p className="fw-semibold mb-2">Supported Request Categories:</p>
-              <ol className="list-group list-group-numbered">
-                {categories.map((cat) => (
-                  <li key={cat.id} className="list-group-item">
-                    {cat.name}
-                  </li>
-                ))}
-              </ol>
-            </div>
-          )}
+          <p className="fw-semibold mb-2">Supported Request Categories:</p>
+          <ol className="list-group list-group-numbered">
+            {categories.map((cat) => (
+              <li key={cat.id} className="list-group-item">
+                {cat.name}
+              </li>
+            ))}
+          </ol>
         </div>
       )}
 
