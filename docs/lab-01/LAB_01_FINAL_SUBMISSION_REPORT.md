@@ -205,21 +205,27 @@ I used the **Antigravity AI Agent** with **Claude 3.5 Sonnet / Gemini 3.6 Flash*
 ## 5. Answer Part 4: App Demo (10 Points)
 
 ### 4.1 Initial UI State (Idle)
-- **Path:** `docs/lab-01/screenshots/idle.png`
-- Displays heading `TokTickIT IT Service Desk` and initial `[Check System]` button.
+Displays heading `TokTickIT IT Service Desk` and initial `[Check System]` button:
+
+![4.1 Initial UI State (Idle)](screenshots/idle.png)
+
+---
 
 ### 4.2 Health Check Success UI State (Issue 2)
-- **Path:** `docs/lab-01/screenshots/issue2_health_success.png`
-- Displays `System Status: Online`.
+Displays `System Status: Online`:
+
+![4.2 Health Check Success UI State (Issue 2)](screenshots/issue2_health_success.png)
+
+---
 
 ### 4.3 Full Success UI State (Issue 4)
-- **Path:** `docs/lab-01/screenshots/success.png`
-- Displays `System Status: Online` and 4 seeded categories:
-  1. Account and Access
-  2. Hardware
-  3. Software
-  4. Network
+Displays `System Status: Online` and 4 seeded categories (`Account and Access`, `Hardware`, `Software`, `Network`):
+
+![4.3 Full Success UI State (Issue 4)](screenshots/success.png)
+
+---
 
 ### 4.4 Failure UI State (Offline Error)
-- **Path:** `docs/lab-01/screenshots/offline.png`
-- Displays `System Status: Offline` with error message `Unable to connect to TokTickIT API`.
+Displays `System Status: Offline` with user-friendly error message:
+
+![4.4 Failure UI State (Offline Error)](screenshots/offline.png)
