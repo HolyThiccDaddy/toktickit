@@ -4,7 +4,7 @@ This document details all automated test suites implemented, executed, and verif
 
 ---
 
-## 🧪 Summary Table of Test Specifications
+## Summary Table of Test Specifications
 
 | Test ID | Location | Framework / Tool | Test Description & Assertion Criteria | Status |
 | :--- | :--- | :--- | :--- | :---: |
@@ -16,7 +16,7 @@ This document details all automated test suites implemented, executed, and verif
 
 ---
 
-## 💻 Test Execution Commands & Verification Output
+## Test Execution Commands & Verification Output
 
 ### 1. Server Integration Tests (`server`)
 ```bash
@@ -59,7 +59,7 @@ npm test
 
 ---
 
-## 🎯 Verification Conclusion
+## Verification Conclusion
 
 - Total Test Suites: **3 Files** (`health.test.ts`, `categories.test.ts`, `App.test.tsx`)
 - Total Automated Tests: **5 Assertions** (2 Server API + 3 Client UI)

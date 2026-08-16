@@ -4,7 +4,7 @@ I used the **Antigravity AI Agent** with **Claude 3.5 Sonnet / Gemini 3.6 Flash*
 
 ---
 
-## 💬 Selected Key Prompts & Practical Interactions
+## Selected Key Prompts & Practical Interactions
 
 | # | Task / Phase | Prompt Summary / Technical Instruction | Reflection & Outcome |
 | :-: | :--- | :--- | :--- |
@@ -21,7 +21,7 @@ I used the **Antigravity AI Agent** with **Claude 3.5 Sonnet / Gemini 3.6 Flash*
 
 ---
 
-## 💡 Key Takeaways & Reflection Summary
+## Key Takeaways & Reflection Summary
 
 1. **Task Decoupling & Strict Branch Discipline:**
    - Working with AI requires clear boundaries for each Git branch. Explicitly prompting AI to limit changes to acceptance criteria prevented bloated PRs and ensured clean peer reviews.
