@@ -18,7 +18,7 @@
   - **My response:** "I finish fixing the first problem please review."
 
 - **PR [#8](https://github.com/HolyThiccDaddy/toktickit/pull/8) (feature/2-health-check):**
-  - **Reviewer comment:** "Everything look good, the health endpoint matches the Issue 2 requirement. I left a couple of small cleanup comments." & "since e isn't used, this can just be catch { ... }"
+  - **Reviewer comment:** "Everything look good, the health endpoint matches the Issue 2 requirement. I left a couple of small cleanup comments." & "since err isn't used, this can just be catch { ... }"
   - **My response:** "I will just leave it. In case it will be used in future. Thanks."
 
 - **PR [#9](https://github.com/HolyThiccDaddy/toktickit/pull/9) (feature/3-category-seed):**
