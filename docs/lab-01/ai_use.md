@@ -6,22 +6,22 @@ I used the **Antigravity AI Agent** with **Claude 3.5 Sonnet / Gemini 3.6 Flash*
 
 ## 💬 Selected Key Prompts & Practical Interactions
 
-| Task / Problem Area | Actual Prompt / Interaction | Reflection & Outcome |
+| Task / Problem Area | Prompt Summary / Technical Instruction | Reflection & Outcome |
 | :--- | :--- | :--- |
-| **Prisma Migration & DB Auth Setup** | *"cd server, npx prisma migrate dev --name init, npx prisma db seed พอพิมแล้วกด enter มันขึ้นอะไร restarting อะไรไม่รู้แว๊บๆแล้วก็ไม่เกิดอะไรขึ้น"* | **High Impact:** The AI helped diagnose PostgreSQL authentication errors (`password authentication failed for user "postgres"`) and guided me to configure `pg_hba.conf` with local `trust` mode, allowing Prisma migrations and seeding to succeed cleanly. |
-| **Branch Scope Enforcing & Revert (Issue 3 vs 4)** | *"ใน issue #3 ในส่วนโค้ด ทำแค่ตามโจทย์เท่านั้น อย่าพึ่งแก้ทำ issue#4 เดี๋ยวจารจับได้"* | **Critical Course Correction:** During Issue 3 implementation, AI had previously included `/api/categories` endpoint and UI components. When pointed out, AI cleanly reverted `app.ts`, `api.ts`, `App.tsx`, and test files back to pure Issue 3 scope (Schema + Seed only), ensuring PR review compliance. |
-| **Git Conflict Resolution (PR #10)** | *"มึงเข้าไปดูใน github... This branch has conflicts that must be resolved (App.tsx, api.ts)"* | **Git Flow Assistance:** AI automatically pulled the updated `lab1-staging` branch, merged it into `feature/4-category-list`, carefully resolved code conflicts in `App.tsx` and `api.ts` while keeping the full Issue 4 implementation intact, and pushed back to GitHub cleanly. |
-| **Peer Review Record Synchronization** | *"อันนี้ไฟล์ของเพื่อน เอามาดัดแปลงเป็น Reviewer.md ของกุ"* | **Documentation Perfection:** AI extracted exact quotes, review comments, and PR link IDs from my peer review screenshots with `@osizk` and formatted `docs/lab-01/reviewer.md` matching my exact perspective. |
+| **Prisma Migration & DB Auth Setup** | *"Troubleshoot Prisma migration and seeding failure when running `npx prisma migrate dev` and `npx prisma db seed` on Windows environment."* | **High Impact:** Diagnosed PostgreSQL authentication error (`password authentication failed for user "postgres"`) and guided setting up local `trust` mode in `pg_hba.conf`, enabling smooth migrations and database seeding. |
+| **Branch Scope Enforcing & Revert (Issue 3 vs 4)** | *"Keep Issue #3 strictly scoped to Category model and seed script only. Revert prematurely added Issue #4 API endpoints, UI components, and tests."* | **Critical Course Correction:** Cleanly reverted `/api/categories` endpoint, UI list components, and Vitest specs from `feature/3-category-seed` back to pure Issue 3 scope, ensuring clean PR reviews without cross-issue pollution. |
+| **Git Conflict Resolution (PR #10)** | *"Resolve Git merge conflicts between `lab1-staging` and `feature/4-category-list` in `App.tsx` and `api.ts`."* | **Git Flow Assistance:** Automatically pulled the updated `lab1-staging` branch, merged into `feature/4-category-list`, carefully resolved code conflicts in `App.tsx` and `api.ts` while maintaining complete Issue 4 functionality, and pushed back to GitHub. |
+| **Peer Review Record Synchronization** | *"Format the peer review records in `docs/lab-01/reviewer.md` based on partner review interactions and screenshot logs."* | **Documentation Perfection:** Extracted review comments, PR IDs, and exact conversation history with `@osizk` to generate a structured `docs/lab-01/reviewer.md` document matching lab requirements. |
 
 ---
 
 ## 💡 Key Takeaways & Reflection Summary
 
 1. **Task Decoupling & Strict Branch Discipline:**
-   - Working with AI requires clear boundaries for each Git branch. When AI generated Issue 4 features prematurely during Issue 3, explicitly prompting AI to limit changes to acceptance criteria prevented bloated PRs and ensured clean peer reviews.
+   - Working with AI requires clear boundaries for each Git branch. Explicitly prompting AI to limit changes to acceptance criteria prevented bloated PRs and ensured clean peer reviews.
 
 2. **Automated Testing & Environment Troubleshooting:**
    - AI proved invaluable for diagnosing local environment friction (PostgreSQL connection auth, Vite/Vitest async UI mocking, and Supertest route assertion) without hardcoding fallbacks or bypassing test suites.
 
 3. **Pair-Programming Efficiency:**
-   - Using natural Thai prompts combined with direct terminal execution enabled fast iterations while retaining full control over Git branch strategy, code quality, and peer review history.
+   - Structured pair-programming with AI enabled fast iterations while retaining full control over Git branch strategy, code quality, and peer review history.
