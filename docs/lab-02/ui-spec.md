@@ -70,13 +70,27 @@ TokTickIT Lab 2 establishes the **Zen Green Theme**, a cohesive, professional, a
 ## 5. Screen Layouts & Specifications
 
 ### 5.1 Development Requester Selection Screen
-- **Container:** Centered card (max-width 560px), subtle shadow.
-- **Elements:**
-  - Screen title: "Select Development Requester"
-  - Explanatory subtitle: "Choose a development requester to simulate the current requester context for Lab 2. This is for testing only and is not a login screen."
-  - Requester dropdown populated with active users.
-  - Informational banner: "Authentication coming in Lab 3".
-  - Actions: `[Cancel]` and `[Continue]`.
+- **Container:** Centered card (max-width 560px), subtle shadow on `#F5F7F6` canvas.
+- **Header & Title:**
+  - Icon: User Avatar icon in `#006B3C`.
+  - Title: "Select Development Requester"
+  - Explanatory Subtitle: "Choose a development requester to simulate the current requester context for Lab 2. This is for testing only and is not a login screen."
+  - Informational Callout: "Authentication coming in Lab 3. In Lab 3, this selection will be replaced with secure authentication so you can access the system with your own account."
+- **States & Behavior:**
+  1. **Normal State:**
+     - Dropdown displaying active development requesters (`Name - Department`).
+     - Helper text: "Only active development requesters are shown."
+     - `[Continue]` primary button and `[Cancel]` secondary button.
+  2. **Loading State:**
+     - Dropdown replaced with a loading placeholder spinner and text "Loading development requesters...".
+     - `[Continue]` button is disabled.
+  3. **Empty State (No Active Requesters):**
+     - Warning box in `#FEFCBF` with text: "No active development requesters found in database. Please run database seed."
+     - Dropdown disabled, `[Continue]` button disabled.
+  4. **Safe API Failure State:**
+     - Error banner in `#FFF5F5` (border `#C53030`): "Unable to load development requesters from server. Please verify backend connection."
+     - An accessible `[Retry Connection]` button is displayed.
+- **Keyboard Accessibility:** Full Tab navigation order, Arrow key selection in dropdown, `Enter` key triggers Continue, focus outlines in `#0B7A46`.
 
 ### 5.2 Application Shell & Navigation Header
 - **Top Bar:** Background `#006B3C`, white text, height 56px.
@@ -92,6 +106,7 @@ TokTickIT Lab 2 establishes the **Zen Green Theme**, a cohesive, professional, a
   3. **Problem Details:** Summary input (required, 5-150 chars), Description textarea (required, 10-2000 chars).
   4. **Attachment Dropzone:** File picker accepting JPG/PNG/WEBP/PDF <= 5MB (max 5 files), list of selected files with remove action.
   5. **Footer Actions:** `[Cancel]` button (returns to My Tickets) and primary `[Submit Ticket]` button.
+- **Error Preservation:** If submission fails, entered summary, description, and selected dropdown options remain populated.
 
 ### 5.4 My Tickets Screen
 - **Top Controls:** Search bar (search by summary or ticket number), Filter dropdowns (Category, Priority, Status), `[Clear Filters]` button, and prominent `[+ Create Ticket]` button.
@@ -114,7 +129,7 @@ TokTickIT Lab 2 establishes the **Zen Green Theme**, a cohesive, professional, a
 - **Attachment Section:**
   - List of active attachments with filename, file size, upload date, `[Download]` button, and `[Remove]` button.
   - List of soft-removed attachments (grayed out) showing filename, removal reason, removed timestamp, with download disabled.
-  - `[+ Add Attachment]` action for uploading additional files.
+  - `[+ Add Attachment]` action for uploading additional files (max 5 active files).
   - Soft-removal confirmation modal requiring removal reason before proceeding.
 
 ---
