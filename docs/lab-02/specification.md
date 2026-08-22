@@ -93,12 +93,49 @@ The IT department requires a full-stack, responsive web application for end-user
 
 ---
 
-## 7. Data Changes (Prisma Schema)
-- **`RequesterUser` Model:** `id`, `name`, `email`, `department`, `isActive`, `createdAt`, `updatedAt`, relation to `Ticket[]`.
-- **`Category` Model:** `id`, `name`, `description`, `isActive`, `createdAt`, relation to `Ticket[]`.
-- **`RelatedSystem` Model:** `id`, `name`, `description`, `isActive`, `createdAt`, relation to `Ticket[]`.
-- **`Ticket` Model:** `id`, `ticketNumber` (unique, indexed), `summary`, `description`, `requestedPriority`, `currentStatus` (default: `NEW`), `requesterId` (FK, indexed), `categoryId` (FK, indexed), `relatedSystemId` (FK, indexed), `createdAt`, `updatedAt`, relations to `Attachment[]`.
-- **`Attachment` Model:** `id`, `ticketId` (FK, indexed), `originalFilename`, `storageKey`, `mimeType`, `fileSize`, `isDeleted` (default: `false`), `deletionReason` (nullable), `deletedAt` (nullable), `uploaderId` (FK), `createdAt`.
+## 7. Data Changes & Database Design
+
+### 7.1 Database Schema Models
+- **`RequesterUser` Model:** `id` (PK, autoincrement), `name` (string), `email` (string, unique), `department` (string), `isActive` (boolean, default: `true`), `createdAt` (timestamp), `updatedAt` (timestamp), relation `tickets Ticket[]`.
+- **`Category` Model:** `id` (PK, autoincrement), `name` (string, unique), `description` (string), `isActive` (boolean, default: `true`), `createdAt` (timestamp), relation `tickets Ticket[]`.
+- **`RelatedSystem` Model:** `id` (PK, autoincrement), `name` (string, unique), `description` (string), `isActive` (boolean, default: `true`), `createdAt` (timestamp), relation `tickets Ticket[]`.
+- **`Ticket` Model:** `id` (PK, autoincrement), `ticketNumber` (string, unique, indexed), `summary` (string), `description` (text), `requestedPriority` (enum: `LOW`, `MEDIUM`, `HIGH`, `URGENT`), `currentStatus` (enum: `NEW`, default: `NEW`), `requesterId` (FK, indexed), `categoryId` (FK, indexed), `relatedSystemId` (FK, indexed), `createdAt` (timestamp), `updatedAt` (timestamp), relations to `Attachment[]`.
+- **`Attachment` Model:** `id` (PK, autoincrement), `ticketId` (FK, indexed), `originalFilename` (string), `storageKey` (string, unique), `mimeType` (string), `fileSize` (integer), `isDeleted` (boolean, default: `false`, indexed), `deletionReason` (string, nullable), `deletedAt` (timestamp, nullable), `uploaderId` (integer, FK), `createdAt` (timestamp).
+
+### 7.2 Database Design Decisions & Justifications
+1. **Decoupled Public Identifier (`ticketNumber`) vs. Internal Key (`id`):**
+   - *Decision:* Generate a formatted, human-readable identifier `TKT-YYYY-XXXXXX` (indexed with unique constraint) instead of exposing autoincrementing integer IDs directly in URLs or public interfaces.
+   - *Justification:* Exposing sequential database primary keys leaks business metrics (total ticket volume over time) and enables predictable enumeration attacks. A structured ticket number provides audit-friendly annual partitioning, uniform visual alignment in tables, and prevents sequence scraping.
+2. **Soft Deletion Architecture for Attachments (`isDeleted`, `deletionReason`, `deletedAt`):**
+   - *Decision:* Retain attachment database rows and filesystem records upon removal, marking them with `isDeleted = true` and capturing the mandatory `deletionReason`.
+   - *Justification:* In enterprise IT Service Desks, evidence submitted during incident triage must be preserved for audit compliance, dispute resolution, and forensic integrity. Soft-deletion ensures non-repudiation while the application layer prevents unauthorized downloading or viewing.
+3. **Compound & Foreign Key Indexing on `Ticket` and `Attachment`:**
+   - *Decision:* Explicit `@@index([requesterId, createdAt])`, `@@index([categoryId])`, and `@@index([ticketId, isDeleted])`.
+   - *Justification:* The `My Tickets` dashboard queries tickets exclusively by `requesterId` ordered by `createdAt DESC`. Indexing these foreign keys avoids full-table scans, ensuring sub-10ms query performance as ticket volume scales.
+
+### 7.3 Required Seed Data Quantities & Catalog
+All seed entries are executed via idempotent Prisma `upsert` operations:
+1. **Ticket Categories (4 entries):**
+   - `Account and Access` (ID 1): Login, credentials, permissions, and account lifecycle.
+   - `Hardware` (ID 2): Computers, laptops, peripherals, monitors, and physical equipment.
+   - `Software` (ID 3): Operating systems, licensed productivity software, and system utilities.
+   - `Network` (ID 4): Campus Wi-Fi, VPN connectivity, IP assignment, and network infrastructure.
+2. **Related Systems (7 entries, >= 6 required):**
+   - `Email`: Corporate email services, webmail, and mailing lists.
+   - `Campus Wi-Fi`: Wireless network connectivity across campus buildings.
+   - `VPN`: Remote virtual private network access.
+   - `LEB2 App`: Online learning environment and course management platform.
+   - `Grade Submission App`: Faculty academic grading system.
+   - `Printer`: Networked department and lab printers.
+   - `Corporate Laptop`: Standard issued employee laptop hardware.
+3. **Development Requesters (5 entries: 4 active, 1 inactive):**
+   - **Active Requesters (4 entries):**
+     1. `Jennifer Anderson` (`jennifer.anderson@example.com`, Dept: `Human Resources`, `isActive: true`)
+     2. `Michael Brown` (`michael.brown@example.com`, Dept: `Information Technology`, `isActive: true`)
+     3. `Sarah Johnson` (`sarah.johnson@example.com`, Dept: `Finance & Accounting`, `isActive: true`)
+     4. `David Lee` (`david.lee@example.com`, Dept: `Marketing & Communications`, `isActive: true`)
+   - **Inactive Requester (1 entry):**
+     5. `Robert Taylor` (`robert.taylor@example.com`, Dept: `Operations`, `isActive: false` — filtered out of UI selector).
 
 ---
 
