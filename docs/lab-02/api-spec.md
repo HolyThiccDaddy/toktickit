@@ -1,0 +1,271 @@
+﻿# Lab 2 REST API Specification
+
+## 1. Overview & Authentication Simulation
+This document defines the complete REST API contract for TokTickIT Lab 2. All endpoints use JSON payloads for request and response bodies (except file upload and download endpoints).
+
+Because full session/JWT authentication is scheduled for Lab 3, multi-user identity in Lab 2 is simulated using the request header:
+```http
+x-requester-id: <integer>
+```
+Backend handlers extract `x-requester-id` to identify the requesting tenant and strictly enforce data ownership. If the header is missing or references an invalid/inactive requester, the API responds with HTTP 401 Unauthorized or 403 Forbidden.
+
+---
+
+## 2. API Endpoints
+
+### 2.1 Get Active Development Requesters
+- **Path:** `GET /api/requesters`
+- **Description:** Retrieves all active development requesters for selection in the UI. Inactive requesters are excluded.
+- **Headers:** None required.
+- **Responses:**
+  - **200 OK:**
+    ```json
+    {
+      "status": "success",
+      "data": [
+        {
+          "id": 1,
+          "name": "Jennifer Anderson",
+          "email": "jennifer.anderson@example.com",
+          "department": "Human Resources",
+          "isActive": true
+        }
+      ]
+    }
+    ```
+
+---
+
+### 2.2 Get Active Categories
+- **Path:** `GET /api/categories`
+- **Description:** Retrieves the active IT ticket classification categories.
+- **Responses:**
+  - **200 OK:**
+    ```json
+    {
+      "status": "success",
+      "data": [
+        { "id": 1, "name": "Account and Access", "description": "Login, credentials, and permissions" },
+        { "id": 2, "name": "Hardware", "description": "Computers, peripherals, and physical devices" },
+        { "id": 3, "name": "Software", "description": "Operating systems, applications, and licenses" },
+        { "id": 4, "name": "Network", "description": "Wi-Fi, VPN, internet connectivity, and routing" }
+      ]
+    }
+    ```
+
+---
+
+### 2.3 Get Active Related Systems
+- **Path:** `GET /api/related-systems`
+- **Description:** Retrieves the active IT systems, platforms, and equipment list.
+- **Responses:**
+  - **200 OK:**
+    ```json
+    {
+      "status": "success",
+      "data": [
+        { "id": 1, "name": "Email", "description": "Corporate email services and webmail" },
+        { "id": 2, "name": "Campus Wi-Fi", "description": "Wireless network connectivity across campus" },
+        { "id": 3, "name": "VPN", "description": "Remote virtual private network access" },
+        { "id": 4, "name": "LEB2 App", "description": "Learning environment platform" },
+        { "id": 5, "name": "Grade Submission App", "description": "Academic grading system" },
+        { "id": 6, "name": "Printer", "description": "Networked office and lab printers" },
+        { "id": 7, "name": "Corporate Laptop", "description": "Standard issued employee laptop hardware" }
+      ]
+    }
+    ```
+
+---
+
+### 2.4 Create Support Ticket
+- **Path:** `POST /api/tickets`
+- **Description:** Creates a new support ticket under the authenticated requester. Supports multipart form data for uploading up to 5 initial attachments.
+- **Headers:** `x-requester-id: <id>` (Required)
+- **Request Body (Multipart or JSON):**
+  ```json
+  {
+    "summary": "Cannot connect to VPN from home",
+    "description": "Attempting to connect to VPN yields error code 800 since this morning.",
+    "categoryId": 4,
+    "relatedSystemId": 3,
+    "requestedPriority": "HIGH"
+  }
+  ```
+- **Responses:**
+  - **201 Created:**
+    ```json
+    {
+      "status": "success",
+      "data": {
+        "id": 101,
+        "ticketNumber": "TKT-2026-000101",
+        "summary": "Cannot connect to VPN from home",
+        "description": "Attempting to connect to VPN yields error code 800 since this morning.",
+        "requestedPriority": "HIGH",
+        "currentStatus": "NEW",
+        "requesterId": 1,
+        "categoryId": 4,
+        "relatedSystemId": 3,
+        "createdAt": "2026-08-22T08:00:00.000Z",
+        "attachments": []
+      }
+    }
+    ```
+  - **400 Bad Request:** Field validation failure.
+    ```json
+    {
+      "status": "fail",
+      "errors": [
+        { "field": "summary", "message": "Summary must be between 5 and 150 characters" }
+      ]
+    }
+    ```
+
+---
+
+### 2.5 List Requester's Tickets (My Tickets)
+- **Path:** `GET /api/tickets`
+- **Description:** Retrieves paginated tickets owned strictly by the requester in `x-requester-id`. Supports full-text search, filtering, and sorting.
+- **Headers:** `x-requester-id: <id>` (Required)
+- **Query Parameters:**
+  - `search` (string, optional): Searches `ticketNumber` and `summary`.
+  - `categoryId` (integer, optional): Filters by category.
+  - `requestedPriority` (string, optional): `LOW`, `MEDIUM`, `HIGH`, `URGENT`.
+  - `currentStatus` (string, optional): `NEW`.
+  - `sortBy` (string, optional, default `createdAt`): `createdAt`, `ticketNumber`, `summary`, `requestedPriority`.
+  - `sortOrder` (string, optional, default `desc`): `asc`, `desc`.
+  - `page` (integer, optional, default `1`).
+  - `limit` (integer, optional, default `10`, max `50`).
+- **Responses:**
+  - **200 OK:**
+    ```json
+    {
+      "status": "success",
+      "data": {
+        "tickets": [
+          {
+            "id": 101,
+            "ticketNumber": "TKT-2026-000101",
+            "summary": "Cannot connect to VPN from home",
+            "requestedPriority": "HIGH",
+            "currentStatus": "NEW",
+            "createdAt": "2026-08-22T08:00:00.000Z",
+            "category": { "id": 4, "name": "Network" },
+            "relatedSystem": { "id": 3, "name": "VPN" }
+          }
+        ],
+        "pagination": {
+          "total": 1,
+          "page": 1,
+          "limit": 10,
+          "totalPages": 1
+        }
+      }
+    }
+    ```
+
+---
+
+### 2.6 Get Ticket Details
+- **Path:** `GET /api/tickets/:id`
+- **Description:** Retrieves full ticket details and associated attachments. Enforces strict ownership check.
+- **Headers:** `x-requester-id: <id>` (Required)
+- **Responses:**
+  - **200 OK:**
+    ```json
+    {
+      "status": "success",
+      "data": {
+        "id": 101,
+        "ticketNumber": "TKT-2026-000101",
+        "summary": "Cannot connect to VPN from home",
+        "description": "Attempting to connect to VPN yields error code 800 since this morning.",
+        "requestedPriority": "HIGH",
+        "currentStatus": "NEW",
+        "createdAt": "2026-08-22T08:00:00.000Z",
+        "requester": { "id": 1, "name": "Jennifer Anderson", "email": "jennifer.anderson@example.com" },
+        "category": { "id": 4, "name": "Network" },
+        "relatedSystem": { "id": 3, "name": "VPN" },
+        "attachments": [
+          {
+            "id": 12,
+            "originalFilename": "vpn_error.png",
+            "fileSize": 245000,
+            "mimeType": "image/png",
+            "isDeleted": false,
+            "deletionReason": null,
+            "deletedAt": null,
+            "createdAt": "2026-08-22T08:00:00.000Z"
+          }
+        ]
+      }
+    }
+    ```
+  - **403 Forbidden:** Requester does not own this ticket.
+  - **404 Not Found:** Ticket does not exist.
+
+---
+
+### 2.7 Add Attachment to Existing Ticket
+- **Path:** `POST /api/tickets/:id/attachments`
+- **Description:** Uploads and attaches a permitted file to an owned ticket.
+- **Headers:** `x-requester-id: <id>` (Required)
+- **Request Body:** Multipart `file`
+- **Responses:**
+  - **201 Created:**
+    ```json
+    {
+      "status": "success",
+      "data": {
+        "id": 13,
+        "originalFilename": "network_log.pdf",
+        "fileSize": 150000,
+        "mimeType": "application/pdf",
+        "isDeleted": false,
+        "createdAt": "2026-08-22T08:15:00.000Z"
+      }
+    }
+    ```
+  - **400 Bad Request:** Unsupported file type or file exceeds 5MB or ticket already has 5 active attachments.
+  - **403 Forbidden:** Requester does not own the ticket.
+
+---
+
+### 2.8 Download Attachment
+- **Path:** `GET /api/attachments/:id/download`
+- **Description:** Streams the binary content of an active attachment.
+- **Headers:** `x-requester-id: <id>` (Required)
+- **Responses:**
+  - **200 OK:** Binary stream with `Content-Disposition: attachment; filename="..."` and matching `Content-Type`.
+  - **403 Forbidden:** Requester does not own the parent ticket.
+  - **404 Not Found / 410 Gone:** Attachment does not exist or has been soft-removed.
+
+---
+
+### 2.9 Soft-Remove Attachment
+- **Path:** `DELETE /api/attachments/:id`
+- **Description:** Marks an attachment as soft-deleted and records the mandatory reason.
+- **Headers:** `x-requester-id: <id>` (Required)
+- **Request Body:**
+  ```json
+  {
+    "deletionReason": "Uploaded incorrect diagnostic screenshot"
+  }
+  ```
+- **Responses:**
+  - **200 OK:**
+    ```json
+    {
+      "status": "success",
+      "message": "Attachment removed successfully",
+      "data": {
+        "id": 12,
+        "isDeleted": true,
+        "deletionReason": "Uploaded incorrect diagnostic screenshot",
+        "deletedAt": "2026-08-22T08:30:00.000Z"
+      }
+    }
+    ```
+  - **400 Bad Request:** Missing or invalid `deletionReason`.
+  - **403 Forbidden:** Requester does not own the parent ticket.
+  - **404 Not Found:** Attachment does not exist.
