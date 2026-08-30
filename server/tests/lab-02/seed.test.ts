@@ -69,7 +69,31 @@ describe("Database Seed Idempotency & Verification (Lab 2)", () => {
     expect(counter?.lastSequence).toBe(0);
   });
 
-  it("should remain idempotent when run a third time", async () => {
+  it("should preserve lastSequence on an existing TicketCounter when re-seeded", async () => {
+    const currentYear = new Date().getFullYear();
+    // Simulate an existing counter where tickets were already issued (e.g. lastSequence = 5)
+    await prisma.ticketCounter.update({
+      where: { year: currentYear },
+      data: { lastSequence: 5 },
+    });
+
+    // Run seed again
+    await seed(prisma);
+
+    // Verify lastSequence is still 5, not reset to 0
+    const counter = await prisma.ticketCounter.findUnique({
+      where: { year: currentYear },
+    });
+    expect(counter?.lastSequence).toBe(5);
+
+    // Reset back to 0 for subsequent test suites
+    await prisma.ticketCounter.update({
+      where: { year: currentYear },
+      data: { lastSequence: 0 },
+    });
+  });
+
+  it("should remain idempotent when run multiple times", async () => {
     const result = await seed(prisma);
     expect(result.categoriesCount).toBe(4);
     expect(result.relatedSystemsCount).toBe(7);
