@@ -22,14 +22,15 @@ enum TicketStatus {
 }
 
 model RequesterUser {
-  id         Int      @id @default(autoincrement())
-  name       String
-  email      String   @unique
-  department String
-  isActive   Boolean  @default(true)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  tickets    Ticket[]
+  id          Int          @id @default(autoincrement())
+  name        String
+  email       String       @unique
+  department  String
+  isActive    Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  tickets     Ticket[]
+  attachments Attachment[]
 }
 
 model Category {
@@ -69,24 +70,31 @@ model Ticket {
   attachments       Attachment[]
 
   @@index([requesterId, createdAt])
+  @@index([requesterId, updatedAt])
   @@index([categoryId])
   @@index([relatedSystemId])
 }
 
 model Attachment {
-  id               Int       @id @default(autoincrement())
+  id               Int            @id @default(autoincrement())
   ticketId         Int
   originalFilename String
-  storageKey       String    @unique
+  storageKey       String         @unique
   mimeType         String
   fileSize         Int
-  isDeleted        Boolean   @default(false)
+  isDeleted        Boolean        @default(false)
   deletionReason   String?
   deletedAt        DateTime?
   uploaderId       Int?
-  createdAt        DateTime  @default(now())
+  createdAt        DateTime       @default(now())
 
-  ticket           Ticket    @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  ticket           Ticket         @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  uploader         RequesterUser? @relation(fields: [uploaderId], references: [id], onDelete: SetNull)
 
   @@index([ticketId, isDeleted])
+}
+
+model TicketCounter {
+  year         Int @id
+  lastSequence Int @default(0)
 }

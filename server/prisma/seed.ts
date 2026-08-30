@@ -1,8 +1,6 @@
 import { getPrisma } from "../src/prisma.js";
 
-async function main() {
-  const prisma = getPrisma();
-
+export async function seed(prisma = getPrisma()) {
   // 1. Seed Categories (4 required categories)
   const categories = [
     { name: "Account and Access", description: "Login, credentials, permissions, and account lifecycle" },
@@ -18,7 +16,6 @@ async function main() {
       create: { name: cat.name, description: cat.description, isActive: true },
     });
   }
-  console.log("Seeded 4 categories.");
 
   // 2. Seed Related Systems (7 systems >= 6 required)
   const relatedSystems = [
@@ -38,7 +35,6 @@ async function main() {
       create: { name: sys.name, description: sys.description, isActive: true },
     });
   }
-  console.log("Seeded 7 related systems.");
 
   // 3. Seed Development Requesters (4 active, 1 inactive)
   const requesters = [
@@ -56,14 +52,38 @@ async function main() {
       create: { name: req.name, email: req.email, department: req.department, isActive: req.isActive },
     });
   }
-  console.log("Seeded 5 development requesters (4 active, 1 inactive).");
+
+  // 4. Initialize TicketCounter for current year if not exists
+  const currentYear = new Date().getFullYear();
+  await prisma.ticketCounter.upsert({
+    where: { year: currentYear },
+    update: {},
+    create: { year: currentYear, lastSequence: 0 },
+  });
+
+  return {
+    categoriesCount: categories.length,
+    relatedSystemsCount: relatedSystems.length,
+    requestersCount: requesters.length,
+  };
 }
 
-main()
-  .catch((e) => {
-    console.error(e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await getPrisma().$disconnect();
-  });
+async function main() {
+  const result = await seed();
+  console.log(`Seeded ${result.categoriesCount} categories.`);
+  console.log(`Seeded ${result.relatedSystemsCount} related systems.`);
+  console.log(`Seeded ${result.requestersCount} development requesters (4 active, 1 inactive).`);
+  console.log(`Initialized ticket counter.`);
+}
+
+// Only execute directly when run as script
+if (process.argv[1]?.includes("seed.ts") || process.argv[1]?.includes("seed.js")) {
+  main()
+    .catch((e) => {
+      console.error(e);
+      process.exit(1);
+    })
+    .finally(async () => {
+      await getPrisma().$disconnect();
+    });
+}
