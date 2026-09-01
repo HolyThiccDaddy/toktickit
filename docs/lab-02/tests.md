@@ -109,7 +109,7 @@ npx playwright test
 | :--- | :--- | :--- |
 | Server regression | `cd server && npm test` | Passed: 4 files, 10 tests |
 | Server build | `cd server && npm run build` | Passed |
-| Client regression | `cd client && npm test` | Passed: 2 files, 7 tests |
+| Client regression | `cd client && npm test` | Passed: 2 files, 8 tests |
 | Client build | `cd client && npm run build` | Passed |
 
 The remaining planned Lab 2 tests stay marked `Planned` until their owning Issues are implemented and verified.

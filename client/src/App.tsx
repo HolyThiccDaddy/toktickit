@@ -1,8 +1,35 @@
 import { useCallback, useEffect, useState } from "react";
-import { getRequesters, type Requester } from "./api.js";
+import { checkSystem, getRequesters, type Category, type Requester } from "./api.js";
 import { RequesterProvider, useRequester } from "./RequesterContext.js";
 
 type LoadState = "loading" | "ready" | "empty" | "error";
+type SystemState = "idle" | "loading" | "success" | "error";
+
+function RequesterWorkspace() {
+  const [state, setState] = useState<SystemState>("idle");
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  async function handleCheckSystem() {
+    setState("loading");
+    setErrorMessage("");
+    try {
+      const result = await checkSystem();
+      setCategories(result.categories);
+      setState("success");
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "Unable to connect to TokTickIT API");
+      setState("error");
+    }
+  }
+
+  return <main className="container py-5" style={{ maxWidth: 640 }}>
+    <h1 className="h3 mb-4">TokTickIT <span className="text-success">IT Service Desk</span></h1>
+    <button className="btn btn-success mb-3" onClick={handleCheckSystem} disabled={state === "loading"}>{state === "loading" ? "Loading…" : "Check System"}</button>
+    {state === "success" && <section className="mt-3"><p className="fw-bold text-success">System Status: Online</p><p className="fw-semibold mb-2">Supported Request Categories:</p><ol className="list-group list-group-numbered">{categories.map((category) => <li key={category.id} className="list-group-item">{category.name}</li>)}</ol></section>}
+    {state === "error" && <section className="mt-3 text-danger" role="alert"><p className="fw-bold mb-1">System Status: Offline</p><p>{errorMessage}</p></section>}
+  </main>;
+}
 
 function RequesterApp() {
   const [requesters, setRequesters] = useState<Requester[]>([]);
@@ -21,7 +48,7 @@ function RequesterApp() {
   useEffect(() => { void load(); }, [load]);
 
   const current = state === "ready" ? requesters.find((item) => item.id === requesterId) : undefined;
-  if (current) return <><header className="d-flex flex-wrap align-items-center justify-content-between gap-2 px-3 py-2 text-white w-100" style={{ background: "#006B3C" }}><strong>TokTickIT</strong><div className="d-flex flex-wrap align-items-center gap-2"><span>{current.name}</span><button className="btn btn-light btn-sm" onClick={() => { clearRequester(); setSelectedId(""); }}>Change Requester</button></div></header><main className="container py-5"><h1 className="h3">Requester workspace</h1></main></>;
+  if (current) return <><header className="d-flex flex-wrap align-items-center justify-content-between gap-2 px-3 py-2 text-white w-100" style={{ background: "#006B3C" }}><strong>TokTickIT</strong><div className="d-flex flex-wrap align-items-center gap-2"><span>{current.name}</span><button className="btn btn-light btn-sm" onClick={() => { clearRequester(); setSelectedId(""); }}>Change Requester</button></div></header><RequesterWorkspace /></>;
 
   function continueWithRequester() {
     const selected = requesters.find((item) => item.id === Number(selectedId));

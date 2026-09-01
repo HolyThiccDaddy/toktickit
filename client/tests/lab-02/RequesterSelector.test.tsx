@@ -40,7 +40,7 @@ describe("Development Requester selection", () => {
     ]);
     render(<App />);
     expect(await screen.findByText("Jennifer Anderson Updated")).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: /Requester workspace/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /IT Service Desk/i })).toBeInTheDocument();
   });
 
   it("shows a retryable safe error", async () => {
