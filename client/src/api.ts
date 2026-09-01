@@ -18,6 +18,46 @@ export interface Requester {
   isActive: boolean;
 }
 
+export interface RelatedSystem { id: number; name: string; description: string | null; }
+export interface CreatedTicket { id: number; ticketNumber: string; summary: string; currentStatus: "NEW"; requesterId: number; }
+
+export class ApiError extends Error {
+  constructor(message: string, public readonly fieldErrors: Record<string, string> = {}) {
+    super(message);
+    this.name = "ApiError";
+  }
+}
+
+async function readJson(response: Response): Promise<Record<string, unknown>> {
+  try {
+    return await response.json() as Record<string, unknown>;
+  } catch {
+    return {};
+  }
+}
+
+export async function getReferenceData(): Promise<{ categories: Category[]; relatedSystems: RelatedSystem[] }> {
+  const [categoriesResponse, systemsResponse] = await Promise.all([
+    fetch(`${API_URL}/api/categories`), fetch(`${API_URL}/api/related-systems`),
+  ]);
+  if (!categoriesResponse.ok || !systemsResponse.ok) throw new Error("Unable to load ticket reference data");
+  return { categories: await categoriesResponse.json(), relatedSystems: await systemsResponse.json() };
+}
+
+export async function createTicket(requesterId: number, formData: FormData): Promise<CreatedTicket> {
+  const response = await fetch(`${API_URL}/api/tickets`, { method: "POST", headers: { "x-requester-id": String(requesterId) }, body: formData });
+  const body = await readJson(response);
+  if (!response.ok) {
+    const message = typeof body.error === "string" ? body.error : "Unable to create ticket";
+    const fieldErrors = body.fieldErrors && typeof body.fieldErrors === "object"
+      ? Object.fromEntries(Object.entries(body.fieldErrors).filter((entry): entry is [string, string] => typeof entry[1] === "string"))
+      : {};
+    throw new ApiError(message, fieldErrors);
+  }
+  if (typeof body.ticketNumber !== "string") throw new ApiError("Unable to create ticket");
+  return body as unknown as CreatedTicket;
+}
+
 export async function getRequesters(): Promise<Requester[]> {
   const response = await fetch(`${API_URL}/api/requesters`);
   if (!response.ok) throw new Error("Failed to load requesters");

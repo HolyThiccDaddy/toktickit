@@ -14,14 +14,14 @@ The testing strategy for TokTickIT Lab 2 guarantees complete functional correctn
 
 | Test ID | Type | Requirement / AC | What It Tests | Expected Result | Automated Test File | Status |
 | :--- | :--- | :--- | :--- | :--- | :--- | :---: |
-| **UNIT-01** | Unit | BR-01, FR-04 | Ticket number generator utility | Formats sequence into `TKT-YYYY-XXXXXX` (e.g., `TKT-2026-000001`) with zero-padding | `server/tests/lab-02/ticket-number.unit.test.ts` | Planned |
-| **UNIT-02** | Unit | BR-06, AC-05 | File attachment validator utility | Accepts valid JPG/PNG/WEBP/PDF <= 5MB; rejects oversized files and invalid MIME types | `server/tests/lab-02/attachment-validator.unit.test.ts` | Planned |
+| **UNIT-01** | Unit | BR-01, FR-04 | Ticket number generator utility | Formats sequence into `TKT-YYYY-XXXXXX` (e.g., `TKT-2026-000001`) with zero-padding | `server/tests/lab-02/ticket-number.unit.test.ts` | Passed |
+| **UNIT-02** | Unit | BR-06, AC-05 | File attachment validator utility | Accepts valid JPG/PNG/WEBP/PDF <= 5MB; rejects oversized files and invalid MIME types | `server/tests/lab-02/attachment-validator.unit.test.ts` | Passed |
 | **API-01** | API | AC-01, FR-01 | `GET /api/requesters` active list | Returns 200 with list of active requesters only; inactive excluded | `server/tests/lab-02/requesters.api.test.ts` | Passed |
-| **API-02** | API | AC-04, FR-03, BR-01 | `POST /api/tickets` valid creation | Returns 201 with saved ticket, generated `TKT-YYYY-XXXXXX`, status `NEW` | `server/tests/lab-02/create-ticket.api.test.ts` | Planned |
-| **API-03** | API | AC-03, BR-05 | `POST /api/tickets` validation errors | Returns 400 with field-specific errors when summary/description invalid | `server/tests/lab-02/create-ticket.api.test.ts` | Planned |
-| **API-04** | API | AC-05, BR-06 | `POST /api/tickets` valid attachment upload | Successfully stores uploaded files and saves attachment records | `server/tests/lab-02/create-ticket.api.test.ts` | Planned |
-| **API-05** | API | AC-05, BR-06 | `POST /api/tickets` backend file rejection | Returns 400 when file > 5MB, invalid MIME type, extension mismatch, or > 5 files | `server/tests/lab-02/create-ticket.api.test.ts` | Planned |
-| **API-06** | API | AC-11, BR-11 | `POST /api/tickets` upload failure rollback | Rolls back DB transaction and removes temporary files on disk if storage fails | `server/tests/lab-02/create-ticket.api.test.ts` | Planned |
+| **API-02** | API | AC-04, FR-03, BR-01 | `POST /api/tickets` valid creation | Returns 201 with saved ticket, generated `TKT-YYYY-XXXXXX`, status `NEW` | `server/tests/lab-02/create-ticket.api.test.ts` | Passed |
+| **API-03** | API | AC-03, BR-05 | `POST /api/tickets` validation errors | Returns 400 with field-specific errors when summary/description invalid | `server/tests/lab-02/create-ticket.api.test.ts` | Passed |
+| **API-04** | API | AC-05, BR-06 | `POST /api/tickets` valid attachment upload | Successfully stores uploaded files and saves attachment records | `server/tests/lab-02/create-ticket.api.test.ts` | Passed |
+| **API-05** | API | AC-05, BR-06 | `POST /api/tickets` backend file rejection | Returns 400 when file > 5MB, invalid MIME type, extension mismatch, or > 5 files | `server/tests/lab-02/create-ticket.api.test.ts` | Passed |
+| **API-06** | API | AC-11, BR-11 | `POST /api/tickets` upload failure rollback | Rolls back DB transaction and removes temporary files on disk if storage fails | `server/tests/lab-02/create-ticket.api.test.ts` | Passed |
 | **API-07** | API | AC-06, FR-06, BR-08 | `GET /api/tickets` requester ownership | Returns only tickets belonging to requester in `x-requester-id` header | `server/tests/lab-02/my-tickets.api.test.ts` | Planned |
 | **API-08** | API | AC-07, FR-07 | `GET /api/tickets` search and filters | Correctly filters by category, priority, status, and search query | `server/tests/lab-02/my-tickets.api.test.ts` | Planned |
 | **API-09** | API | AC-07, FR-07 | `GET /api/tickets` pagination | Returns requested page/limit with total count and page metadata | `server/tests/lab-02/my-tickets.api.test.ts` | Planned |
@@ -35,10 +35,10 @@ The testing strategy for TokTickIT Lab 2 guarantees complete functional correctn
 | **UI-01** | UI | AC-01, FR-01 | Development Requester selector screen | Renders dropdown of active requesters, disclaimer banner, continue button | `client/tests/lab-02/RequesterSelector.test.tsx` | Passed |
 | **UI-02** | UI | AC-01, FR-01 | Requester selector loading/empty/error states | Renders loading spinner, empty state when no users, and API failure with retry | `client/tests/lab-02/RequesterSelector.test.tsx` | Passed |
 | **UI-03** | UI | AC-02, FR-01 | Requester Context & Header switcher | Displays the selected requester name, persists a validated requester ID for the session, and returns to the selector on change | `client/tests/lab-02/RequesterSelector.test.tsx` | Passed |
-| **UI-04** | UI | AC-03, BR-05 | Create Ticket form client validation | Shows red inline error messages when submitting empty required fields | `client/tests/lab-02/CreateTicket.test.tsx` | Planned |
-| **UI-05** | UI | AC-04, FR-03, BR-09 | Create Ticket submission & busy state | Submit button disables and shows spinner while processing request | `client/tests/lab-02/CreateTicket.test.tsx` | Planned |
-| **UI-06** | UI | AC-05, BR-06 | Create Ticket file upload validation | Rejects files >5MB or unsupported MIME types with clear error message | `client/tests/lab-02/CreateTicket.test.tsx` | Planned |
-| **UI-07** | UI | AC-11, BR-10 | Create Ticket failure data preservation | Form preserves typed inputs when API submission fails | `client/tests/lab-02/CreateTicket.test.tsx` | Planned |
+| **UI-04** | UI | AC-03, BR-05 | Create Ticket form client validation | Shows red inline error messages when submitting empty required fields | `client/tests/lab-02/CreateTicket.test.tsx` | Passed |
+| **UI-05** | UI | AC-04, FR-03, BR-09 | Create Ticket submission & busy state | Submit button disables and shows spinner while processing request | `client/tests/lab-02/CreateTicket.test.tsx` | Passed |
+| **UI-06** | UI | AC-05, BR-06 | Create Ticket file upload validation | Rejects files >5MB or unsupported MIME types with clear error message | `client/tests/lab-02/CreateTicket.test.tsx` | Passed |
+| **UI-07** | UI | AC-11, BR-10 | Create Ticket failure data preservation | Form preserves typed inputs when API submission fails | `client/tests/lab-02/CreateTicket.test.tsx` | Passed |
 | **UI-08** | UI | AC-06, AC-07, FR-06 | My Tickets list, filters & sorting | Renders ticket table/cards, search bar, category/priority/status filters | `client/tests/lab-02/MyTickets.test.tsx` | Planned |
 | **UI-09** | UI | AC-07, FR-07 | My Tickets empty vs no-results state | Renders distinct empty state when 0 tickets, and no-results with Clear Filters | `client/tests/lab-02/MyTickets.test.tsx` | Planned |
 | **UI-10** | UI | AC-08, FR-08 | Ticket Detail read-only layout | Renders all ticket metadata in read-only format without editable inputs | `client/tests/lab-02/RequesterTicketDetail.test.tsx` | Planned |
@@ -113,6 +113,15 @@ npx playwright test
 | Client build | `cd client && npm run build` | Passed |
 
 The remaining planned Lab 2 tests stay marked `Planned` until their owning Issues are implemented and verified.
+
+### Issue #8 - Create Ticket Screen and API (2026-09-01)
+
+| Check | Command | Result |
+| :--- | :--- | :--- |
+| Server regression | `cd server && npm test` | Passed twice: 7 files, 23 tests |
+| Server build | `cd server && npm run build` | Passed |
+| Client regression | `cd client && npm test` | Passed twice: 4 files, 19 tests |
+| Client build | `cd client && npm run build` | Passed |
 
 ---
 
