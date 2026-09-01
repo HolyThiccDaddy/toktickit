@@ -1,38 +1,35 @@
 import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
-import type { Requester } from "./api.js";
-
 interface RequesterContextValue {
-  requester: Requester | null;
-  selectRequester: (requester: Requester) => void;
+  requesterId: number | null;
+  selectRequester: (requesterId: number) => void;
   clearRequester: () => void;
 }
 
 const STORAGE_KEY = "toktickit.developmentRequester";
 const RequesterContext = createContext<RequesterContextValue | undefined>(undefined);
 
-function readStoredRequester(): Requester | null {
-  try {
-    const value = sessionStorage.getItem(STORAGE_KEY);
-    return value ? JSON.parse(value) as Requester : null;
-  } catch {
-    sessionStorage.removeItem(STORAGE_KEY);
-    return null;
-  }
+function readStoredRequesterId(): number | null {
+  const value = sessionStorage.getItem(STORAGE_KEY);
+  if (!value) return null;
+  const requesterId = Number(value);
+  if (Number.isInteger(requesterId) && requesterId > 0) return requesterId;
+  sessionStorage.removeItem(STORAGE_KEY);
+  return null;
 }
 
 export function RequesterProvider({ children }: { children: ReactNode }) {
-  const [requester, setRequester] = useState<Requester | null>(readStoredRequester);
+  const [requesterId, setRequesterId] = useState<number | null>(readStoredRequesterId);
   const value = useMemo<RequesterContextValue>(() => ({
-    requester,
-    selectRequester: (next) => {
-      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-      setRequester(next);
+    requesterId,
+    selectRequester: (nextId) => {
+      sessionStorage.setItem(STORAGE_KEY, String(nextId));
+      setRequesterId(nextId);
     },
     clearRequester: () => {
       sessionStorage.removeItem(STORAGE_KEY);
-      setRequester(null);
+      setRequesterId(null);
     },
-  }), [requester]);
+  }), [requesterId]);
   return <RequesterContext.Provider value={value}>{children}</RequesterContext.Provider>;
 }
 

@@ -16,7 +16,7 @@ The testing strategy for TokTickIT Lab 2 guarantees complete functional correctn
 | :--- | :--- | :--- | :--- | :--- | :--- | :---: |
 | **UNIT-01** | Unit | BR-01, FR-04 | Ticket number generator utility | Formats sequence into `TKT-YYYY-XXXXXX` (e.g., `TKT-2026-000001`) with zero-padding | `server/tests/lab-02/ticket-number.unit.test.ts` | Planned |
 | **UNIT-02** | Unit | BR-06, AC-05 | File attachment validator utility | Accepts valid JPG/PNG/WEBP/PDF <= 5MB; rejects oversized files and invalid MIME types | `server/tests/lab-02/attachment-validator.unit.test.ts` | Planned |
-| **API-01** | API | AC-01, FR-01 | `GET /api/requesters` active list | Returns 200 with list of active requesters only; inactive excluded | `server/tests/lab-02/requesters.api.test.ts` | Planned |
+| **API-01** | API | AC-01, FR-01 | `GET /api/requesters` active list | Returns 200 with list of active requesters only; inactive excluded | `server/tests/lab-02/requesters.api.test.ts` | Passed |
 | **API-02** | API | AC-04, FR-03, BR-01 | `POST /api/tickets` valid creation | Returns 201 with saved ticket, generated `TKT-YYYY-XXXXXX`, status `NEW` | `server/tests/lab-02/create-ticket.api.test.ts` | Planned |
 | **API-03** | API | AC-03, BR-05 | `POST /api/tickets` validation errors | Returns 400 with field-specific errors when summary/description invalid | `server/tests/lab-02/create-ticket.api.test.ts` | Planned |
 | **API-04** | API | AC-05, BR-06 | `POST /api/tickets` valid attachment upload | Successfully stores uploaded files and saves attachment records | `server/tests/lab-02/create-ticket.api.test.ts` | Planned |
@@ -32,9 +32,9 @@ The testing strategy for TokTickIT Lab 2 guarantees complete functional correctn
 | **API-14** | API | AC-09, FR-11, BR-07 | `DELETE /api/attachments/:id` soft removal | Sets `isDeleted=true`, stores reason, blocks subsequent download | `server/tests/lab-02/attachments.api.test.ts` | Planned |
 | **API-15** | API | AC-09, FR-10, BR-07 | `GET /api/attachments/:id/download` stream | Returns 200 and binary stream for active attachment | `server/tests/lab-02/attachments.api.test.ts` | Planned |
 | **API-16** | API | AC-09, FR-10, BR-07 | `GET /api/attachments/:id/download` deleted file | Returns 404/410 when attempting to download soft-removed attachment | `server/tests/lab-02/attachments.api.test.ts` | Planned |
-| **UI-01** | UI | AC-01, FR-01 | Development Requester selector screen | Renders dropdown of active requesters, disclaimer banner, continue button | `client/tests/lab-02/RequesterSelector.test.tsx` | Planned |
-| **UI-02** | UI | AC-01, FR-01 | Requester selector loading/empty/error states | Renders loading spinner, empty state when no users, and API failure with retry | `client/tests/lab-02/RequesterSelector.test.tsx` | Planned |
-| **UI-03** | UI | AC-02, FR-01 | Requester Context & Header switcher | Displays selected requester name in header, opens selector modal on change | `client/tests/lab-02/RequesterSelector.test.tsx` | Planned |
+| **UI-01** | UI | AC-01, FR-01 | Development Requester selector screen | Renders dropdown of active requesters, disclaimer banner, continue button | `client/tests/lab-02/RequesterSelector.test.tsx` | Passed |
+| **UI-02** | UI | AC-01, FR-01 | Requester selector loading/empty/error states | Renders loading spinner, empty state when no users, and API failure with retry | `client/tests/lab-02/RequesterSelector.test.tsx` | Passed |
+| **UI-03** | UI | AC-02, FR-01 | Requester Context & Header switcher | Displays the selected requester name, persists a validated requester ID for the session, and returns to the selector on change | `client/tests/lab-02/RequesterSelector.test.tsx` | Passed |
 | **UI-04** | UI | AC-03, BR-05 | Create Ticket form client validation | Shows red inline error messages when submitting empty required fields | `client/tests/lab-02/CreateTicket.test.tsx` | Planned |
 | **UI-05** | UI | AC-04, FR-03, BR-09 | Create Ticket submission & busy state | Submit button disables and shows spinner while processing request | `client/tests/lab-02/CreateTicket.test.tsx` | Planned |
 | **UI-06** | UI | AC-05, BR-06 | Create Ticket file upload validation | Rejects files >5MB or unsupported MIME types with clear error message | `client/tests/lab-02/CreateTicket.test.tsx` | Planned |
@@ -102,7 +102,17 @@ npx playwright test
 ---
 
 ## 6. Final Results
-*(Will be updated upon completion of implementation with empirical test execution output logs)*
+
+### Issue #7 - Development Requester Context (2026-09-01)
+
+| Check | Command | Result |
+| :--- | :--- | :--- |
+| Server regression | `cd server && npm test` | Passed: 4 files, 10 tests |
+| Server build | `cd server && npm run build` | Passed |
+| Client regression | `cd client && npm test` | Passed: 2 files, 7 tests |
+| Client build | `cd client && npm run build` | Passed |
+
+The remaining planned Lab 2 tests stay marked `Planned` until their owning Issues are implemented and verified.
 
 ---
 

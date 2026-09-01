@@ -20,16 +20,37 @@ describe("Development Requester selection", () => {
 
     expect(await screen.findByText("Jennifer Anderson")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Change Requester/i })).toBeInTheDocument();
-    expect(sessionStorage.getItem("toktickit.developmentRequester")).toContain("Jennifer Anderson");
+    expect(sessionStorage.getItem("toktickit.developmentRequester")).toBe("1");
     fireEvent.click(screen.getByRole("button", { name: /Change Requester/i }));
     expect(await screen.findByRole("heading", { name: /Select Development Requester/i })).toBeInTheDocument();
   });
 
+  it("rejects a stale stored requester and uses current API data", async () => {
+    sessionStorage.setItem("toktickit.developmentRequester", "999");
+    vi.spyOn(api, "getRequesters").mockResolvedValue(requesters);
+    render(<App />);
+    expect(await screen.findByRole("heading", { name: /Select Development Requester/i })).toBeInTheDocument();
+    expect(sessionStorage.getItem("toktickit.developmentRequester")).toBeNull();
+  });
+
+  it("refreshes a valid stored requester with the latest API data", async () => {
+    sessionStorage.setItem("toktickit.developmentRequester", "1");
+    vi.spyOn(api, "getRequesters").mockResolvedValue([
+      { ...requesters[0], name: "Jennifer Anderson Updated" },
+    ]);
+    render(<App />);
+    expect(await screen.findByText("Jennifer Anderson Updated")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /Requester workspace/i })).toBeInTheDocument();
+  });
+
   it("shows a retryable safe error", async () => {
-    vi.spyOn(api, "getRequesters").mockRejectedValue(new Error("network"));
+    vi.spyOn(api, "getRequesters")
+      .mockRejectedValueOnce(new Error("network"))
+      .mockResolvedValueOnce(requesters);
     render(<App />);
     expect(await screen.findByText(/Unable to load development requesters from server/i)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Retry Connection/i })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /Retry Connection/i }));
+    expect(await screen.findByLabelText(/Development Requester/i)).toBeInTheDocument();
   });
 
   it("shows the required empty state", async () => {
