@@ -1,18 +1,74 @@
+import { existsSync } from "node:fs";
+import { resolve } from "node:path";
+import { loadEnvFile } from "node:process";
+import type { PrismaClient } from "@prisma/client";
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import { getPrisma } from "../../src/prisma.js";
-import { seed } from "../../prisma/seed.js";
+
+const testEnvPath = resolve(process.cwd(), ".env.test");
+
+if (!existsSync(testEnvPath)) {
+  throw new Error(
+    "Missing server/.env.test. Copy server/.env.test.example to server/.env.test before running Lab 2 database tests.",
+  );
+}
+
+loadEnvFile(testEnvPath);
+
+const databaseUrl = process.env.DATABASE_URL;
+if (!databaseUrl) {
+  throw new Error("DATABASE_URL must be defined in server/.env.test.");
+}
+
+const databaseName = new URL(databaseUrl).pathname
+  .split("/")
+  .filter(Boolean)
+  .at(-1);
+
+if (!databaseName?.toLowerCase().endsWith("_test")) {
+  throw new Error(
+    `Refusing to run destructive seed tests against non-test database: ${
+      databaseName ?? "unknown"
+    }`,
+  );
+}
 
 describe("Database Seed Idempotency & Verification (Lab 2)", () => {
-  const prisma = getPrisma();
+  let prisma: PrismaClient;
+  let seed: (client: PrismaClient) => Promise<{
+    categoriesCount: number;
+    relatedSystemsCount: number;
+    requestersCount: number;
+  }>;
 
   beforeAll(async () => {
+    // Import Prisma only after loading and validating the dedicated test DB.
+    const prismaModule = await import("../../src/prisma.js");
+    const seedModule = await import("../../prisma/seed.js");
+
+    prisma = prismaModule.getPrisma();
+    seed = seedModule.seed;
+
+    // Prepare deterministic fixtures only inside the guarded test database.
+    // RESTART IDENTITY keeps legacy assertions that rely on seeded IDs stable
+    // even when the suite is run repeatedly against the same test database.
+    await prisma.$executeRawUnsafe(`
+      TRUNCATE TABLE
+        "Attachment",
+        "Ticket",
+        "TicketCounter",
+        "RequesterUser",
+        "RelatedSystem",
+        "Category"
+      RESTART IDENTITY CASCADE
+    `);
+
     // Run seed twice to test idempotency
     await seed(prisma);
     await seed(prisma);
   });
 
   afterAll(async () => {
-    await prisma.$disconnect();
+    await prisma?.$disconnect();
   });
 
   it("should seed exactly 4 categories without duplicates", async () => {
