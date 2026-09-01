@@ -1,45 +1,20 @@
-import { describe, it, expect, vi } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import App from "../../src/App.js";
 import * as api from "../../src/api.js";
 
-describe("App", () => {
-  // WORKED EXAMPLE — provided for you.
-  it("renders the TokTickIT heading", () => {
+describe("App shell regression", () => {
+  beforeEach(() => sessionStorage.clear());
+  it("preserves the TokTickIT application identity", async () => {
+    vi.spyOn(api, "getRequesters").mockResolvedValue([]);
     render(<App />);
-    expect(screen.getByText(/TokTickIT/i)).toBeInTheDocument();
+    expect(screen.getByText("TokTickIT")).toBeInTheDocument();
+    expect(await screen.findByText(/No active development requesters found/i)).toBeInTheDocument();
   });
-
-  it("shows Online and the seeded categories on success", async () => {
-    vi.spyOn(api, "checkSystem").mockResolvedValue({
-      online: true,
-      categories: [
-        { id: 1, name: "Account and Access" },
-        { id: 2, name: "Hardware" },
-        { id: 3, name: "Software" },
-        { id: 4, name: "Network" },
-      ],
-    });
-
+  it("identifies the selector as a testing mechanism", async () => {
+    vi.spyOn(api, "getRequesters").mockResolvedValue([]);
     render(<App />);
-    fireEvent.click(screen.getByRole("button", { name: /Check System/i }));
-
-    expect(await screen.findByText(/System Status: Online/i)).toBeInTheDocument();
-    expect(screen.getByText("Account and Access")).toBeInTheDocument();
-    expect(screen.getByText("Hardware")).toBeInTheDocument();
-    expect(screen.getByText("Software")).toBeInTheDocument();
-    expect(screen.getByText("Network")).toBeInTheDocument();
-  });
-
-  it("shows an Offline error message when the API is unavailable", async () => {
-    vi.spyOn(api, "checkSystem").mockRejectedValue(
-      new Error("Unable to connect to TokTickIT API")
-    );
-
-    render(<App />);
-    fireEvent.click(screen.getByRole("button", { name: /Check System/i }));
-
-    expect(await screen.findByText(/System Status: Offline/i)).toBeInTheDocument();
-    expect(screen.getByText(/Unable to connect to TokTickIT API/i)).toBeInTheDocument();
+    expect(screen.getByText(/not a login screen/i)).toBeInTheDocument();
+    expect(await screen.findByText(/No active development requesters found/i)).toBeInTheDocument();
   });
 });

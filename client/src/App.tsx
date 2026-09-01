@@ -1,61 +1,38 @@
-import { useState } from "react";
-import { checkSystem, Category } from "./api.js";
+import { useCallback, useEffect, useState } from "react";
+import { getRequesters, type Requester } from "./api.js";
+import { RequesterProvider, useRequester } from "./RequesterContext.js";
 
-// UI states you must handle for Issue 4: idle, loading, success, error.
-type UiState = "idle" | "loading" | "success" | "error";
+type LoadState = "loading" | "ready" | "empty" | "error";
+
+function RequesterApp() {
+  const [requesters, setRequesters] = useState<Requester[]>([]);
+  const [selectedId, setSelectedId] = useState("");
+  const { requester: current, selectRequester, clearRequester } = useRequester();
+  const [state, setState] = useState<LoadState>("loading");
+  const load = useCallback(async () => {
+    setState("loading");
+    try {
+      const active = (await getRequesters()).filter((item) => item.isActive);
+      setRequesters(active);
+      setState(active.length ? "ready" : "empty");
+    } catch { setState("error"); }
+  }, []);
+  useEffect(() => { void load(); }, [load]);
+
+  if (current) return <><header className="d-flex flex-wrap align-items-center justify-content-between gap-2 px-3 py-2 text-white w-100" style={{ background: "#006B3C" }}><strong>TokTickIT</strong><div className="d-flex flex-wrap align-items-center gap-2"><span>{current.name}</span><button className="btn btn-light btn-sm" onClick={() => { clearRequester(); setSelectedId(""); }}>Change Requester</button></div></header><main className="container py-5"><h1 className="h3">Requester workspace</h1></main></>;
+
+  return <main className="min-vh-100 d-flex align-items-center" style={{ background: "#F5F7F6" }}><section className="card shadow-sm mx-auto p-4 w-100" style={{ maxWidth: 560 }}>
+    <div className="fw-bold mb-2" style={{ color: "#006B3C" }}>TokTickIT</div><h1 className="h3" style={{ color: "#006B3C" }}>Select Development Requester</h1>
+    <p>Choose a development requester to simulate the current requester context for Lab 2. This is for testing only and is not a login screen.</p>
+    <div className="alert" style={{ background: "#EAF6EF" }}>Authentication coming in Lab 3.</div>
+    {state === "loading" && <p aria-live="polite">Loading development requesters...</p>}
+    {state === "error" && <div className="alert alert-danger">Unable to load development requesters from server. Please verify backend connection.<button className="btn btn-outline-danger d-block mt-2" onClick={load}>Retry Connection</button></div>}
+    {state === "empty" && <div className="alert alert-warning">No active development requesters found in database. Please run database seed.</div>}
+    {state === "ready" && <><label className="form-label" htmlFor="requester">Development Requester</label><select id="requester" className="form-select" value={selectedId} onChange={(event) => setSelectedId(event.target.value)}><option value="">Select a requester</option>{requesters.map((item) => <option key={item.id} value={item.id}>{item.name} - {item.department}</option>)}</select><small>Only active development requesters are shown.</small></>}
+    <div className="mt-4 d-flex gap-2"><button className="btn btn-success" disabled={!selectedId || state !== "ready"} onClick={() => { const selected = requesters.find((item) => item.id === Number(selectedId)); if (selected) selectRequester(selected); }}>Continue</button><button className="btn btn-outline-secondary" type="button" onClick={() => setSelectedId("")}>Cancel</button></div>
+  </section></main>;
+}
 
 export default function App() {
-  const [state, setState] = useState<UiState>("idle");
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [errorMsg, setErrorMsg] = useState<string>("");
-
-  async function handleCheck() {
-    setState("loading");
-    setErrorMsg("");
-    try {
-      const result = await checkSystem();
-      setCategories(result.categories);
-      setState("success");
-    } catch (err: any) {
-      setErrorMsg(err.message ?? "Unable to connect to TokTickIT API");
-      setState("error");
-    }
-  }
-
-  return (
-    <div className="container py-5" style={{ maxWidth: 640 }}>
-      <h1 className="h3 mb-4">
-        TokTickIT <span className="text-success">IT Service Desk</span>
-      </h1>
-
-      <button
-        className="btn btn-success mb-3"
-        onClick={handleCheck}
-        disabled={state === "loading"}
-      >
-        {state === "loading" ? "Loading…" : "Check System"}
-      </button>
-
-      {state === "success" && (
-        <div className="mt-3">
-          <p className="fw-bold text-success">System Status: Online</p>
-          <p className="fw-semibold mb-2">Supported Request Categories:</p>
-          <ol className="list-group list-group-numbered">
-            {categories.map((cat) => (
-              <li key={cat.id} className="list-group-item">
-                {cat.name}
-              </li>
-            ))}
-          </ol>
-        </div>
-      )}
-
-      {state === "error" && (
-        <div className="mt-3 text-danger">
-          <p className="fw-bold mb-1">System Status: Offline</p>
-          <p>{errorMsg}</p>
-        </div>
-      )}
-    </div>
-  );
+  return <RequesterProvider><RequesterApp /></RequesterProvider>;
 }
