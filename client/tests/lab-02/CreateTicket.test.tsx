@@ -24,12 +24,15 @@ describe("Create Ticket", () => {
     expect(createSpy).not.toHaveBeenCalled();
   });
   it("submits under the selected requester and shows the official ticket number", async () => {
-    vi.spyOn(api, "createTicket").mockResolvedValue({ id: 1, ticketNumber: "TKT-2026-000001", summary: "Laptop fails", currentStatus: "NEW", requesterId: 1 }); await openForm();
+    const createdAt = "2026-09-01T08:30:00.000Z";
+    vi.spyOn(api, "createTicket").mockResolvedValue({ id: 1, ticketNumber: "TKT-2026-000001", summary: "Laptop fails", currentStatus: "NEW", requesterId: 1, createdAt }); await openForm();
+    expect(screen.getByLabelText(/Ticket Date/i)).toHaveValue("Assigned on submission");
     fireEvent.change(screen.getByLabelText(/Ticket Summary/i), { target: { value: "Laptop fails" } });
     fireEvent.change(screen.getByLabelText(/^Description/i), { target: { value: "Laptop does not power on." } });
     fireEvent.change(screen.getByLabelText(/Category/i), { target: { value: "1" } }); fireEvent.change(screen.getByLabelText(/Related System/i), { target: { value: "1" } });
     fireEvent.click(screen.getByRole("button", { name: /Submit Ticket/i }));
     expect(await screen.findByText("TKT-2026-000001")).toBeInTheDocument();
+    expect(screen.getByText(new Date(createdAt).toLocaleString())).toBeInTheDocument();
     expect(api.createTicket).toHaveBeenCalledWith(1, expect.any(FormData));
   });
   it("preserves entered values after an API failure", async () => {
@@ -56,7 +59,7 @@ describe("Create Ticket", () => {
   });
 
   it("removes a selected attachment before submission", async () => {
-    vi.spyOn(api, "createTicket").mockResolvedValue({ id: 1, ticketNumber: "TKT-2026-000001", summary: "Laptop fails", currentStatus: "NEW", requesterId: 1 });
+    vi.spyOn(api, "createTicket").mockResolvedValue({ id: 1, ticketNumber: "TKT-2026-000001", summary: "Laptop fails", currentStatus: "NEW", requesterId: 1, createdAt: "2026-09-01T08:30:00.000Z" });
     await openForm();
     const file = new File(["%PDF-1.4"], "evidence.pdf", { type: "application/pdf" });
     fireEvent.change(screen.getByLabelText(/Attachments/i), { target: { files: [file] } });
@@ -92,7 +95,7 @@ describe("Create Ticket", () => {
     fireEvent.change(screen.getByLabelText(/Category/i), { target: { value: "1" } }); fireEvent.change(screen.getByLabelText(/Related System/i), { target: { value: "1" } });
     fireEvent.click(screen.getByRole("button", { name: /Submit Ticket/i }));
     expect(await screen.findByRole("button", { name: /Submitting/i })).toBeDisabled();
-    resolveCreate({ id: 1, ticketNumber: "TKT-2026-000001", summary: "Laptop fails", currentStatus: "NEW", requesterId: 1 });
+    resolveCreate({ id: 1, ticketNumber: "TKT-2026-000001", summary: "Laptop fails", currentStatus: "NEW", requesterId: 1, createdAt: "2026-09-01T08:30:00.000Z" });
     expect(await screen.findByText("TKT-2026-000001")).toBeInTheDocument();
   });
 });

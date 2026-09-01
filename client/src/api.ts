@@ -19,7 +19,7 @@ export interface Requester {
 }
 
 export interface RelatedSystem { id: number; name: string; description: string | null; }
-export interface CreatedTicket { id: number; ticketNumber: string; summary: string; currentStatus: "NEW"; requesterId: number; }
+export interface CreatedTicket { id: number; ticketNumber: string; summary: string; currentStatus: "NEW"; requesterId: number; createdAt: string; }
 
 export class ApiError extends Error {
   constructor(message: string, public readonly fieldErrors: Record<string, string> = {}) {
@@ -54,7 +54,7 @@ export async function createTicket(requesterId: number, formData: FormData): Pro
       : {};
     throw new ApiError(message, fieldErrors);
   }
-  if (typeof body.ticketNumber !== "string") throw new ApiError("Unable to create ticket");
+  if (typeof body.ticketNumber !== "string" || typeof body.createdAt !== "string") throw new ApiError("Unable to create ticket");
   return body as unknown as CreatedTicket;
 }
 
