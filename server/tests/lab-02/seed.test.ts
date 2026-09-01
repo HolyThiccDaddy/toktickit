@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
 import { resolve } from "node:path";
-import { loadEnvFile } from "node:process";
 import type { PrismaClient } from "@prisma/client";
+import { config } from "dotenv";
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 
 const testEnvPath = resolve(process.cwd(), ".env.test");
@@ -12,7 +12,10 @@ if (!existsSync(testEnvPath)) {
   );
 }
 
-loadEnvFile(testEnvPath);
+const loadResult = config({ path: testEnvPath });
+if (loadResult.error) {
+  throw new Error(`Unable to load server/.env.test: ${loadResult.error.message}`);
+}
 
 const databaseUrl = process.env.DATABASE_URL;
 if (!databaseUrl) {
