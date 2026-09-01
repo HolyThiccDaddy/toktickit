@@ -1,9 +1,12 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
-import { access, mkdir, rm, writeFile } from "node:fs/promises";
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+import { access, mkdir, readdir, rename, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import { resolve } from "node:path";
+import express from "express";
 import request from "supertest";
 import { app } from "../../src/app.js";
 import { getPrisma } from "../../src/prisma.js";
+import { createTicketsRouter } from "../../src/tickets.js";
 
 const validTicket = {
   summary: "VPN connection fails",
@@ -14,12 +17,27 @@ const validTicket = {
 };
 
 describe("POST /api/tickets", () => {
+  let testUploadRoot: string;
+  const previousUploadRoot = process.env.TOKTICKIT_UPLOAD_ROOT;
+
+  beforeAll(async () => {
+    testUploadRoot = await import("node:fs/promises").then(({ mkdtemp }) => mkdtemp(resolve(tmpdir(), "toktickit-ticket-test-")));
+    process.env.TOKTICKIT_UPLOAD_ROOT = testUploadRoot;
+  });
+
   afterEach(async () => {
     vi.restoreAllMocks();
     await getPrisma().attachment.deleteMany();
     await getPrisma().ticket.deleteMany();
     await getPrisma().ticketCounter.updateMany({ data: { lastSequence: 0 } });
-    await rm(resolve(process.cwd(), "uploads"), { recursive: true, force: true });
+    await rm(testUploadRoot, { recursive: true, force: true });
+    await mkdir(testUploadRoot, { recursive: true });
+  });
+
+  afterAll(async () => {
+    await rm(testUploadRoot, { recursive: true, force: true });
+    if (previousUploadRoot === undefined) delete process.env.TOKTICKIT_UPLOAD_ROOT;
+    else process.env.TOKTICKIT_UPLOAD_ROOT = previousUploadRoot;
   });
 
   it("allocates unique sequential ticket numbers for concurrent requests", async () => {
@@ -40,7 +58,7 @@ describe("POST /api/tickets", () => {
     expect(response.body.attachments[0]).toEqual(expect.objectContaining({ originalFilename: "evidence.pdf", mimeType: "application/pdf", isDeleted: false }));
     const attachment = await getPrisma().attachment.findFirstOrThrow();
     expect(attachment.storageKey).not.toContain("evidence");
-    await expect(access(resolve(process.cwd(), "uploads", attachment.storageKey))).resolves.toBeUndefined();
+    await expect(access(resolve(testUploadRoot, attachment.storageKey))).resolves.toBeUndefined();
   });
 
   it("rejects more than five files without creating a ticket", async () => {
@@ -63,10 +81,12 @@ describe("POST /api/tickets", () => {
   });
 
   it("rolls back when attachment storage is unavailable", async () => {
-    const uploadPath = resolve(process.cwd(), "uploads");
-    await mkdir(resolve(process.cwd()), { recursive: true });
+    const uploadPath = resolve(testUploadRoot, "blocked");
     await writeFile(uploadPath, "blocks directory creation");
-    const response = await request(app).post("/api/tickets").set("x-requester-id", "1")
+    const storageFailureApp = express();
+    storageFailureApp.use(express.json());
+    storageFailureApp.use("/api/tickets", createTicketsRouter({ getUploadRoot: () => uploadPath }));
+    const response = await request(storageFailureApp).post("/api/tickets").set("x-requester-id", "1")
       .field("summary", validTicket.summary).field("description", validTicket.description)
       .field("categoryId", "4").field("relatedSystemId", "3").field("requestedPriority", "HIGH")
       .attach("files", Buffer.from("%PDF-1.4\ntest"), { filename: "evidence.pdf", contentType: "application/pdf" });
@@ -93,6 +113,23 @@ describe("POST /api/tickets", () => {
     expect(await getPrisma().ticket.count()).toBe(0);
   });
 
+  it("returns exact field errors for invalid summary and description", async () => {
+    const response = await request(app).post("/api/tickets").set("x-requester-id", "1").send({
+      ...validTicket,
+      summary: "x",
+      description: "short",
+    });
+    expect(response.status).toBe(400);
+    expect(response.body).toEqual({
+      error: "Validation failed",
+      fieldErrors: {
+        summary: "Summary must be 5-150 characters",
+        description: "Description must be 10-2000 characters",
+      },
+    });
+    expect(await getPrisma().ticket.count()).toBe(0);
+  });
+
   it("rejects an inactive requester", async () => {
     const response = await request(app).post("/api/tickets").set("x-requester-id", "5").send(validTicket);
     expect(response.status).toBe(403);
@@ -114,5 +151,34 @@ describe("POST /api/tickets", () => {
     expect(response.status).toBe(500);
     expect(response.body).toEqual({ error: "Failed to create ticket" });
     expect(JSON.stringify(response.body)).not.toContain("database details");
+  });
+
+  it("cleans staged and final files when moving the second file fails", async () => {
+    const isolatedRoot = resolve(testUploadRoot, "partial-move");
+    let moveCount = 0;
+    const partialFailureApp = express();
+    partialFailureApp.use(express.json());
+    partialFailureApp.use("/api/tickets", createTicketsRouter({
+      getUploadRoot: () => isolatedRoot,
+      moveAttachment: async (source, destination) => {
+        moveCount += 1;
+        if (moveCount === 2) throw new Error("simulated second move failure");
+        await rename(source, destination);
+      },
+    }));
+
+    const response = await request(partialFailureApp).post("/api/tickets").set("x-requester-id", "1")
+      .field("summary", validTicket.summary).field("description", validTicket.description)
+      .field("categoryId", "4").field("relatedSystemId", "3").field("requestedPriority", "HIGH")
+      .attach("files", Buffer.from("%PDF-1.4\nfirst"), { filename: "first.pdf", contentType: "application/pdf" })
+      .attach("files", Buffer.from("%PDF-1.4\nsecond"), { filename: "second.pdf", contentType: "application/pdf" });
+
+    expect(response.status).toBe(500);
+    expect(await getPrisma().ticket.count()).toBe(0);
+    const remainingFiles = await readdir(isolatedRoot).catch((error: NodeJS.ErrnoException) => {
+      if (error.code === "ENOENT") return [];
+      throw error;
+    });
+    expect(remainingFiles).toEqual([]);
   });
 });

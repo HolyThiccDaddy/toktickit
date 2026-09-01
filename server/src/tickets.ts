@@ -1,11 +1,10 @@
 import { randomUUID } from "node:crypto";
-import { mkdir, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, rename, rm, writeFile } from "node:fs/promises";
 import { extname, resolve } from "node:path";
 import { Router } from "express";
 import multer from "multer";
 import { getPrisma } from "./prisma.js";
 
-const router = Router();
 const maxFileSize = 5_242_880;
 const upload = multer({ storage: multer.memoryStorage(), limits: { files: 5, fileSize: maxFileSize } });
 const priorities = new Set(["LOW", "MEDIUM", "HIGH", "URGENT"]);
@@ -32,7 +31,19 @@ export function formatTicketNumber(year: number, sequence: number) {
   return `TKT-${year}-${String(sequence).padStart(6, "0")}`;
 }
 
-router.post("/", upload.array("files", 5), async (req, res) => {
+type TicketsRouterOptions = {
+  getUploadRoot?: () => string;
+  writeStagedFile?: (path: string, data: Buffer) => Promise<void>;
+  moveAttachment?: (source: string, destination: string) => Promise<void>;
+};
+
+export function createTicketsRouter(options: TicketsRouterOptions = {}) {
+  const router = Router();
+  const getUploadRoot = options.getUploadRoot ?? (() => resolve(process.env.TOKTICKIT_UPLOAD_ROOT ?? resolve(process.cwd(), "uploads")));
+  const writeStagedFile = options.writeStagedFile ?? (async (path, data) => { await writeFile(path, data, { flag: "wx" }); });
+  const moveAttachment = options.moveAttachment ?? rename;
+
+  router.post("/", upload.array("files", 5), async (req, res) => {
   const requesterId = Number(req.header("x-requester-id"));
   if (!Number.isInteger(requesterId) || requesterId < 1) return res.status(401).json({ error: "Requester identity is required" });
 
@@ -51,8 +62,8 @@ router.post("/", upload.array("files", 5), async (req, res) => {
   if (files.some((file) => !validateAttachment(file))) errors.files = "Attachment type, extension, or content is invalid";
   if (Object.keys(errors).length) return res.status(400).json({ error: "Validation failed", fieldErrors: errors });
 
-  const uploadRoot = resolve(process.cwd(), "uploads");
-  const writtenPaths: string[] = [];
+  const finalPaths: string[] = [];
+  let stagingRoot: string | undefined;
   try {
     const prisma = getPrisma();
     const requester = await prisma.requesterUser.findFirst({ where: { id: requesterId, isActive: true }, select: { id: true } });
@@ -63,30 +74,53 @@ router.post("/", upload.array("files", 5), async (req, res) => {
     ]);
     if (!category || !relatedSystem) return res.status(400).json({ error: "Validation failed", fieldErrors: { referenceData: "Category or related system is invalid" } });
 
+    const uploadRoot = getUploadRoot();
     await mkdir(uploadRoot, { recursive: true });
+    stagingRoot = await mkdtemp(resolve(uploadRoot, ".staging-"));
+    const preparedAttachments: Array<{
+      file: Express.Multer.File;
+      storageKey: string;
+      stagedPath: string;
+      finalPath: string;
+    }> = [];
+    for (const file of files) {
+      const storageKey = `${randomUUID()}${extname(file.originalname).toLowerCase()}`;
+      const stagedPath = resolve(stagingRoot, storageKey);
+      const finalPath = resolve(uploadRoot, storageKey);
+      await writeStagedFile(stagedPath, file.buffer);
+      preparedAttachments.push({ file, storageKey, stagedPath, finalPath });
+    }
+
     const ticket = await prisma.$transaction(async (tx) => {
       const year = new Date().getFullYear();
       await tx.ticketCounter.upsert({ where: { year }, update: {}, create: { year, lastSequence: 0 } });
       const counter = await tx.ticketCounter.update({ where: { year }, data: { lastSequence: { increment: 1 } } });
       const ticketNumber = formatTicketNumber(year, counter.lastSequence);
       const attachmentData = [];
-      for (const file of files) {
-        const storageKey = `${randomUUID()}${extname(file.originalname).toLowerCase()}`;
-        const path = resolve(uploadRoot, storageKey);
-        await writeFile(path, file.buffer, { flag: "wx" });
-        writtenPaths.push(path);
+      for (const { file, storageKey, stagedPath, finalPath } of preparedAttachments) {
+        await moveAttachment(stagedPath, finalPath);
+        finalPaths.push(finalPath);
         attachmentData.push({ originalFilename: file.originalname, storageKey, mimeType: file.mimetype, fileSize: file.size, uploaderId: requesterId });
       }
-      return tx.ticket.create({
+      const createdTicket = await tx.ticket.create({
         data: { ticketNumber, summary, description, requestedPriority: requestedPriority as "LOW" | "MEDIUM" | "HIGH" | "URGENT", requesterId, categoryId, relatedSystemId, attachments: { create: attachmentData } },
         include: { attachments: { select: { id: true, originalFilename: true, mimeType: true, fileSize: true, isDeleted: true, createdAt: true } } },
       });
+      await rm(stagingRoot!, { recursive: true, force: true });
+      stagingRoot = undefined;
+      return createdTicket;
     });
     return res.status(201).json(ticket);
   } catch {
-    await Promise.allSettled(writtenPaths.map((path) => rm(path, { force: true })));
+    await Promise.allSettled([
+      ...finalPaths.map((path) => rm(path, { force: true })),
+      ...(stagingRoot ? [rm(stagingRoot, { recursive: true, force: true })] : []),
+    ]);
     return res.status(500).json({ error: "Failed to create ticket" });
   }
-});
+  });
 
-export default router;
+  return router;
+}
+
+export default createTicketsRouter();
