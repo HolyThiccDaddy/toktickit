@@ -43,10 +43,10 @@ The testing strategy for TokTickIT Lab 2 guarantees complete functional correctn
 | **UI-09** | UI | AC-07, FR-07 | My Tickets empty vs no-results state | Renders distinct empty state when 0 tickets, and no-results with Clear Filters | `client/tests/lab-02/MyTickets.test.tsx` | Passed |
 | **UI-10** | UI | AC-08, FR-08 | Ticket Detail read-only layout | Renders all ticket metadata in read-only format without editable inputs | `client/tests/lab-02/TicketDetail.test.tsx` | Passed |
 | **UI-11** | UI | AC-09, FR-11 | Attachment soft-removal modal | Requires non-empty reason before confirming soft-removal | `client/tests/lab-02/TicketDetail.test.tsx` | Passed |
-| **STYLE-01**| Style | Section 7 | Zen Green theme tokens & components | Asserts correct CSS color variables, font sizes, button classes, badge colors | `client/tests/lab-02/ThemeStyles.test.tsx` | Planned |
-| **RESP-01** | Responsive | Section 8.7 | Responsive layout adaptations | Asserts table-to-card switch, touch target sizes, and single-column form stacking | `client/tests/lab-02/ResponsiveLayout.test.tsx` | Planned |
-| **E2E-01** | E2E | AC-01 - AC-09 | End-to-end requester ticket flow | Complete flow: select requester -> create ticket -> find in My Tickets -> view detail -> soft-remove attachment | `e2e/lab-02/requester-ticket-flow.spec.ts` | Planned |
-| **E2E-02** | E2E | AC-06, AC-10 | Multi-requester isolation E2E | Verifies Requester A tickets are inaccessible and invisible to Requester B | `e2e/lab-02/multi-requester-isolation.spec.ts` | Planned |
+| **STYLE-01**| Style | Section 7 | Zen Green theme tokens & components | Asserts correct CSS color variables, font sizes, button classes, badge colors | `client/tests/lab-02/ThemeStyles.test.tsx` | Passed |
+| **RESP-01** | Responsive | Section 8.7 | Responsive layout adaptations | Asserts table-to-card switch, touch target sizes, and single-column form stacking | `client/tests/lab-02/ResponsiveLayout.test.tsx` | Passed |
+| **E2E-01** | E2E | AC-01 - AC-09 | End-to-end requester ticket flow | Complete flow: select requester -> create ticket -> find in My Tickets -> view detail -> soft-remove attachment | `e2e/lab-02/requester-ticket-flow.spec.ts` | Passed |
+| **E2E-02** | E2E | AC-06, AC-10 | Multi-requester isolation E2E | Verifies Requester A tickets are inaccessible and invisible to Requester B | `e2e/lab-02/multi-requester-isolation.spec.ts` | Passed |
 
 ---
 
@@ -96,7 +96,7 @@ npm test
 
 ### Run End-to-End Tests
 ```bash
-npx playwright test
+npm run test:e2e
 ```
 
 ---
@@ -169,6 +169,25 @@ Issue #10 API coverage includes owned detail retrieval, cross-requester denial, 
 | Soft-removed attachment metadata with download disabled | `artifacts/lab-02/screenshots/ticket-detail/04_soft_removed_state.png` | Passed |
 
 All four Issue #10 artifacts were regenerated as distinct valid PNG files; the attachment-list image is a focused crop of the attachment state, while the other images capture the full detail, removal modal, and soft-removed states.
+
+### Issue #11 - Automated E2E Tests, Visual Inspection, and Release Preparation (2026-09-03)
+
+| Check | Command | Result |
+| :--- | :--- | :--- |
+| E2E requester flow and isolation | `npm run test:e2e` | Passed: 5 tests (desktop flow, isolation, and desktop/tablet/mobile responsive checks) |
+| E2E database safety | `npm run e2e:prepare` | Passed: deterministic fixtures loaded into `toktickit_test` |
+| Theme and responsive unit checks | `cd client && npm test` | Passed |
+
+#### Issue #11 Visual Evidence
+
+| Required state | Evidence | Result |
+| :--- | :--- | :--- |
+| Desktop requester workspace | `artifacts/lab-02/screenshots/release/desktop_requester_workspace.png` | Passed |
+| Tablet requester workspace at 768px | `artifacts/lab-02/screenshots/release/tablet_requester_workspace.png` | Passed |
+| Mobile requester workspace | `artifacts/lab-02/screenshots/release/mobile_requester_workspace.png` | Passed |
+| Desktop ticket detail after attachment removal | `artifacts/lab-02/screenshots/release/desktop_ticket_detail_removed.png` | Passed |
+
+The responsive checks assert that the document has no horizontal overflow at any configured viewport. The release PR and final peer-review approval remain pending until `feature/11-e2e-release` is pushed.
 
 ---
 

@@ -15,3 +15,7 @@ server/prisma/*.db
 .DS_Store
 # uploaded files
 server/uploads/
+# Playwright output
+test-results/
+playwright-report/
+server/tmp/
