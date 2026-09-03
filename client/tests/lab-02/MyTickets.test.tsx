@@ -35,6 +35,18 @@ describe("My Tickets", () => {
     expect(listSpy).toHaveBeenCalledWith(1, expect.objectContaining({ page: 1, limit: 10 }));
   });
 
+  it("opens the read-only Ticket Detail workspace from a ticket row", async () => {
+    vi.spyOn(api, "getTickets").mockResolvedValue({ tickets, pagination: { total: 1, page: 1, limit: 10, totalPages: 1 } });
+    vi.spyOn(api, "getTicket").mockResolvedValue({
+      id: 101, ticketNumber: tickets[0].ticketNumber, summary: tickets[0].summary, description: "The VPN client reports an error when connecting from home.", requestedPriority: "HIGH", currentStatus: "NEW", createdAt: tickets[0].createdAt,
+      requester: { id: 1, name: requester.name, email: requester.email }, category: tickets[0].category, relatedSystem: tickets[0].relatedSystem, attachments: [],
+    });
+    render(<App />); await selectRequester();
+    fireEvent.click(screen.getAllByRole("button", { name: /^View$/ })[0]);
+    expect(await screen.findByRole("heading", { name: tickets[0].ticketNumber })).toBeInTheDocument();
+    expect(screen.getByText("The VPN client reports an error when connecting from home.")).toBeInTheDocument();
+  });
+
   it("sends search, filters, and sorting then clears them", async () => {
     const listSpy = vi.spyOn(api, "getTickets").mockResolvedValue({ tickets, pagination: { total: 1, page: 1, limit: 10, totalPages: 1 } });
     render(<App />); await selectRequester();
