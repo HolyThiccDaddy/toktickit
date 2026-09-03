@@ -20,6 +20,32 @@ export interface Requester {
 
 export interface RelatedSystem { id: number; name: string; description: string | null; }
 export interface CreatedTicket { id: number; ticketNumber: string; summary: string; currentStatus: "NEW"; requesterId: number; createdAt: string; }
+export type TicketPriority = "LOW" | "MEDIUM" | "HIGH" | "URGENT";
+export type TicketSortField = "createdAt" | "ticketNumber" | "summary" | "requestedPriority";
+export interface TicketListItem {
+  id: number;
+  ticketNumber: string;
+  summary: string;
+  requestedPriority: TicketPriority;
+  currentStatus: "NEW";
+  createdAt: string;
+  category: Category;
+  relatedSystem: { id: number; name: string };
+}
+export interface TicketListResponse {
+  tickets: TicketListItem[];
+  pagination: { total: number; page: number; limit: number; totalPages: number };
+}
+export interface TicketListQuery {
+  search?: string;
+  categoryId?: number;
+  requestedPriority?: TicketPriority;
+  currentStatus?: "NEW";
+  sortBy: TicketSortField;
+  sortOrder: "asc" | "desc";
+  page: number;
+  limit: number;
+}
 
 export class ApiError extends Error {
   constructor(message: string, public readonly fieldErrors: Record<string, string> = {}) {
@@ -44,6 +70,12 @@ export async function getReferenceData(): Promise<{ categories: Category[]; rela
   return { categories: await categoriesResponse.json(), relatedSystems: await systemsResponse.json() };
 }
 
+export async function getCategories(): Promise<Category[]> {
+  const response = await fetch(`${API_URL}/api/categories`);
+  if (!response.ok) throw new Error("Unable to load categories");
+  return response.json();
+}
+
 export async function createTicket(requesterId: number, formData: FormData): Promise<CreatedTicket> {
   const response = await fetch(`${API_URL}/api/tickets`, { method: "POST", headers: { "x-requester-id": String(requesterId) }, body: formData });
   const body = await readJson(response);
@@ -56,6 +88,18 @@ export async function createTicket(requesterId: number, formData: FormData): Pro
   }
   if (typeof body.ticketNumber !== "string" || typeof body.createdAt !== "string") throw new ApiError("Unable to create ticket");
   return body as unknown as CreatedTicket;
+}
+
+export async function getTickets(requesterId: number, query: TicketListQuery): Promise<TicketListResponse> {
+  const params = new URLSearchParams();
+  Object.entries(query).forEach(([key, item]) => {
+    if (item !== undefined && item !== "") params.set(key, String(item));
+  });
+  const response = await fetch(`${API_URL}/api/tickets?${params.toString()}`, {
+    headers: { "x-requester-id": String(requesterId) },
+  });
+  if (!response.ok) throw new Error("Unable to load your tickets");
+  return response.json();
 }
 
 export async function getRequesters(): Promise<Requester[]> {
