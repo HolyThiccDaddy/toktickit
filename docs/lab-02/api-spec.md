@@ -145,6 +145,7 @@ When an API validation or operational error occurs, the server responds with a s
   - `sortOrder` (string, optional, default `desc`): `asc`, `desc`.
   - `page` (integer, optional, default `1`).
   - `limit` (integer, optional, default `10`, max `50`).
+- **Sorting Behavior:** Results use `id ASC` as the deterministic secondary sort when primary values are equal.
 - **Responses:**
   - **200 OK:**
     ```json
@@ -169,7 +170,9 @@ When an API validation or operational error occurs, the server responds with a s
       }
     }
     ```
+  - **400 Bad Request:** Invalid filter, sort, page, or limit value.
   - **401 Unauthorized / 403 Forbidden:** Missing or invalid `x-requester-id`.
+  - **500 Internal Server Error:** The ticket list could not be loaded. The response does not expose backend details.
 
 ---
 

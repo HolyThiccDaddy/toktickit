@@ -3,6 +3,7 @@ import { mkdir, mkdtemp, rename, rm, writeFile } from "node:fs/promises";
 import { extname, resolve } from "node:path";
 import { Router } from "express";
 import multer from "multer";
+import type { Prisma } from "@prisma/client";
 import { getPrisma } from "./prisma.js";
 
 const maxFileSize = 5_242_880;
@@ -42,6 +43,76 @@ export function createTicketsRouter(options: TicketsRouterOptions = {}) {
   const getUploadRoot = options.getUploadRoot ?? (() => resolve(process.env.TOKTICKIT_UPLOAD_ROOT ?? resolve(process.cwd(), "uploads")));
   const writeStagedFile = options.writeStagedFile ?? (async (path, data) => { await writeFile(path, data, { flag: "wx" }); });
   const moveAttachment = options.moveAttachment ?? rename;
+
+  router.get("/", async (req, res) => {
+    const requesterId = Number(req.header("x-requester-id"));
+    if (!Number.isInteger(requesterId) || requesterId < 1) {
+      return res.status(401).json({ error: "Requester identity is required" });
+    }
+
+    const value = (name: string) => typeof req.query[name] === "string" ? req.query[name] as string : undefined;
+    const search = value("search")?.trim();
+    const categoryIdValue = value("categoryId");
+    const requestedPriority = value("requestedPriority");
+    const currentStatus = value("currentStatus");
+    const sortBy = value("sortBy") ?? "createdAt";
+    const sortOrder = value("sortOrder") ?? "desc";
+    const pageValue = value("page") ?? "1";
+    const limitValue = value("limit") ?? "10";
+    const categoryId = categoryIdValue === undefined ? undefined : Number(categoryIdValue);
+    const page = Number(pageValue);
+    const limit = Number(limitValue);
+    const allowedSortFields = new Set(["createdAt", "ticketNumber", "summary", "requestedPriority"]);
+
+    const invalid =
+      (categoryId !== undefined && (!Number.isInteger(categoryId) || categoryId < 1)) ||
+      (requestedPriority !== undefined && !priorities.has(requestedPriority)) ||
+      (currentStatus !== undefined && currentStatus !== "NEW") ||
+      !allowedSortFields.has(sortBy) || !["asc", "desc"].includes(sortOrder) ||
+      !Number.isInteger(page) || page < 1 || !Number.isInteger(limit) || limit < 1 || limit > 50;
+    if (invalid) return res.status(400).json({ error: "Invalid ticket query parameters" });
+
+    try {
+      const prisma = getPrisma();
+      const requester = await prisma.requesterUser.findFirst({
+        where: { id: requesterId, isActive: true }, select: { id: true },
+      });
+      if (!requester) return res.status(403).json({ error: "Requester is invalid or inactive" });
+
+      const where: Prisma.TicketWhereInput = {
+        requesterId,
+        ...(categoryId !== undefined ? { categoryId } : {}),
+        ...(requestedPriority ? { requestedPriority: requestedPriority as "LOW" | "MEDIUM" | "HIGH" | "URGENT" } : {}),
+        ...(currentStatus ? { currentStatus: "NEW" } : {}),
+        ...(search ? { OR: [
+          { ticketNumber: { contains: search, mode: "insensitive" } },
+          { summary: { contains: search, mode: "insensitive" } },
+        ] } : {}),
+      };
+      const orderBy: Prisma.TicketOrderByWithRelationInput[] = [
+        { [sortBy]: sortOrder } as Prisma.TicketOrderByWithRelationInput,
+        { id: "asc" },
+      ];
+      const [total, tickets] = await prisma.$transaction([
+        prisma.ticket.count({ where }),
+        prisma.ticket.findMany({
+          where, orderBy, skip: (page - 1) * limit, take: limit,
+          select: {
+            id: true, ticketNumber: true, summary: true, requestedPriority: true,
+            currentStatus: true, createdAt: true,
+            category: { select: { id: true, name: true } },
+            relatedSystem: { select: { id: true, name: true } },
+          },
+        }),
+      ]);
+      return res.status(200).json({
+        tickets,
+        pagination: { total, page, limit, totalPages: Math.ceil(total / limit) },
+      });
+    } catch {
+      return res.status(500).json({ error: "Failed to fetch tickets" });
+    }
+  });
 
   router.post("/", upload.array("files", 5), async (req, res) => {
   const requesterId = Number(req.header("x-requester-id"));

@@ -22,9 +22,9 @@ The testing strategy for TokTickIT Lab 2 guarantees complete functional correctn
 | **API-04** | API | AC-05, BR-06 | `POST /api/tickets` valid attachment upload | Successfully stores uploaded files and saves attachment records | `server/tests/lab-02/create-ticket.api.test.ts` | Passed |
 | **API-05** | API | AC-05, BR-06 | `POST /api/tickets` backend file rejection | Returns 400 when file > 5MB, invalid MIME type, extension mismatch, or > 5 files | `server/tests/lab-02/create-ticket.api.test.ts` | Passed |
 | **API-06** | API | AC-11, BR-11 | `POST /api/tickets` upload failure rollback | Rolls back DB transaction and removes temporary files on disk if storage fails | `server/tests/lab-02/create-ticket.api.test.ts` | Passed |
-| **API-07** | API | AC-06, FR-06, BR-08 | `GET /api/tickets` requester ownership | Returns only tickets belonging to requester in `x-requester-id` header | `server/tests/lab-02/my-tickets.api.test.ts` | Planned |
-| **API-08** | API | AC-07, FR-07 | `GET /api/tickets` search and filters | Correctly filters by category, priority, status, and search query | `server/tests/lab-02/my-tickets.api.test.ts` | Planned |
-| **API-09** | API | AC-07, FR-07 | `GET /api/tickets` pagination | Returns requested page/limit with total count and page metadata | `server/tests/lab-02/my-tickets.api.test.ts` | Planned |
+| **API-07** | API | AC-06, FR-06, BR-08 | `GET /api/tickets` requester ownership | Returns only tickets belonging to requester in `x-requester-id` header | `server/tests/lab-02/my-tickets.api.test.ts` | Passed |
+| **API-08** | API | AC-07, FR-07 | `GET /api/tickets` search and filters | Correctly filters by category, priority, status, and search query | `server/tests/lab-02/my-tickets.api.test.ts` | Passed |
+| **API-09** | API | AC-07, FR-07 | `GET /api/tickets` pagination | Returns requested page/limit with total count and page metadata | `server/tests/lab-02/my-tickets.api.test.ts` | Passed |
 | **API-10** | API | AC-08, FR-08, BR-08 | `GET /api/tickets/:id` owned detail | Returns 200 with ticket data and attachment list for owner | `server/tests/lab-02/ticket-detail.api.test.ts` | Planned |
 | **API-11** | API | AC-10, BR-08 | `GET /api/tickets/:id` cross-owner access | Returns 403 Forbidden when requester attempts to view another user's ticket | `server/tests/lab-02/ticket-detail.api.test.ts` | Planned |
 | **API-12** | API | AC-09, FR-09, BR-06 | `POST /api/tickets/:id/attachments` upload | Adds valid attachment to owned ticket within 5-attachment limit | `server/tests/lab-02/attachments.api.test.ts` | Planned |
@@ -39,8 +39,8 @@ The testing strategy for TokTickIT Lab 2 guarantees complete functional correctn
 | **UI-05** | UI | AC-04, FR-03, BR-09 | Create Ticket submission & busy state | Submit button disables and shows spinner while processing request | `client/tests/lab-02/CreateTicket.test.tsx` | Passed |
 | **UI-06** | UI | AC-05, BR-06 | Create Ticket file upload validation | Rejects files >5MB or unsupported MIME types with clear error message | `client/tests/lab-02/CreateTicket.test.tsx` | Passed |
 | **UI-07** | UI | AC-11, BR-10 | Create Ticket failure data preservation | Form preserves typed inputs when API submission fails | `client/tests/lab-02/CreateTicket.test.tsx` | Passed |
-| **UI-08** | UI | AC-06, AC-07, FR-06 | My Tickets list, filters & sorting | Renders ticket table/cards, search bar, category/priority/status filters | `client/tests/lab-02/MyTickets.test.tsx` | Planned |
-| **UI-09** | UI | AC-07, FR-07 | My Tickets empty vs no-results state | Renders distinct empty state when 0 tickets, and no-results with Clear Filters | `client/tests/lab-02/MyTickets.test.tsx` | Planned |
+| **UI-08** | UI | AC-06, AC-07, FR-06 | My Tickets list, filters & sorting | Renders ticket table/cards, search bar, category/priority/status filters | `client/tests/lab-02/MyTickets.test.tsx` | Passed |
+| **UI-09** | UI | AC-07, FR-07 | My Tickets empty vs no-results state | Renders distinct empty state when 0 tickets, and no-results with Clear Filters | `client/tests/lab-02/MyTickets.test.tsx` | Passed |
 | **UI-10** | UI | AC-08, FR-08 | Ticket Detail read-only layout | Renders all ticket metadata in read-only format without editable inputs | `client/tests/lab-02/RequesterTicketDetail.test.tsx` | Planned |
 | **UI-11** | UI | AC-09, FR-11 | Attachment soft-removal modal | Requires non-empty reason before confirming soft-removal | `client/tests/lab-02/AttachmentSection.test.tsx` | Planned |
 | **STYLE-01**| Style | Section 7 | Zen Green theme tokens & components | Asserts correct CSS color variables, font sizes, button classes, badge colors | `client/tests/lab-02/ThemeStyles.test.tsx` | Planned |
@@ -122,6 +122,31 @@ The remaining planned Lab 2 tests stay marked `Planned` until their owning Issue
 | Server build | `cd server && npm run build` | Passed |
 | Client regression | `cd client && npm test` | Passed twice: 4 files, 19 tests |
 | Client build | `cd client && npm run build` | Passed |
+
+### Issue #9 - My Tickets List Screen and Query API (2026-09-03)
+
+| Check | Command | Result |
+| :--- | :--- | :--- |
+| Server regression | `cd server && npm test` | Passed twice: 8 files, 45 tests |
+| Server build | `cd server && npm run build` | Passed |
+| Client regression | `cd client && npm test` | Passed twice: 5 files, 27 tests |
+| Client build | `cd client && npm run build` | Passed |
+
+#### Issue #9 Visual Evidence
+
+| Required state | Evidence | Result |
+| :--- | :--- | :--- |
+| Desktop requester-owned ticket table and sort indicator | `artifacts/lab-02/screenshots/my-tickets/01_ticket_list_desktop.png` | Passed |
+| Combined search, category, priority, and status filters | `artifacts/lab-02/screenshots/my-tickets/02_search_and_filter.png` | Passed |
+| Numbered pagination and page navigation | `artifacts/lab-02/screenshots/my-tickets/03_pagination.png` | Passed |
+| Empty account state | `artifacts/lab-02/screenshots/my-tickets/04_empty_state.png` | Passed |
+| Mobile card layout at 390px without horizontal overflow | `artifacts/lab-02/screenshots/my-tickets/05_mobile_card_view.png` | Passed |
+| Requester switch and cross-requester isolation | `artifacts/lab-02/screenshots/my-tickets/06_requester_isolation.png` | Passed |
+| Filtered no-results state with Clear Filters action | `artifacts/lab-02/screenshots/my-tickets/07_no_results.png` | Passed |
+| Tablet responsive table at 768px | `artifacts/lab-02/screenshots/my-tickets/08_tablet_table_view.png` | Passed |
+
+Desktop (1440px), tablet (768px), and mobile (390px) were checked in the running application. No clipping, overlap, horizontal page overflow, or browser console errors were observed. Loading skeletons and requester switching are also covered by `client/tests/lab-02/MyTickets.test.tsx`.
+Category API failure is covered by the same UI test: the error banner and `Retry Categories` action remain visible while the ticket list stays available.
 
 ---
 

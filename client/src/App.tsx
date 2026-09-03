@@ -2,12 +2,13 @@ import { useCallback, useEffect, useState } from "react";
 import { checkSystem, getRequesters, type Category, type Requester } from "./api.js";
 import { RequesterProvider, useRequester } from "./RequesterContext.js";
 import CreateTicket from "./CreateTicket.js";
+import MyTickets from "./MyTickets.js";
 
 type LoadState = "loading" | "ready" | "empty" | "error";
 type SystemState = "idle" | "loading" | "success" | "error";
 
 function RequesterWorkspace({ requester, onChangeRequester }: { requester: Requester; onChangeRequester: () => void }) {
-  const [view, setView] = useState<"system" | "create">("system");
+  const [view, setView] = useState<"system" | "tickets" | "create">("system");
   const [state, setState] = useState<SystemState>("idle");
   const [categories, setCategories] = useState<Category[]>([]);
   const [errorMessage, setErrorMessage] = useState("");
@@ -25,9 +26,10 @@ function RequesterWorkspace({ requester, onChangeRequester }: { requester: Reque
     }
   }
 
-  const navigation = <nav className="d-flex gap-2" aria-label="Primary navigation"><button className={`zen-nav-button px-2 py-1 ${view === "system" ? "active" : ""}`} type="button" onClick={() => setView("system")}>Home</button><button className="zen-nav-button px-2 py-1" type="button" disabled title="Available in the My Tickets feature">My Tickets</button><button className={`zen-nav-button px-2 py-1 ${view === "create" ? "active" : ""}`} type="button" onClick={() => setView("create")}>+ Create Ticket</button></nav>;
+  const navigation = <nav className="d-flex gap-2" aria-label="Primary navigation"><button className={`zen-nav-button px-2 py-1 ${view === "system" ? "active" : ""}`} type="button" onClick={() => setView("system")}>Home</button><button className={`zen-nav-button px-2 py-1 ${view === "tickets" ? "active" : ""}`} type="button" onClick={() => setView("tickets")}>My Tickets</button><button className={`zen-nav-button px-2 py-1 ${view === "create" ? "active" : ""}`} type="button" onClick={() => setView("create")}>+ Create Ticket</button></nav>;
   const header = <header className="zen-header d-flex flex-wrap align-items-center justify-content-between gap-2 px-3 py-2 text-white w-100"><strong>TokTickIT</strong>{navigation}<div className="d-flex align-items-center gap-2"><span>{requester.name}</span><button className="btn btn-light btn-sm" onClick={onChangeRequester}>Change Requester</button></div></header>;
-  if (view === "create") return <>{header}<main className="container py-4" style={{ maxWidth: 900 }}><CreateTicket requester={requester} onCancel={() => setView("system")} /></main></>;
+  if (view === "create") return <>{header}<main className="container py-4" style={{ maxWidth: 900 }}><CreateTicket requester={requester} onCancel={() => setView("tickets")} /></main></>;
+  if (view === "tickets") return <>{header}<main className="container py-4"><MyTickets requester={requester} onCreate={() => setView("create")} /></main></>;
   return <>{header}<main className="container py-5" style={{ maxWidth: 640 }}>
     <h1 className="h3 mb-4">TokTickIT <span className="text-success">IT Service Desk</span></h1>
     <button className="btn btn-zen mb-3" onClick={handleCheckSystem} disabled={state === "loading"}>{state === "loading" ? "Loading…" : "Check System"}</button>
@@ -52,7 +54,9 @@ function RequesterApp() {
   }, [requesterId, clearRequester]);
   useEffect(() => { void load(); }, [load]);
 
-  const current = state === "ready" ? requesters.find((item) => item.id === requesterId) : undefined;
+  // Keep the validated workspace mounted while the requester list refreshes.
+  // Otherwise selecting an identity briefly unmounts the workspace and repeats its API calls.
+  const current = requesters.find((item) => item.id === requesterId);
   if (current) return <RequesterWorkspace requester={current} onChangeRequester={() => { clearRequester(); setSelectedId(""); }} />;
 
   function continueWithRequester() {
