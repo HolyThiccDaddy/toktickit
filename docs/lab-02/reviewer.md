@@ -32,7 +32,34 @@
 
 ## Pull Requests I reviewed for my partner
 
-No Lab 2 partner pull-request URLs were recorded in this repository. Add the partner PR links, review verdicts, and merge commits here when those records are available.
+| PR | Issue | Branch | Merge commit | My verdict |
+|---|---|---|---|---|
+| [#20](https://github.com/osizk/TokTickIT/pull/20) | #12 Lab 2 contract documentation | `feature/5-Lab2Contract` | `fc25158` | Reviewed with requested documentation updates; confirmed fixed before merge. |
+| [#21](https://github.com/osizk/TokTickIT/pull/21) | #13 Add Lab 2 data/reference APIs | `feature/lab2-data-reference` | — | Closed without merge; no review was submitted by me. |
+| [#22](https://github.com/osizk/TokTickIT/pull/22) | #13 Lab 2 data and reference APIs | `feature/6-Lab2-dataReference` | `91b877b` | Approved and merged after checking every changed file. |
+| [#23](https://github.com/osizk/TokTickIT/pull/23) | #14 Lab 2 requester context | `feature/7-Lab2RequesterContext` | `bcaf342` | Approved and merged after verifying requester selection, all four UI states, and seven tests. |
+| [#24](https://github.com/osizk/TokTickIT/pull/24) | #15 Ticket creation and atomic attachments | `feature/8-Lab2TicketCreate` | `0675074` | Approved and merged after testing the feature flow and a phone-sized viewport. |
+| [#25](https://github.com/osizk/TokTickIT/pull/25) | #16 My Tickets list and query controls | `feature/9-Lab2MyTickets` | `057d63f` | Approved and merged after testing the requested features, server/client runtime, and responsive layout. |
+| [#26](https://github.com/osizk/TokTickIT/pull/26) | #17 Lab 2 ticket detail and attachments | `feature/10-Lab2TicketDetailAttachments` | `d3a7478` | Approved and merged after testing Ticket Detail and attachment upload, download, and soft removal. |
+| [#27](https://github.com/osizk/TokTickIT/pull/27) | #18 Lab 2 E2E and visual testing | `feature/11-Lab2E2EVisual` | `9499959` | Approved and merged after checking desktop and phone-sized responsive behavior. |
+
+### Conversations on PRs I Reviewed
+
+**PR [#20](https://github.com/osizk/TokTickIT/pull/20) (`feature/5-Lab2Contract`).** I requested a short database-design rationale in the lab specification, such as the reason for attachment soft deletion or `TicketCounter`, and asked for the exact model field types and relations. After the updates were pushed, I confirmed that the issues were fixed before the pull request was merged.
+
+**PR [#21](https://github.com/osizk/TokTickIT/pull/21) (`feature/lab2-data-reference`).** This pull request was closed with unmerged commits. I did not submit a review on this attempt; the follow-up implementation was reviewed in PR [#22](https://github.com/osizk/TokTickIT/pull/22).
+
+**PR [#22](https://github.com/osizk/TokTickIT/pull/22) (`feature/6-Lab2-dataReference`).** I checked every changed file, found the data/reference API implementation working as expected, and approved the pull request before it was merged.
+
+**PR [#23](https://github.com/osizk/TokTickIT/pull/23) (`feature/7-Lab2RequesterContext`).** I verified requester selection, the four required UI states, and the seven reported tests. The implementation worked as expected, so I approved it before merge.
+
+**PR [#24](https://github.com/osizk/TokTickIT/pull/24) (`feature/8-Lab2TicketCreate`).** I tested the ticket-creation and attachment flow, including a phone-sized viewport. The behavior and layout worked as expected, so I approved the pull request.
+
+**PR [#25](https://github.com/osizk/TokTickIT/pull/25) (`feature/9-Lab2MyTickets`).** I tested the requested My Tickets features, confirmed that the server and client ran without issues, and checked the responsive layout before approving the pull request.
+
+**PR [#26](https://github.com/osizk/TokTickIT/pull/26) (`feature/10-Lab2TicketDetailAttachments`).** I tested Ticket Detail and verified attachment upload, download, and soft removal. All checked behavior worked as expected, so I approved the pull request.
+
+**PR [#27](https://github.com/osizk/TokTickIT/pull/27) (`feature/11-Lab2E2EVisual`).** I checked the responsive E2E implementation on desktop and phone-sized layouts. The behavior worked well at both sizes, so I approved the pull request.
 
 ## Issue #11 Review Evidence
 
