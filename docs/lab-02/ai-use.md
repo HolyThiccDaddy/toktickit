@@ -14,4 +14,4 @@ I used Codex as a pair-programming assistant for the final Lab 2 verification an
 
 ## Reflection
 
-The final verification work benefited from using the same browser-driven journey for both behavior and visual inspection. Keeping the E2E database reset separate from the application server prevents local development data from affecting repeatability, while the explicit `_test` guard protects against destructive setup mistakes. The remaining release PR and peer-review fields are left pending until the feature branch is pushed and reviewed.
+The final verification work benefited from using the same browser-driven journey for both behavior and visual inspection. Keeping the E2E database reset separate from the application server prevents local development data from affecting repeatability, while the explicit `_test` guard protects against destructive setup mistakes. The remaining release PR and peer-review fields are left pending until the pull request is opened and reviewed.

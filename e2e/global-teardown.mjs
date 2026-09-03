@@ -14,7 +14,13 @@ function killTree(pid) {
 
 export default async function globalTeardown() {
   try {
-    const state = JSON.parse(await readFile(statePath, "utf8"));
+    let state;
+    try {
+      state = JSON.parse(await readFile(statePath, "utf8"));
+    } catch (error) {
+      if (error?.code === "ENOENT") return;
+      throw error;
+    }
     await Promise.all((state.pids ?? []).map((pid) => killTree(pid)));
   } finally {
     await rm(statePath, { force: true });

@@ -1,7 +1,7 @@
-import { expect, test } from "@playwright/test";
-import path from "node:path";
+import { expect, test } from "../playwright.js";
+import { fileURLToPath } from "node:url";
 
-const attachmentFixture = path.resolve("artifacts/lab-02/screenshots/ticket-detail/01_ticket_detail_readonly.png");
+const attachmentFixture = fileURLToPath(new URL("../../artifacts/lab-02/screenshots/ticket-detail/01_ticket_detail_readonly.png", import.meta.url));
 
 test.describe("Issue #11 requester ticket flow", () => {
   test("selects a requester, creates a ticket, opens detail, and removes an attachment", async ({ page }) => {
@@ -44,6 +44,6 @@ test.describe("Issue #11 requester ticket flow", () => {
 
     await expect(page.getByRole("heading", { name: "Removed attachments" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Download unavailable" })).toBeDisabled();
-    await page.screenshot({ path: "artifacts/lab-02/screenshots/release/desktop_ticket_detail_removed.png", fullPage: true });
+    await page.screenshot({ path: fileURLToPath(new URL("../../artifacts/lab-02/screenshots/release/desktop_ticket_detail_removed.png", import.meta.url)), fullPage: true });
   });
 });

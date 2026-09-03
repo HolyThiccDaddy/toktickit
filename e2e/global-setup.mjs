@@ -1,13 +1,15 @@
-import { spawn } from "node:child_process";
+import { execFile as execFileCallback, spawn } from "node:child_process";
 import { access, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { promisify } from "node:util";
 
 const repoRoot = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const statePath = resolve(tmpdir(), "toktickit-e2e-processes.json");
 const backendUrl = "http://127.0.0.1:3002";
 const frontendUrl = "http://127.0.0.1:5173";
+const execFile = promisify(execFileCallback);
 
 function start(command, args, cwd, env) {
   return spawn(command, args, {
@@ -33,7 +35,13 @@ async function waitFor(url, child) {
 }
 
 export default async function globalSetup() {
+  if (process.platform === "win32") {
+    await execFile(process.env.ComSpec ?? "cmd.exe", ["/d", "/s", "/c", "npm --prefix server run build"], { cwd: repoRoot, windowsHide: true });
+  } else {
+    await execFile("npm", ["--prefix", "server", "run", "build"], { cwd: repoRoot, windowsHide: true });
+  }
   await access(resolve(repoRoot, "server/dist/src/index.js"));
+  await execFile("node", ["e2e/support/reset-test-db.mjs"], { cwd: repoRoot, windowsHide: true });
   const backend = start("node", ["dist/src/index.js"], resolve(repoRoot, "server"), {
     DOTENV_CONFIG_PATH: ".env.test",
     PORT: "3002",

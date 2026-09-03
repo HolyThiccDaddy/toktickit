@@ -12,10 +12,10 @@
 | #8 Create Ticket | [#22](https://github.com/HolyThiccDaddy/toktickit/pull/22) | `feature/8-create-ticket` | `26b2e9c` | Approved and merged |
 | #9 My Tickets | [#23](https://github.com/HolyThiccDaddy/toktickit/pull/23) | `feature/9-my-tickets` | `f2356bf` | Approved and merged |
 | #10 Ticket Detail and Attachments | [#24](https://github.com/HolyThiccDaddy/toktickit/pull/24) | `feature/10-ticket-detail` | `08882a2` | Approved and merged |
-| #11 E2E and Release Preparation | Pending | `feature/11-e2e-release` | Pending | Review to be requested after push |
+| #11 E2E and Release Preparation | Pending | `feature/11-e2e-release` | Pending | Review to be requested after PR creation |
 
-Issue #11 adds the final automated requester journeys, responsive visual evidence, and release documentation. The PR row will be completed with the final URL, merge commit, and the partner's review message after the branch is pushed and reviewed.
+Issue #11 adds the final automated requester journeys, responsive visual evidence, and release documentation. The PR row will be completed with the final URL, merge commit, and the partner's review message after the pull request is created and reviewed.
 
 ## Review evidence for Issue #11
 
-The automated E2E run covers the complete requester flow and cross-requester isolation. The responsive project captures desktop, tablet, and mobile PNG artifacts under `artifacts/lab-02/screenshots/release/`. Final peer-review comments and approval are intentionally recorded after the Issue #11 PR exists; no review result is invented in advance.
+The automated E2E run covers the complete requester flow and cross-requester isolation. The responsive project exercises Create Ticket, My Tickets, and Ticket Detail at desktop, tablet, and mobile viewports, with PNG artifacts under `artifacts/lab-02/screenshots/release/`. Final peer-review comments and approval are intentionally recorded after the Issue #11 PR exists; no review result is invented in advance.

@@ -96,7 +96,8 @@ npm test
 
 ### Run End-to-End Tests
 ```bash
-npm run test:e2e
+cd client
+npx playwright test
 ```
 
 ---
@@ -174,8 +175,8 @@ All four Issue #10 artifacts were regenerated as distinct valid PNG files; the a
 
 | Check | Command | Result |
 | :--- | :--- | :--- |
-| E2E requester flow and isolation | `npm run test:e2e` | Passed: 5 tests (desktop flow, isolation, and desktop/tablet/mobile responsive checks) |
-| E2E database safety | `npm run e2e:prepare` | Passed: deterministic fixtures loaded into `toktickit_test` |
+| E2E requester flow, isolation, and responsive journeys | `cd client && npx playwright test` | Passed: 5 tests (desktop flow, isolation, and Create Ticket/My Tickets/Ticket Detail checks at desktop/tablet/mobile viewports) |
+| E2E database safety | Playwright global setup invoked by the command above | Passed: server build and deterministic fixtures loaded into `toktickit_test` |
 | Theme and responsive unit checks | `cd client && npm test` | Passed |
 
 #### Issue #11 Visual Evidence
@@ -185,9 +186,18 @@ All four Issue #10 artifacts were regenerated as distinct valid PNG files; the a
 | Desktop requester workspace | `artifacts/lab-02/screenshots/release/desktop_requester_workspace.png` | Passed |
 | Tablet requester workspace at 768px | `artifacts/lab-02/screenshots/release/tablet_requester_workspace.png` | Passed |
 | Mobile requester workspace | `artifacts/lab-02/screenshots/release/mobile_requester_workspace.png` | Passed |
+| Desktop Create Ticket form and success state | `artifacts/lab-02/screenshots/release/desktop_create_ticket.png`, `desktop_create_success.png` | Passed |
+| Tablet Create Ticket form and success state | `artifacts/lab-02/screenshots/release/tablet_create_ticket.png`, `tablet_create_success.png` | Passed |
+| Mobile Create Ticket form and success state | `artifacts/lab-02/screenshots/release/mobile_create_ticket.png`, `mobile_create_success.png` | Passed |
+| Desktop My Tickets list | `artifacts/lab-02/screenshots/release/desktop_my_tickets.png` | Passed |
+| Tablet My Tickets list | `artifacts/lab-02/screenshots/release/tablet_my_tickets.png` | Passed |
+| Mobile My Tickets card view | `artifacts/lab-02/screenshots/release/mobile_my_tickets.png` | Passed |
+| Desktop Ticket Detail | `artifacts/lab-02/screenshots/release/desktop_ticket_detail.png` | Passed |
+| Tablet Ticket Detail | `artifacts/lab-02/screenshots/release/tablet_ticket_detail.png` | Passed |
+| Mobile Ticket Detail | `artifacts/lab-02/screenshots/release/mobile_ticket_detail.png` | Passed |
 | Desktop ticket detail after attachment removal | `artifacts/lab-02/screenshots/release/desktop_ticket_detail_removed.png` | Passed |
 
-The responsive checks assert that the document has no horizontal overflow at any configured viewport. The release PR and final peer-review approval remain pending until `feature/11-e2e-release` is pushed.
+The responsive checks assert that the document has no horizontal overflow at every configured viewport and exercise all three requester screens. The release PR and final peer-review approval remain pending until the PR is opened and reviewed.
 
 ---
 
