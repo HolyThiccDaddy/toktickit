@@ -25,13 +25,13 @@ The testing strategy for TokTickIT Lab 2 guarantees complete functional correctn
 | **API-07** | API | AC-06, FR-06, BR-08 | `GET /api/tickets` requester ownership | Returns only tickets belonging to requester in `x-requester-id` header | `server/tests/lab-02/my-tickets.api.test.ts` | Passed |
 | **API-08** | API | AC-07, FR-07 | `GET /api/tickets` search and filters | Correctly filters by category, priority, status, and search query | `server/tests/lab-02/my-tickets.api.test.ts` | Passed |
 | **API-09** | API | AC-07, FR-07 | `GET /api/tickets` pagination | Returns requested page/limit with total count and page metadata | `server/tests/lab-02/my-tickets.api.test.ts` | Passed |
-| **API-10** | API | AC-08, FR-08, BR-08 | `GET /api/tickets/:id` owned detail | Returns 200 with ticket data and attachment list for owner | `server/tests/lab-02/ticket-detail.api.test.ts` | Planned |
-| **API-11** | API | AC-10, BR-08 | `GET /api/tickets/:id` cross-owner access | Returns 403 Forbidden when requester attempts to view another user's ticket | `server/tests/lab-02/ticket-detail.api.test.ts` | Planned |
-| **API-12** | API | AC-09, FR-09, BR-06 | `POST /api/tickets/:id/attachments` upload | Adds valid attachment to owned ticket within 5-attachment limit | `server/tests/lab-02/attachments.api.test.ts` | Planned |
-| **API-13** | API | AC-05, BR-06 | `POST /api/tickets/:id/attachments` limit check | Returns 400 when attempting to exceed 5 active attachments on ticket | `server/tests/lab-02/attachments.api.test.ts` | Planned |
-| **API-14** | API | AC-09, FR-11, BR-07 | `DELETE /api/attachments/:id` soft removal | Sets `isDeleted=true`, stores reason, blocks subsequent download | `server/tests/lab-02/attachments.api.test.ts` | Planned |
-| **API-15** | API | AC-09, FR-10, BR-07 | `GET /api/attachments/:id/download` stream | Returns 200 and binary stream for active attachment | `server/tests/lab-02/attachments.api.test.ts` | Planned |
-| **API-16** | API | AC-09, FR-10, BR-07 | `GET /api/attachments/:id/download` deleted file | Returns 404/410 when attempting to download soft-removed attachment | `server/tests/lab-02/attachments.api.test.ts` | Planned |
+| **API-10** | API | AC-08, FR-08, BR-08 | `GET /api/tickets/:id` owned detail | Returns 200 with ticket data and attachment list for owner | `server/tests/lab-02/ticket-detail.api.test.ts` | Passed |
+| **API-11** | API | AC-10, BR-08 | `GET /api/tickets/:id` cross-owner access | Returns 403 Forbidden when requester attempts to view another user's ticket | `server/tests/lab-02/ticket-detail.api.test.ts` | Passed |
+| **API-12** | API | AC-09, FR-09, BR-06 | `POST /api/tickets/:id/attachments` upload | Adds valid attachment to owned ticket within 5-attachment limit | `server/tests/lab-02/ticket-detail.api.test.ts` | Passed |
+| **API-13** | API | AC-05, BR-06 | `POST /api/tickets/:id/attachments` limit check | Returns 400 when attempting to exceed 5 active attachments on ticket | `server/tests/lab-02/ticket-detail.api.test.ts` | Passed |
+| **API-14** | API | AC-09, FR-11, BR-07 | `DELETE /api/attachments/:id` soft removal | Sets `isDeleted=true`, stores reason, blocks subsequent download | `server/tests/lab-02/ticket-detail.api.test.ts` | Passed |
+| **API-15** | API | AC-09, FR-10, BR-07 | `GET /api/attachments/:id/download` stream | Returns 200 and binary stream for active attachment | `server/tests/lab-02/ticket-detail.api.test.ts` | Passed |
+| **API-16** | API | AC-09, FR-10, BR-07 | `GET /api/attachments/:id/download` deleted file | Returns 404/410 when attempting to download soft-removed attachment | `server/tests/lab-02/ticket-detail.api.test.ts` | Passed |
 | **UI-01** | UI | AC-01, FR-01 | Development Requester selector screen | Renders dropdown of active requesters, disclaimer banner, continue button | `client/tests/lab-02/RequesterSelector.test.tsx` | Passed |
 | **UI-02** | UI | AC-01, FR-01 | Requester selector loading/empty/error states | Renders loading spinner, empty state when no users, and API failure with retry | `client/tests/lab-02/RequesterSelector.test.tsx` | Passed |
 | **UI-03** | UI | AC-02, FR-01 | Requester Context & Header switcher | Displays the selected requester name, persists a validated requester ID for the session, and returns to the selector on change | `client/tests/lab-02/RequesterSelector.test.tsx` | Passed |
@@ -41,8 +41,8 @@ The testing strategy for TokTickIT Lab 2 guarantees complete functional correctn
 | **UI-07** | UI | AC-11, BR-10 | Create Ticket failure data preservation | Form preserves typed inputs when API submission fails | `client/tests/lab-02/CreateTicket.test.tsx` | Passed |
 | **UI-08** | UI | AC-06, AC-07, FR-06 | My Tickets list, filters & sorting | Renders ticket table/cards, search bar, category/priority/status filters | `client/tests/lab-02/MyTickets.test.tsx` | Passed |
 | **UI-09** | UI | AC-07, FR-07 | My Tickets empty vs no-results state | Renders distinct empty state when 0 tickets, and no-results with Clear Filters | `client/tests/lab-02/MyTickets.test.tsx` | Passed |
-| **UI-10** | UI | AC-08, FR-08 | Ticket Detail read-only layout | Renders all ticket metadata in read-only format without editable inputs | `client/tests/lab-02/RequesterTicketDetail.test.tsx` | Planned |
-| **UI-11** | UI | AC-09, FR-11 | Attachment soft-removal modal | Requires non-empty reason before confirming soft-removal | `client/tests/lab-02/AttachmentSection.test.tsx` | Planned |
+| **UI-10** | UI | AC-08, FR-08 | Ticket Detail read-only layout | Renders all ticket metadata in read-only format without editable inputs | `client/tests/lab-02/TicketDetail.test.tsx` | Passed |
+| **UI-11** | UI | AC-09, FR-11 | Attachment soft-removal modal | Requires non-empty reason before confirming soft-removal | `client/tests/lab-02/TicketDetail.test.tsx` | Passed |
 | **STYLE-01**| Style | Section 7 | Zen Green theme tokens & components | Asserts correct CSS color variables, font sizes, button classes, badge colors | `client/tests/lab-02/ThemeStyles.test.tsx` | Planned |
 | **RESP-01** | Responsive | Section 8.7 | Responsive layout adaptations | Asserts table-to-card switch, touch target sizes, and single-column form stacking | `client/tests/lab-02/ResponsiveLayout.test.tsx` | Planned |
 | **E2E-01** | E2E | AC-01 - AC-09 | End-to-end requester ticket flow | Complete flow: select requester -> create ticket -> find in My Tickets -> view detail -> soft-remove attachment | `e2e/lab-02/requester-ticket-flow.spec.ts` | Planned |
@@ -147,6 +147,28 @@ The remaining planned Lab 2 tests stay marked `Planned` until their owning Issue
 
 Desktop (1440px), tablet (768px), and mobile (390px) were checked in the running application. No clipping, overlap, horizontal page overflow, or browser console errors were observed. Loading skeletons and requester switching are also covered by `client/tests/lab-02/MyTickets.test.tsx`.
 Category API failure is covered by the same UI test: the error banner and `Retry Categories` action remain visible while the ticket list stays available.
+
+### Issue #10 - Ticket Detail and Attachment Management (2026-09-03)
+
+| Check | Command | Result |
+| :--- | :--- | :--- |
+| Server regression | `cd server && npm test` | Passed twice: 9 files, 56 tests |
+| Server build | `cd server && npm run build` | Passed |
+| Client regression | `cd client && npm test` | Passed twice: 6 files, 34 tests |
+| Client build | `cd client && npm run build` | Passed |
+
+Issue #10 API coverage includes owned detail retrieval, cross-requester denial, validated attachment upload, active-attachment limits, storage compensation, binary download, soft removal, and deletion validation. The Ticket Detail UI covers read-only metadata, loading/retry, active and removed attachment states, upload feedback, download, and the reason-required removal modal.
+
+#### Issue #10 Visual Evidence
+
+| Required state | Evidence | Result |
+| :--- | :--- | :--- |
+| Read-only ticket detail with metadata and status | `artifacts/lab-02/screenshots/ticket-detail/01_ticket_detail_readonly.png` | Passed |
+| Active attachment list with download and remove actions | `artifacts/lab-02/screenshots/ticket-detail/02_attachment_list.png` | Passed |
+| Soft-removal confirmation modal requiring a reason | `artifacts/lab-02/screenshots/ticket-detail/03_soft_removal_modal.png` | Passed |
+| Soft-removed attachment metadata with download disabled | `artifacts/lab-02/screenshots/ticket-detail/04_soft_removed_state.png` | Passed |
+
+All four Issue #10 artifacts were regenerated as distinct valid PNG files; the attachment-list image is a focused crop of the attachment state, while the other images capture the full detail, removal modal, and soft-removed states.
 
 ---
 

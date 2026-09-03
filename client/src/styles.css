@@ -31,6 +31,13 @@ body { background: var(--zen-body); }
 .priority-medium { background: #fefcbf; color: #744210; }
 .priority-high { background: #feebc8; color: #7b341e; }
 .priority-urgent { background: #fed7d7; color: #742a2a; }
+.ticket-detail { max-width: 980px; margin: 0 auto; }
+.ticket-detail-metadata dt { color: #5b6f64; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; }
+.ticket-detail-metadata dd { margin-bottom: 0; color: #1b2e24; }
+.ticket-description { white-space: pre-wrap; overflow-wrap: anywhere; }
+.ticket-attachment-deleted { background: #f1f3f2; color: #68756e; }
+.ticket-modal-backdrop { position: fixed; inset: 0; z-index: 1050; display: grid; place-items: center; padding: 1rem; background: rgb(0 0 0 / 45%); }
+.ticket-modal { width: min(100%, 520px); }
 
 @media (max-width: 767.98px) {
   .ticket-actions { display: grid !important; grid-template-columns: 1fr; }
