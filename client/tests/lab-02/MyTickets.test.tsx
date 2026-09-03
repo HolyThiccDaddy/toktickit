@@ -92,6 +92,22 @@ describe("My Tickets", () => {
     expect(await screen.findByText(/Page 2 of 2/i)).toBeInTheDocument();
   });
 
+  it("shows a retryable category loading error without hiding the ticket list", async () => {
+    const categorySpy = vi.mocked(api.getCategories)
+      .mockRejectedValueOnce(new Error("offline"))
+      .mockResolvedValueOnce([{ id: 4, name: "Network" }]);
+    vi.spyOn(api, "getTickets").mockResolvedValue({ tickets, pagination: { total: 1, page: 1, limit: 10, totalPages: 1 } });
+
+    render(<App />); await selectRequester();
+    expect(await screen.findByRole("alert")).toHaveTextContent(/Unable to load ticket categories/i);
+    expect(screen.getByRole("button", { name: /Retry Categories/i })).toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: "Category" })).toBeDisabled();
+    fireEvent.click(screen.getByRole("button", { name: /Retry Categories/i }));
+    await waitFor(() => expect(categorySpy).toHaveBeenCalledTimes(2));
+    expect(await screen.findByRole("option", { name: "Network" })).toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: "Category" })).toBeEnabled();
+  });
+
   it("reloads ownership-scoped tickets after changing requester", async () => {
     const listSpy = vi.spyOn(api, "getTickets").mockImplementation(async (requesterId) => requesterId === 1
       ? { tickets, pagination: { total: 1, page: 1, limit: 10, totalPages: 1 } }

@@ -129,7 +129,7 @@ The remaining planned Lab 2 tests stay marked `Planned` until their owning Issue
 | :--- | :--- | :--- |
 | Server regression | `cd server && npm test` | Passed twice: 8 files, 45 tests |
 | Server build | `cd server && npm run build` | Passed |
-| Client regression | `cd client && npm test` | Passed twice: 5 files, 26 tests |
+| Client regression | `cd client && npm test` | Passed twice: 5 files, 27 tests |
 | Client build | `cd client && npm run build` | Passed |
 
 #### Issue #9 Visual Evidence
@@ -146,6 +146,7 @@ The remaining planned Lab 2 tests stay marked `Planned` until their owning Issue
 | Tablet responsive table at 768px | `artifacts/lab-02/screenshots/my-tickets/08_tablet_table_view.png` | Passed |
 
 Desktop (1440px), tablet (768px), and mobile (390px) were checked in the running application. No clipping, overlap, horizontal page overflow, or browser console errors were observed. Loading skeletons and requester switching are also covered by `client/tests/lab-02/MyTickets.test.tsx`.
+Category API failure is covered by the same UI test: the error banner and `Retry Categories` action remain visible while the ticket list stays available.
 
 ---
 

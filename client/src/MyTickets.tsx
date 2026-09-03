@@ -9,6 +9,8 @@ type SortOrder = "asc" | "desc";
 export default function MyTickets({ requester, onCreate }: { requester: Requester; onCreate: () => void }) {
   const [tickets, setTickets] = useState<TicketListItem[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
+  const [categoryError, setCategoryError] = useState("");
   const [search, setSearch] = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [priority, setPriority] = useState("");
@@ -42,7 +44,13 @@ export default function MyTickets({ requester, onCreate }: { requester: Requeste
     }
   }, [requester.id, search, categoryId, priority, status, sortBy, sortOrder, page]);
 
-  useEffect(() => { void getCategories().then(setCategories).catch(() => setCategories([])); }, []);
+  async function loadCategories() {
+    setCategoriesLoading(true); setCategoryError("");
+    try { setCategories(await getCategories()); }
+    catch { setCategoryError("Unable to load ticket categories. Please retry to enable category filtering."); }
+    finally { setCategoriesLoading(false); }
+  }
+  useEffect(() => { void loadCategories(); }, []);
   useEffect(() => { void loadTickets(); }, [loadTickets]);
 
   function updateFilter(setter: (value: string) => void, value: string) { setter(value); setPage(1); }
@@ -65,11 +73,13 @@ export default function MyTickets({ requester, onCreate }: { requester: Requeste
     </div>
     <div className="card shadow-sm p-3 mb-3"><div className="row g-3 align-items-end">
       <div className="col-lg-4"><label className="form-label" htmlFor="ticket-search">Search tickets</label><input id="ticket-search" className="form-control" placeholder="Summary or ticket number" value={search} onChange={(event) => updateFilter(setSearch, event.target.value)} /></div>
-      <div className="col-sm-4 col-lg-2"><label className="form-label" htmlFor="ticket-category">Category</label><select id="ticket-category" className="form-select" value={categoryId} onChange={(event) => updateFilter(setCategoryId, event.target.value)}><option value="">All categories</option>{categories.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></div>
+      <div className="col-sm-4 col-lg-2"><label className="form-label" htmlFor="ticket-category">Category</label><select id="ticket-category" className="form-select" value={categoryId} onChange={(event) => updateFilter(setCategoryId, event.target.value)} disabled={categoriesLoading || Boolean(categoryError)}><option value="">All categories</option>{categories.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></div>
       <div className="col-sm-4 col-lg-2"><label className="form-label" htmlFor="ticket-priority">Requested Priority</label><select id="ticket-priority" className="form-select" value={priority} onChange={(event) => updateFilter(setPriority, event.target.value)}><option value="">All priorities</option>{["LOW", "MEDIUM", "HIGH", "URGENT"].map((item) => <option key={item}>{item}</option>)}</select></div>
       <div className="col-sm-4 col-lg-2"><label className="form-label" htmlFor="ticket-status">Current Status</label><select id="ticket-status" className="form-select" value={status} onChange={(event) => updateFilter(setStatus, event.target.value)}><option value="">All statuses</option><option value="NEW">NEW</option></select></div>
       <div className="col-lg-2"><button className="btn btn-outline-zen w-100" type="button" onClick={clearFilters} disabled={!hasFilters}>Clear Filters</button></div>
     </div></div>
+    {categoriesLoading && <p className="small text-muted" role="status">Loading ticket categories...</p>}
+    {categoryError && <div className="alert alert-danger" role="alert">{categoryError}<button className="btn btn-outline-danger d-block mt-2" type="button" onClick={() => void loadCategories()}>Retry Categories</button></div>}
 
     {loading && <div role="status" aria-live="polite">
       <span className="visually-hidden">Loading your tickets...</span>
