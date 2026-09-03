@@ -168,6 +168,8 @@ Issue #10 API coverage includes owned detail retrieval, cross-requester denial, 
 | Soft-removal confirmation modal requiring a reason | `artifacts/lab-02/screenshots/ticket-detail/03_soft_removal_modal.png` | Passed |
 | Soft-removed attachment metadata with download disabled | `artifacts/lab-02/screenshots/ticket-detail/04_soft_removed_state.png` | Passed |
 
+All four Issue #10 artifacts were regenerated as distinct valid PNG files; the attachment-list image is a focused crop of the attachment state, while the other images capture the full detail, removal modal, and soft-removed states.
+
 ---
 
 ## 7. Known Limitations or Deferred Tests

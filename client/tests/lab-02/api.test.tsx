@@ -77,4 +77,15 @@ describe("ticket detail API client", () => {
     expect(result.blob).toBeInstanceOf(Blob);
     expect(result.blob.size).toBe(3);
   });
+
+  it("normalizes Multer single-file limit errors from files to file", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(JSON.stringify({
+      error: "Validation failed",
+      fieldErrors: { files: "Each attachment must be no larger than 5 MB" },
+    }), { status: 400, headers: { "content-type": "application/json" } })));
+    await expect(addAttachment(1, 7, new File(["pdf"], "large.pdf", { type: "application/pdf" }))).rejects.toMatchObject({
+      message: "Validation failed",
+      fieldErrors: { file: "Each attachment must be no larger than 5 MB" },
+    });
+  });
 });

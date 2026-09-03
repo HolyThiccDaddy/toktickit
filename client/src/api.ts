@@ -85,6 +85,14 @@ async function readJson(response: Response): Promise<Record<string, unknown>> {
   }
 }
 
+function readFieldErrors(body: Record<string, unknown>) {
+  const fieldErrors = body.fieldErrors && typeof body.fieldErrors === "object"
+    ? Object.fromEntries(Object.entries(body.fieldErrors).filter((entry): entry is [string, string] => typeof entry[1] === "string")) : {};
+  // Multer reports single-file limits under `files`; the detail UI uses `file`.
+  if (!fieldErrors.file && fieldErrors.files) fieldErrors.file = fieldErrors.files;
+  return fieldErrors;
+}
+
 export async function getReferenceData(): Promise<{ categories: Category[]; relatedSystems: RelatedSystem[] }> {
   const [categoriesResponse, systemsResponse] = await Promise.all([
     fetch(`${API_URL}/api/categories`), fetch(`${API_URL}/api/related-systems`),
@@ -140,9 +148,7 @@ export async function addAttachment(requesterId: number, ticketId: number, file:
   });
   const body = await readJson(response);
   if (!response.ok) {
-    const fieldErrors = body.fieldErrors && typeof body.fieldErrors === "object"
-      ? Object.fromEntries(Object.entries(body.fieldErrors).filter((entry): entry is [string, string] => typeof entry[1] === "string")) : {};
-    throw new ApiError(typeof body.error === "string" ? body.error : "Unable to add attachment", fieldErrors);
+    throw new ApiError(typeof body.error === "string" ? body.error : "Unable to add attachment", readFieldErrors(body));
   }
   return body as unknown as TicketAttachment;
 }
@@ -165,9 +171,7 @@ export async function removeAttachment(requesterId: number, attachmentId: number
   });
   const body = await readJson(response);
   if (!response.ok) {
-    const fieldErrors = body.fieldErrors && typeof body.fieldErrors === "object"
-      ? Object.fromEntries(Object.entries(body.fieldErrors).filter((entry): entry is [string, string] => typeof entry[1] === "string")) : {};
-    throw new ApiError(typeof body.error === "string" ? body.error : "Unable to remove attachment", fieldErrors);
+    throw new ApiError(typeof body.error === "string" ? body.error : "Unable to remove attachment", readFieldErrors(body));
   }
   return body.attachment as TicketAttachment;
 }

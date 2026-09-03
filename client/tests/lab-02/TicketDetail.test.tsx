@@ -47,6 +47,32 @@ describe("Ticket Detail", () => {
     await waitFor(() => expect(add).toHaveBeenCalledWith(1, 101, file));
   });
 
+  it("keeps upload and removal busy states independent", async () => {
+    vi.spyOn(api, "getTicket").mockResolvedValue(detail);
+    let resolveRemoval!: (attachment: api.TicketAttachment) => void;
+    const removal = new Promise<api.TicketAttachment>((resolve) => { resolveRemoval = resolve; });
+    vi.spyOn(api, "removeAttachment").mockReturnValue(removal);
+    render(<TicketDetail requester={requester} ticketId={101} onBack={vi.fn()} />);
+    await screen.findByText("VPN access fails");
+    fireEvent.click(screen.getByRole("button", { name: /^Remove$/ }));
+    fireEvent.change(screen.getByLabelText("Reason"), { target: { value: "No longer needed" } });
+    fireEvent.click(screen.getByRole("button", { name: "Remove attachment" }));
+    expect(await screen.findByRole("button", { name: "Removing..." })).toBeDisabled();
+    expect(screen.getByLabelText("Add Attachment")).toBeEnabled();
+    resolveRemoval(detail.attachments[1]);
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+  });
+
+  it("shows the specific Multer limit error returned under the files key", async () => {
+    vi.spyOn(api, "getTicket").mockResolvedValue(detail);
+    vi.spyOn(api, "addAttachment").mockRejectedValue(new api.ApiError("Validation failed", { files: "Each attachment must be no larger than 5 MB" }));
+    render(<TicketDetail requester={requester} ticketId={101} onBack={vi.fn()} />);
+    await screen.findByText("VPN access fails");
+    const file = new File(["%PDF-1.4"], "too-large.pdf", { type: "application/pdf" });
+    fireEvent.change(screen.getByLabelText("Add Attachment"), { target: { files: [file] } });
+    expect(await screen.findByRole("alert")).toHaveTextContent("Each attachment must be no larger than 5 MB");
+  });
+
   it("requires a reason and soft-removes an attachment", async () => {
     vi.spyOn(api, "getTicket").mockResolvedValue(detail);
     const remove = vi.spyOn(api, "removeAttachment").mockResolvedValue(detail.attachments[1]);
