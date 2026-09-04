@@ -1,140 +1,120 @@
-# TokTickIT — IT Service Desk Application
+# TokTickIT — Lab 2 Requester Ticketing MVP
 
-TokTickIT is a full-stack IT Service Desk vertical slice built for **Lab 1**. The application features an Express TypeScript backend connected to a PostgreSQL database via Prisma ORM, and a React TypeScript frontend powered by Vite and Bootstrap.
+TokTickIT is a full-stack, requester-facing IT service-desk application built for Lab 2. A temporary Development Requester selector simulates the current user context until real authentication is introduced in Lab 3. Requesters can create tickets, upload permitted evidence, find their own tickets, open read-only details, and manage attachments with ownership protection.
 
----
-
-## Technical Stack
+## Scope and technology
 
 - **Frontend:** React 18, TypeScript, Vite, Bootstrap 5
 - **Backend:** Node.js, Express, TypeScript, Prisma ORM
 - **Database:** PostgreSQL
-- **Testing:** Vitest, Supertest, React Testing Library
-- **Architecture:** Monorepo (`client/` and `server/`)
+- **Testing:** Vitest, Supertest, React Testing Library, Playwright
+- **Architecture:** Monorepo with `client/`, `server/`, and repository-root E2E specs
 
----
+Lab 2 deliberately excludes real authentication, IT Staff workflow, comments/notes, Actions Taken, administration, and status transitions beyond `NEW`.
 
-## Project Structure
+## Repository structure
 
 ```text
 toktickit/
-├── client/                 # Frontend React Application
-│   ├── src/                # UI Components & API client
-│   └── tests/lab-01/       # React Testing Library & Vitest specs
-├── server/                 # Backend Express Application
-│   ├── prisma/             # Prisma Schema & Database Seed Scripts
-│   ├── src/                # Express API routes & Prisma singleton
-│   └── tests/lab-01/       # Supertest API integration specs
-└── docs/lab-01/            # Lab 1 Documentation & Peer Review Records
-    ├── ai_use.md           # AI Use Log & Reflection
-    ├── reviewer.md         # Peer Review Record with partner
-    ├── tests.md            # Automated Test Specifications & Execution Logs
-    └── screenshots/        # Application UI Screenshots
+├── client/                     # React UI, component tests, and Playwright dependency
+├── server/                     # Express API, Prisma schema/migrations, and API tests
+├── e2e/                        # Playwright journeys and deterministic setup/teardown
+├── docs/lab-02/                # Lab 2 contract, test plan, AI log, and review record
+└── artifacts/lab-02/           # Test output and responsive/visual evidence
 ```
 
----
+## Prerequisites
 
-## Getting Started
-
-### Prerequisites
-
-- Node.js (v18 or higher)
+- Node.js **18 or higher**
 - PostgreSQL running locally on port `5432`
+- A PostgreSQL role that can create databases
 
----
-
-### Installation & Environment Setup
-
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/HolyThiccDaddy/toktickit.git
-   cd toktickit
-   ```
-
-2. **Configure Backend Environment:**
-   Create a `server/.env` file:
-   ```env
-   DATABASE_URL="postgresql://postgres:postgres@localhost:5432/toktickit?schema=public"
-   PORT=3000
-   ```
-
-3. **Install Dependencies:**
-   ```bash
-   # Install server dependencies
-   cd server
-   npm install
-
-   # Install client dependencies
-   cd ../client
-   npm install
-   ```
-
----
-
-## Database Migration & Seeding
-
-Run the database migrations and seed script inside the `server/` directory:
+## Installation and environment
 
 ```bash
+git clone https://github.com/HolyThiccDaddy/toktickit.git
+cd toktickit
 cd server
-npx prisma migrate dev --name init
-npx prisma db seed
+npm install
+copy .env.example .env
+cd ../client
+npm install
 ```
 
-*The seed script populates 4 IT request categories:*
-1. Account and Access
-2. Hardware
-3. Software
-4. Network
+Set `server/.env` to a local development database, for example:
 
----
+```env
+DATABASE_URL="postgresql://toktickit:toktickit@localhost:5432/toktickit?schema=public"
+PORT=3000
+TOKTICKIT_UPLOAD_ROOT=uploads
+```
 
-## Running the Application Locally
+Create the dedicated test database before running destructive suites:
 
-### 1. Start the Backend API Server
 ```bash
+createdb -U toktickit toktickit_test
+cd server
+copy .env.test.example .env.test
+npx prisma migrate deploy
+npm run prisma:seed
+```
+
+`server/.env.test` is local-only and ignored by Git. Test setup requires a database name ending in `_test` and writes attachments beneath a test-only temporary directory.
+
+## Run the application
+
+```bash
+# terminal 1
 cd server
 npm run dev
-```
-*API server runs at `http://localhost:3000`*
 
-### 2. Start the Frontend Application
-```bash
+# terminal 2
 cd client
 npm run dev
 ```
-*Frontend app runs at `http://localhost:5173`*
 
----
+The API is available at `http://localhost:3000` and Vite serves the UI at `http://localhost:5173`.
 
-## Automated Testing
+## Verification commands
 
-### Run Backend Integration Tests
+Run the smallest relevant suite first, then the full release checks:
+
 ```bash
 cd server
 npm test
-```
-*Executes `health.test.ts` and `categories.test.ts` via Supertest & Vitest.*
+npm run build
 
-### Run Frontend Component Tests
-```bash
-cd client
+cd ../client
 npm test
+npm run build
+npx playwright test
 ```
-*Executes `App.test.tsx` via React Testing Library & Vitest.*
 
----
+The Playwright command starts isolated services, resets deterministic fixtures in `toktickit_test`, checks desktop/tablet/mobile journeys, and writes JSON results to `artifacts/lab-02/e2e-results.json` plus PNG evidence under `artifacts/lab-02/screenshots/`.
 
-## API Endpoints
+## API surface
 
-- `GET /api/health` — Returns system health status (`HTTP 200 { "status": "ok", "service": "TokTickIT API" }`)
-- `GET /api/categories` — Returns list of seeded IT request categories (`HTTP 200 [{ "id": 1, "name": "Account and Access" }, ...]`)
+- `GET /api/health` — service health
+- `GET /api/requesters` — active Development Requesters
+- `GET /api/categories` — active ticket categories
+- `GET /api/related-systems` — active related systems
+- `POST /api/tickets` — create a `NEW` requester-owned ticket
+- `GET /api/tickets` — requester-scoped search, filtering, sorting, and pagination
+- `GET /api/tickets/:id` — owned read-only ticket detail
+- `POST /api/tickets/:id/attachments` — add a validated attachment
+- `GET /api/attachments/:id/download` — download an active attachment
+- `DELETE /api/attachments/:id` — soft-remove an owned attachment with a reason
 
----
+Requester identity is supplied only through the `X-Requester-Id` header. Attachment uploads enforce allowed type, extension, magic bytes, size, count, ownership, and compensating cleanup rules.
 
-## Lab Documentation
+## Lab 2 documentation
 
-- [AI Use & Reflection Log](docs/lab-01/ai_use.md)
-- [Peer Review Record](docs/lab-01/reviewer.md)
-- [Automated Test Specifications](docs/lab-01/tests.md)
-- [UI Screenshots](docs/lab-01/screenshots/)
+- [Sprint specification](docs/lab-02/specification.md)
+- [REST API contract](docs/lab-02/api-spec.md)
+- [UI specification](docs/lab-02/ui-spec.md)
+- [Test plan and results](docs/lab-02/tests.md)
+- [AI use and reflection](docs/lab-02/ai-use.md)
+- [Peer-review record](docs/lab-02/reviewer.md)
+- [Lab 2 visual evidence](artifacts/lab-02/screenshots/)
+
+The Lab 2 release was integrated into `main` by release PR #27 (`a145b057`).
