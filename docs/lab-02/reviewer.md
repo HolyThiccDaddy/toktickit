@@ -85,7 +85,9 @@
 
 Contract PR [#19](https://github.com/HolyThiccDaddy/toktickit/pull/19) was reviewed and merged into `lab2-staging` with merge commit `296350c` before the implementation PRs. PR [#25](https://github.com/HolyThiccDaddy/toktickit/pull/25) was then merged into `lab2-staging` with merge commit `92c4942c`. The final release integration PR [#27](https://github.com/HolyThiccDaddy/toktickit/pull/27) merged `lab2-staging` into `main` with merge commit `a145b057`.
 
-The follow-up README publication PRs [#28](https://github.com/HolyThiccDaddy/toktickit/pull/28) and [#29](https://github.com/HolyThiccDaddy/toktickit/pull/29) merged the Lab 2 README update into `lab2-staging` and then `main`.
+The follow-up README publication PRs [#28](https://github.com/HolyThiccDaddy/toktickit/pull/28) and [#29](https://github.com/HolyThiccDaddy/toktickit/pull/29) merged the Lab 2 README update into `lab2-staging` and then `main` at `2d963f7`.
+
+The final evidence/report update was promoted by [PR #32](https://github.com/HolyThiccDaddy/toktickit/pull/32) with merge commit `10d902b`. The current documentation correction updates the AI-use prompt count, completed visual checklist, Node.js/Playwright prerequisite, and release chronology in the source files and submission report. It remains separate from the historical core release PR #27 so the evidence trail stays auditable.
 
 In the partner repository, release-evidence PR [#29](https://github.com/osizk/TokTickIT/pull/29) merged into `lab2-staging`, integration PR [#30](https://github.com/osizk/TokTickIT/pull/30) promoted it to `main`, documentation PR [#31](https://github.com/osizk/TokTickIT/pull/31) merged into `lab2-staging`, and final promotion PR [#32](https://github.com/osizk/TokTickIT/pull/32) merged into `main`.
 

@@ -25,7 +25,7 @@ toktickit/
 
 ## Prerequisites
 
-- Node.js **18 or higher**
+- Node.js **20 or higher** (required by the current Playwright dependency)
 - PostgreSQL running locally on port `5432`
 - A PostgreSQL role that can create databases
 
@@ -117,4 +117,4 @@ Requester identity is supplied only through the `X-Requester-Id` header. Attachm
 - [Peer-review record](docs/lab-02/reviewer.md)
 - [Lab 2 visual evidence](artifacts/lab-02/screenshots/)
 
-The Lab 2 release was integrated into `main` by release PR #27 (`a145b057`).
+The core Lab 2 implementation was integrated into `main` by release PR #27 (`a145b057`). The README/documentation update was promoted by PR #29 (`2d963f7`), and the final evidence/report update was promoted by PR #32 (`10d902b`).
