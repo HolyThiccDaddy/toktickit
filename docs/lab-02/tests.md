@@ -8,6 +8,22 @@ The testing strategy for TokTickIT Lab 2 guarantees complete functional correctn
 4. **UI Style & Responsive Verification (Automated Component & Style Tests):** Confirms Zen Green theme tokens, field styling, button hierarchies, and layout integrity across Desktop (>= 992px), Tablet (768-991px), and Mobile (< 768px).
 5. **End-to-End Testing (Playwright):** Simulates realistic user journeys from Development Requester selection to ticket submission, list filtering, and attachment management.
 
+## 1.1 Issue and Release Traceability
+
+Issues #12-#17 remain open because their merged pull requests did not close them automatically; Issue #18 was closed by the final release PR. Each issue is nevertheless linked to its completed implementation PR and the core release PR, so the implementation and release state are auditable.
+
+| GitHub issue | Lab 2 scope | Completed implementation PR | Core release link |
+| :--- | :--- | :--- | :--- |
+| [#12](https://github.com/HolyThiccDaddy/toktickit/issues/12) | Contract and test plan | [#19](https://github.com/HolyThiccDaddy/toktickit/pull/19) | [#27](https://github.com/HolyThiccDaddy/toktickit/pull/27) |
+| [#13](https://github.com/HolyThiccDaddy/toktickit/issues/13) | Database schema and seed | [#20](https://github.com/HolyThiccDaddy/toktickit/pull/20) | [#27](https://github.com/HolyThiccDaddy/toktickit/pull/27) |
+| [#14](https://github.com/HolyThiccDaddy/toktickit/issues/14) | Requester context | [#21](https://github.com/HolyThiccDaddy/toktickit/pull/21) | [#27](https://github.com/HolyThiccDaddy/toktickit/pull/27) |
+| [#15](https://github.com/HolyThiccDaddy/toktickit/issues/15) | Create Ticket | [#22](https://github.com/HolyThiccDaddy/toktickit/pull/22) | [#27](https://github.com/HolyThiccDaddy/toktickit/pull/27) |
+| [#16](https://github.com/HolyThiccDaddy/toktickit/issues/16) | My Tickets | [#23](https://github.com/HolyThiccDaddy/toktickit/pull/23) | [#27](https://github.com/HolyThiccDaddy/toktickit/pull/27) |
+| [#17](https://github.com/HolyThiccDaddy/toktickit/issues/17) | Ticket Detail and attachments | [#24](https://github.com/HolyThiccDaddy/toktickit/pull/24) | [#27](https://github.com/HolyThiccDaddy/toktickit/pull/27) |
+| [#18](https://github.com/HolyThiccDaddy/toktickit/issues/18) | E2E and release preparation | [#25](https://github.com/HolyThiccDaddy/toktickit/pull/25) | [#27](https://github.com/HolyThiccDaddy/toktickit/pull/27) |
+
+The core Lab 2 implementation was integrated into `main` by PR [#27](https://github.com/HolyThiccDaddy/toktickit/pull/27) (`a145b057`). README/documentation was published by PR [#29](https://github.com/HolyThiccDaddy/toktickit/pull/29) (`2d963f7`). The final evidence/report update was promoted by PR [#32](https://github.com/HolyThiccDaddy/toktickit/pull/32) (`10d902b`); the source corrections in this branch keep the published report synchronized with the repository.
+
 ---
 
 ## 2. Planned Tests
@@ -47,6 +63,7 @@ The testing strategy for TokTickIT Lab 2 guarantees complete functional correctn
 | **RESP-01** | Responsive | Section 8.7 | Responsive layout adaptations | Asserts table-to-card switch, touch target sizes, and single-column form stacking | `client/tests/lab-02/ResponsiveLayout.test.tsx` | Passed |
 | **E2E-01** | E2E | AC-01 - AC-09 | End-to-end requester ticket flow | Complete flow: select requester -> create ticket -> find in My Tickets -> view detail -> soft-remove attachment | `e2e/lab-02/requester-ticket-flow.spec.ts` | Passed |
 | **E2E-02** | E2E | AC-06, AC-10 | Multi-requester isolation E2E | Verifies Requester A tickets are inaccessible and invisible to Requester B | `e2e/lab-02/multi-requester-isolation.spec.ts` | Passed |
+| **E2E-03** | E2E / Responsive | AC-01, AC-02, AC-04, AC-06, AC-08 | Responsive requester journey | Runs the requester workspace, Create Ticket, My Tickets, and Ticket Detail journey in desktop, tablet (768px), and mobile (390px) projects; asserts no horizontal overflow and captures each checkpoint | `e2e/lab-02/responsive.visual.spec.ts` | Passed (3 projects) |
 
 ---
 
@@ -54,14 +71,14 @@ The testing strategy for TokTickIT Lab 2 guarantees complete functional correctn
 
 | Acceptance Criterion | Covered Automated Tests | Verification Scope |
 | :--- | :--- | :--- |
-| **AC-01** (Requester Initialization) | API-01, UI-01, UI-02, E2E-01 | Selector view displays active requesters and handles empty/error states |
-| **AC-02** (Context Persistence) | UI-03, E2E-01 | Header displays current requester and persists identity across routes |
+| **AC-01** (Requester Initialization) | API-01, UI-01, UI-02, E2E-01, E2E-03 | Selector view displays active requesters and handles empty/error states |
+| **AC-02** (Context Persistence) | UI-03, E2E-01, E2E-03 | Header displays current requester and persists identity across routes |
 | **AC-03** (Form Validation) | API-03, UI-04 | Missing required fields prevent submission and show inline errors |
-| **AC-04** (Ticket Creation) | API-02, UI-05, UNIT-01, E2E-01 | Ticket saved with status `NEW` and unique Ticket Number |
+| **AC-04** (Ticket Creation) | API-02, UI-05, UNIT-01, E2E-01, E2E-03 | Ticket saved with status `NEW` and unique Ticket Number |
 | **AC-05** (Attachment Validation) | API-04, API-05, API-13, UI-06, UNIT-02 | File size <=5MB and permitted MIME type enforcement |
-| **AC-06** (Multi-Tenant Isolation) | API-07, UI-08, E2E-01, E2E-02 | Requesters can only view tickets they own |
+| **AC-06** (Multi-Tenant Isolation) | API-07, UI-08, E2E-01, E2E-02, E2E-03 | Requesters can only view tickets they own |
 | **AC-07** (Search & Filtering) | API-08, API-09, UI-08, UI-09 | Multi-criteria querying and pagination on ticket list |
-| **AC-08** (Read-Only Detail) | API-10, UI-10, E2E-01 | Detail view displays non-editable ticket fields |
+| **AC-08** (Read-Only Detail) | API-10, UI-10, E2E-01, E2E-03 | Detail view displays non-editable ticket fields |
 | **AC-09** (Attachment Soft-Removal) | API-14, API-15, API-16, UI-11, E2E-01 | Soft removal records reason and prevents download |
 | **AC-10** (Cross-Owner Security) | API-11, E2E-02 | Unauthorized detail access returns 403 Forbidden |
 | **AC-11** (Attachment Rollback & Data Preservation) | API-06, UI-07 | Server rolls back on upload failure; client preserves form fields |
@@ -70,13 +87,13 @@ The testing strategy for TokTickIT Lab 2 guarantees complete functional correctn
 
 ## 4. Responsive and Visual Checklist
 
-- [ ] **Zen Green Color Palette:** Header uses `#006B3C`, hover/active accents use `#0B7A46`, pale background uses `#EAF6EF`, body uses `#F5F7F6`.
-- [ ] **Typography & Spacing:** Standardized font scale, consistent form input heights (38px), labels positioned above controls with red asterisk markers.
-- [ ] **Button Hierarchy:** Primary green buttons for main actions, outline buttons for secondary actions, amber for warnings, red for destructive soft-removal.
-- [ ] **Desktop Viewport (>= 992px):** Centered layout with max-width container, multi-column form, full data table with sortable headers.
-- [ ] **Tablet Viewport (768px - 991px):** Two-column form layout, responsive table layout with horizontal scrolling or condensed columns.
-- [ ] **Mobile Viewport (< 768px):** Single-column stacked form, ticket cards replacing table rows, touch-friendly buttons >= 44px height.
-- [ ] **No Visual Defects:** No clipped text, overlapping elements, or unexpected horizontal scrollbars at any breakpoint.
+- [x] **Zen Green Color Palette:** Header uses `#006B3C`, hover/active accents use `#0B7A46`, pale background uses `#EAF6EF`, body uses `#F5F7F6`.
+- [x] **Typography & Spacing:** Standardized font scale, consistent form input heights (38px), labels positioned above controls with red asterisk markers.
+- [x] **Button Hierarchy:** Primary green buttons for main actions, outline buttons for secondary actions, amber for warnings, red for destructive soft-removal.
+- [x] **Desktop Viewport (>= 992px):** Centered layout with max-width container, multi-column form, full data table with sortable headers.
+- [x] **Tablet Viewport (768px - 991px):** Two-column form layout, responsive table layout with horizontal scrolling or condensed columns.
+- [x] **Mobile Viewport (< 768px):** Single-column stacked form, ticket cards replacing table rows, touch-friendly buttons >= 44px height.
+- [x] **No Visual Defects:** No clipped text, overlapping elements, or unexpected horizontal scrollbars at any breakpoint.
 
 ---
 
@@ -100,6 +117,20 @@ cd client
 npx playwright test
 ```
 
+### Release Evidence Logs
+
+The final release checks were rerun after the documentation update. Readable terminal logs are committed with the evidence so the counts and commands can be audited without relying on a summary:
+
+| Check | Evidence log | Result |
+| :--- | :--- | :--- |
+| Server tests | [`server-test.txt`](../artifacts/lab-02/logs/server-test.txt) | 9 files, 56 tests passed |
+| Server build | [`server-build.txt`](../artifacts/lab-02/logs/server-build.txt) | `tsc` passed |
+| Client tests | [`client-test.txt`](../artifacts/lab-02/logs/client-test.txt) | 8 files, 41 tests passed |
+| Client build | [`client-build.txt`](../artifacts/lab-02/logs/client-build.txt) | TypeScript and Vite build passed |
+| Test-database migration | [`migration-test-db.txt`](../artifacts/lab-02/logs/migration-test-db.txt) | `toktickit_test`; no pending migrations |
+| Repeated seed | [`seed-test-db.txt`](../artifacts/lab-02/logs/seed-test-db.txt) | Two idempotent runs; 4 categories, 7 systems, 5 requesters each run |
+| Playwright E2E | [`e2e-test.txt`](../artifacts/lab-02/logs/e2e-test.txt) | 5 tests passed across desktop, tablet, and mobile |
+
 ---
 
 ## 6. Final Results
@@ -113,7 +144,7 @@ npx playwright test
 | Client regression | `cd client && npm test` | Passed: 2 files, 8 tests |
 | Client build | `cd client && npm run build` | Passed |
 
-The remaining planned Lab 2 tests stay marked `Planned` until their owning Issues are implemented and verified.
+All planned Lab 2 tests through Issue #11 are now implemented and recorded as passed. The traceability matrix below identifies the functional and responsive E2E coverage explicitly.
 
 ### Issue #8 - Create Ticket Screen and API (2026-09-01)
 
@@ -175,7 +206,8 @@ All four Issue #10 artifacts were regenerated as distinct valid PNG files; the a
 
 | Check | Command | Result |
 | :--- | :--- | :--- |
-| E2E requester flow, isolation, and responsive journeys | `cd client && npx playwright test` | Passed: 5 tests (desktop flow, isolation, and Create Ticket/My Tickets/Ticket Detail checks at desktop/tablet/mobile viewports) |
+| E2E requester flow and isolation | `cd client && npx playwright test` | Passed: 2 functional tests on the desktop project (requester flow and cross-owner isolation) |
+| E2E responsive requester journey | `cd client && npx playwright test` | Passed: E2E-03 ran in desktop, tablet (768px), and mobile projects; all five checkpoints passed with no horizontal overflow |
 | E2E database safety | Playwright global setup invoked by the command above | Passed: server build and deterministic fixtures loaded into `toktickit_test` |
 | Theme and responsive unit checks | `cd client && npm test` | Passed |
 
@@ -197,7 +229,7 @@ All four Issue #10 artifacts were regenerated as distinct valid PNG files; the a
 | Mobile Ticket Detail | `artifacts/lab-02/screenshots/release/mobile_ticket_detail.png` | Passed |
 | Desktop ticket detail after attachment removal | `artifacts/lab-02/screenshots/release/desktop_ticket_detail_removed.png` | Passed |
 
-The responsive checks assert that the document has no horizontal overflow at every configured viewport and exercise all three requester screens. The release PR and final peer-review approval remain pending until the PR is opened and reviewed.
+The responsive checks assert that the document has no horizontal overflow at every configured viewport and exercise the requester workspace, Create Ticket, My Tickets, and Ticket Detail screens. Core release PR [#27](https://github.com/HolyThiccDaddy/toktickit/pull/27) merged `lab2-staging` into `main` at `a145b057`; README/documentation PR [#29](https://github.com/HolyThiccDaddy/toktickit/pull/29) promoted the documentation update at `2d963f7`. Peer-review outcomes and merge commits are recorded in `docs/lab-02/reviewer.md`.
 
 ---
 
