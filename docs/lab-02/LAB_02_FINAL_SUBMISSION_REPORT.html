@@ -1,0 +1,603 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LAB 2 : TokTickIT Requester-Facing IT Ticketing System</title>
+  <style>
+    :root {
+      --ink: #172036;
+      --text: #101010;
+      --muted: #39465b;
+      --line: #111111;
+      --panel: #eef2f7;
+      --evidence: #e4ebf4;
+      --note: #fbf7ff;
+      --green: #006b3c;
+      --green-soft: #eaf6ef;
+      --amber: #9a5b00;
+      --red: #b3261e;
+      --page-width: 595.5pt;
+      --page-height: 841.92pt;
+    }
+
+    @page { size: A4; margin: 27pt; }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      background: #ffffff;
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 10.5pt;
+      line-height: 1.42;
+    }
+
+    .report {
+      width: 100%;
+      max-width: var(--page-width);
+      margin: 0 auto;
+    }
+
+    .cover-title {
+      margin: 26pt 0 15pt;
+      text-align: center;
+      color: var(--ink);
+      font-size: 22pt;
+      font-weight: 400;
+      line-height: 1.15;
+    }
+    .cover-title strong { font-weight: 700; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 10pt 0 17pt;
+      page-break-inside: auto;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 6pt 6pt;
+      vertical-align: top;
+      text-align: left;
+    }
+    th {
+      background: var(--panel);
+      font-weight: 700;
+    }
+    tr { page-break-inside: avoid; }
+    .metadata td {
+      width: 50%;
+      background: var(--panel);
+      font-size: 10.5pt;
+    }
+    .metadata strong { font-weight: 700; }
+
+    a { color: #0645ad; text-decoration: underline; overflow-wrap: anywhere; }
+    p { margin: 6pt 0 9pt; }
+    ul, ol { margin: 5pt 0 10pt 20pt; padding: 0; }
+    li { margin: 3pt 0; }
+
+    .answer-heading {
+      color: #000000;
+      font-size: 18pt;
+      line-height: 1.18;
+      margin: 18pt 0 12pt;
+      font-weight: 700;
+      text-decoration: underline;
+      page-break-after: avoid;
+    }
+    .subheading {
+      color: #101010;
+      font-size: 12.5pt;
+      line-height: 1.2;
+      margin: 11pt 0 8pt;
+      font-weight: 700;
+      page-break-after: avoid;
+    }
+    .small-heading {
+      color: var(--ink);
+      font-size: 10.5pt;
+      line-height: 1.2;
+      margin: 8pt 0 5pt;
+      font-weight: 700;
+      page-break-after: avoid;
+    }
+
+    .evidence {
+      border: 1px solid var(--line);
+      margin: 10pt 0 15pt;
+      page-break-inside: avoid;
+      background: #ffffff;
+    }
+    .evidence-title {
+      min-height: 34pt;
+      padding: 9pt 8pt;
+      border-bottom: 1px solid var(--line);
+      background: var(--evidence);
+      color: var(--ink);
+      text-align: center;
+      font-weight: 700;
+      font-size: 10.5pt;
+    }
+    .evidence-body { padding: 5pt; }
+    .evidence img {
+      display: block;
+      width: 100%;
+      max-height: 560pt;
+      object-fit: contain;
+      border: 1px solid #222;
+      background: #ffffff;
+    }
+    .evidence img.terminal-capture {
+      width: auto;
+      max-width: 100%;
+      max-height: 420pt;
+      margin: 0 auto 6pt;
+    }
+    .evidence figcaption {
+      margin: 5pt 2pt 1pt;
+      color: var(--muted);
+      font-size: 8.7pt;
+      line-height: 1.28;
+    }
+    .placeholder {
+      min-height: 76pt;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 13pt;
+      border: 1px dashed #657287;
+      background: #f5f7fa;
+      color: var(--muted);
+      text-align: center;
+      font-size: 9.2pt;
+    }
+    .gap {
+      border-left: 4px solid var(--amber);
+      background: #fff8e8;
+      padding: 7pt 9pt;
+      margin: 8pt 0 11pt;
+    }
+    .pass { color: var(--green); font-weight: 700; }
+    .warn { color: var(--amber); font-weight: 700; }
+    .fail { color: var(--red); font-weight: 700; }
+    .muted { color: var(--muted); }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10pt;
+      align-items: start;
+    }
+    .two-col .evidence { margin-top: 0; }
+
+    .url-table td:first-child { width: 39%; font-weight: 700; background: var(--panel); }
+    .url-table td:last-child { width: 61%; }
+    .compact td, .compact th { padding: 4pt 5pt; font-size: 8.25pt; line-height: 1.3; }
+    .compact th { font-size: 8.2pt; }
+    .status-pass { color: var(--green); font-weight: 700; }
+    .status-warn { color: var(--amber); font-weight: 700; }
+    .status-pending { color: var(--muted); font-weight: 700; }
+
+    pre {
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      margin: 0;
+      padding: 8pt;
+      border: 1px solid #263040;
+      background: #11161d;
+      color: #e8eef7;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 8.1pt;
+      line-height: 1.35;
+    }
+    code { font-family: Consolas, "Courier New", monospace; font-size: 0.92em; }
+    .code-light { background: #f5f7fa; border: 1px solid #bec7d3; color: #202733; }
+
+    .gallery {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10pt;
+      margin: 8pt 0 14pt;
+    }
+    .gallery .evidence { margin: 0; }
+    .gallery .evidence-title { font-size: 9.2pt; min-height: 30pt; padding: 7pt 5pt; }
+    .gallery .evidence img { max-height: 300pt; }
+
+    .checklist { list-style: none; margin-left: 0; }
+    .checklist li { padding-left: 17pt; position: relative; }
+    .checklist li::before { position: absolute; left: 0; top: 0; content: "[ ]"; color: var(--amber); font-weight: 700; }
+    .checklist li.checked::before { content: "[x]"; color: var(--green); }
+
+    .page-break { page-break-before: always; }
+    .avoid-break { page-break-inside: avoid; }
+    .footer-note {
+      margin-top: 16pt;
+      border-top: 1px solid #7b8798;
+      padding-top: 6pt;
+      color: var(--muted);
+      font-size: 8.6pt;
+    }
+
+    @media screen and (max-width: 760px) {
+      body { padding: 12px; }
+      .cover-title { font-size: 20pt; }
+      .two-col, .gallery { grid-template-columns: 1fr; }
+      .compact { display: block; overflow-x: auto; }
+      .compact table { min-width: 680px; }
+    }
+
+    @media print {
+      body { padding: 0; }
+      .report { max-width: none; }
+      a { color: #0645ad; }
+      .evidence img { max-height: 560pt; }
+    }
+  </style>
+</head>
+<body>
+  <main class="report">
+    <h1 class="cover-title"><strong>LAB 2 :</strong> TokTickIT Requester-Facing IT Ticketing System</h1>
+
+    <table class="metadata">
+      <tr>
+        <td><strong>Student Name:</strong> Thira Rungruangkaset</td>
+        <td><strong>Student ID:</strong> 67070503419</td>
+      </tr>
+      <tr>
+        <td><strong>GitHub Username:</strong> HolyThiccDaddy</td>
+        <td><strong>Peer Reviewer:</strong> Ashira Sansoda (67070503445)</td>
+      </tr>
+    </table>
+
+    <h2 class="answer-heading">Answer Part 1: Git Use with Engineering Workflow (10 Points)</h2>
+    <h3 class="subheading">1.1 Repository, Board, Issue and PR URLs</h3>
+    <table class="url-table">
+      <tr><td>GitHub Repository URL:</td><td><a href="https://github.com/HolyThiccDaddy/toktickit">https://github.com/HolyThiccDaddy/toktickit</a></td></tr>
+      <tr><td>GitHub Project Board URL:</td><td><a href="https://github.com/users/HolyThiccDaddy/projects/1">https://github.com/users/HolyThiccDaddy/projects/1</a></td></tr>
+      <tr><td>Lab 2 Issue #5 (GitHub #12, contract):</td><td><a href="https://github.com/HolyThiccDaddy/toktickit/issues/12">https://github.com/HolyThiccDaddy/toktickit/issues/12</a></td></tr>
+      <tr><td>Lab 2 Issue #6 (GitHub #13, database and seed):</td><td><a href="https://github.com/HolyThiccDaddy/toktickit/issues/13">https://github.com/HolyThiccDaddy/toktickit/issues/13</a></td></tr>
+      <tr><td>Lab 2 Issue #7 (GitHub #14, requester context):</td><td><a href="https://github.com/HolyThiccDaddy/toktickit/issues/14">https://github.com/HolyThiccDaddy/toktickit/issues/14</a></td></tr>
+      <tr><td>Lab 2 Issue #8 (GitHub #15, Create Ticket):</td><td><a href="https://github.com/HolyThiccDaddy/toktickit/issues/15">https://github.com/HolyThiccDaddy/toktickit/issues/15</a></td></tr>
+      <tr><td>Lab 2 Issue #9 (GitHub #16, My Tickets):</td><td><a href="https://github.com/HolyThiccDaddy/toktickit/issues/16">https://github.com/HolyThiccDaddy/toktickit/issues/16</a></td></tr>
+      <tr><td>Lab 2 Issue #10 (GitHub #17, Ticket Detail):</td><td><a href="https://github.com/HolyThiccDaddy/toktickit/issues/17">https://github.com/HolyThiccDaddy/toktickit/issues/17</a></td></tr>
+      <tr><td>Lab 2 Issue #11 (GitHub #18, E2E and release):</td><td><a href="https://github.com/HolyThiccDaddy/toktickit/issues/18">https://github.com/HolyThiccDaddy/toktickit/issues/18</a></td></tr>
+      <tr><td>Contract PR #19 and feature PRs #20-#25:</td><td><a href="https://github.com/HolyThiccDaddy/toktickit/pulls?q=is%3Apr+author%3AHolyThiccDaddy">GitHub pull requests authored by HolyThiccDaddy</a></td></tr>
+      <tr><td>Release PR #27 (staging to main):</td><td><a href="https://github.com/HolyThiccDaddy/toktickit/pull/27">https://github.com/HolyThiccDaddy/toktickit/pull/27</a></td></tr>
+    </table>
+
+    <div class="evidence">
+      <div class="evidence-title">1.2 GitHub Project Kanban Board Evidence</div>
+      <div class="evidence-body">
+        <img src="../../artifacts/lab-02/screenshots/report/01_project_board_actual.png" alt="TokTickIT GitHub Project board showing Lab 2 issues in Done">
+        <figcaption>GitHub Project evidence supplied for this report. The board shows the Lab 2 issues in the Done column. Source: <a href="https://github.com/users/HolyThiccDaddy/projects/1">TokTickIT Project</a>.</figcaption>
+      </div>
+    </div>
+    <div class="gap"><strong>Issue traceability:</strong> GitHub Issues #12-#18 remain open because the merged PRs did not close them automatically. Each is linked to its completed implementation PR (#19-#25) and to release PR #27; the Project board records the work as Done. If the course requires a closed issue state, close those seven issue records manually in GitHub.</div>
+    <table class="compact">
+      <tr><th>GitHub issue</th><th>Completed implementation PR</th><th>Release link</th></tr>
+      <tr><td><a href="https://github.com/HolyThiccDaddy/toktickit/issues/12">#12 Contract</a></td><td><a href="https://github.com/HolyThiccDaddy/toktickit/pull/19">PR #19</a></td><td><a href="https://github.com/HolyThiccDaddy/toktickit/pull/27">PR #27</a></td></tr>
+      <tr><td><a href="https://github.com/HolyThiccDaddy/toktickit/issues/13">#13 Database and seed</a></td><td><a href="https://github.com/HolyThiccDaddy/toktickit/pull/20">PR #20</a></td><td><a href="https://github.com/HolyThiccDaddy/toktickit/pull/27">PR #27</a></td></tr>
+      <tr><td><a href="https://github.com/HolyThiccDaddy/toktickit/issues/14">#14 Requester context</a></td><td><a href="https://github.com/HolyThiccDaddy/toktickit/pull/21">PR #21</a></td><td><a href="https://github.com/HolyThiccDaddy/toktickit/pull/27">PR #27</a></td></tr>
+      <tr><td><a href="https://github.com/HolyThiccDaddy/toktickit/issues/15">#15 Create Ticket</a></td><td><a href="https://github.com/HolyThiccDaddy/toktickit/pull/22">PR #22</a></td><td><a href="https://github.com/HolyThiccDaddy/toktickit/pull/27">PR #27</a></td></tr>
+      <tr><td><a href="https://github.com/HolyThiccDaddy/toktickit/issues/16">#16 My Tickets</a></td><td><a href="https://github.com/HolyThiccDaddy/toktickit/pull/23">PR #23</a></td><td><a href="https://github.com/HolyThiccDaddy/toktickit/pull/27">PR #27</a></td></tr>
+      <tr><td><a href="https://github.com/HolyThiccDaddy/toktickit/issues/17">#17 Ticket Detail</a></td><td><a href="https://github.com/HolyThiccDaddy/toktickit/pull/24">PR #24</a></td><td><a href="https://github.com/HolyThiccDaddy/toktickit/pull/27">PR #27</a></td></tr>
+      <tr><td><a href="https://github.com/HolyThiccDaddy/toktickit/issues/18">#18 E2E and release</a></td><td><a href="https://github.com/HolyThiccDaddy/toktickit/pull/25">PR #25</a></td><td><a href="https://github.com/HolyThiccDaddy/toktickit/pull/27">PR #27</a></td></tr>
+    </table>
+
+    <div class="evidence">
+      <div class="evidence-title">1.3 Git Workflow Commit History Evidence</div>
+      <div class="evidence-body">
+        <img src="../../artifacts/lab-02/screenshots/report/02_commit_history_actual.png" alt="TokTickIT GitHub commit history showing the merged Lab 2 pull requests">
+        <figcaption>GitHub commit-history evidence supplied for this report. It shows the merged Lab 2 pull requests and the release merge from <code>lab2-staging</code> into <code>main</code>.</figcaption>
+      </div>
+    </div>
+
+    <div class="evidence">
+      <div class="evidence-title">1.4 IDE Directory Structure Screenshot</div>
+      <div class="evidence-body">
+        <img src="../../artifacts/lab-02/screenshots/report/03_ide_directory_actual.png" alt="TokTickIT repository directory structure in the IDE">
+        <figcaption>IDE evidence supplied for this report, showing the repository tree with client, server, E2E, documentation, and artifact directories.</figcaption>
+      </div>
+    </div>
+
+    <h3 class="subheading">1.5 Rendered README.md Preview</h3>
+    <div class="evidence">
+      <div class="evidence-title">README Evidence</div>
+      <div class="evidence-body">
+        <img src="../../artifacts/lab-02/screenshots/report/05_readme_rendered_full.png" alt="Rendered GitHub README showing Lab 2 installation, test database, and verification commands">
+        <figcaption>Rendered README capture from the Lab 2 default-branch content, including installation, test-database setup, and verification commands.</figcaption>
+        <pre class="code-light">cd client
+npm install
+npx playwright test</pre>
+        <figcaption><a href="https://github.com/HolyThiccDaddy/toktickit/blob/main/README.md">Open README.md on GitHub</a></figcaption>
+      </div>
+    </div>
+
+    <h3 class="subheading">1.6 .gitignore File Content</h3>
+    <div class="evidence">
+      <div class="evidence-title">.gitignore Evidence</div>
+      <div class="evidence-body">
+        <img src="../../artifacts/lab-02/screenshots/report/06_gitignore_terminal.png" alt="PowerShell terminal showing the repository gitignore file">
+        <figcaption>Terminal capture of the `.gitignore` file and its environment/build/test exclusions.</figcaption>
+        <figcaption><a href="https://github.com/HolyThiccDaddy/toktickit/blob/main/.gitignore">Open .gitignore on GitHub</a>. Local server/.env.test and database files remain ignored.</figcaption>
+      </div>
+    </div>
+
+    <h3 class="subheading">1.7 Rendered docs/lab-02/reviewer.md</h3>
+    <div class="evidence">
+      <div class="evidence-title">Reviewer Record Terminal Evidence</div>
+      <div class="evidence-body">
+        <img src="../../artifacts/lab-02/screenshots/report/07_reviewer_rendered.png" alt="Rendered source capture of the Lab 2 peer review record including PR 19">
+        <figcaption>Rendered source capture of `docs/lab-02/reviewer.md`, including the contract PR #19, merge commits, and review outcomes.</figcaption>
+      </div>
+    </div>
+    <table class="compact">
+      <tr><th>Authored PR</th><th>Issue / Branch</th><th>Merge commit</th><th>Partner verdict</th></tr>
+      <tr><td><a href="https://github.com/HolyThiccDaddy/toktickit/pull/19">#19</a></td><td>#5 / feature/5-spec-test-plan</td><td>296350c</td><td class="status-pass">Approved after contract revisions and merged into lab2-staging</td></tr>
+      <tr><td><a href="https://github.com/HolyThiccDaddy/toktickit/pull/20">#20</a></td><td>#6 / feature/6-db-seed</td><td>81d1c33</td><td class="status-pass">Approved and merged</td></tr>
+      <tr><td><a href="https://github.com/HolyThiccDaddy/toktickit/pull/21">#21</a></td><td>#7 / feature/7-requester-context</td><td>37f7e40</td><td class="status-pass">Approved and merged</td></tr>
+      <tr><td><a href="https://github.com/HolyThiccDaddy/toktickit/pull/22">#22</a></td><td>#8 / feature/8-create-ticket</td><td>26b2e9c</td><td class="status-pass">Approved and merged</td></tr>
+      <tr><td><a href="https://github.com/HolyThiccDaddy/toktickit/pull/23">#23</a></td><td>#9 / feature/9-my-tickets</td><td>f2356bf</td><td class="status-pass">Approved and merged</td></tr>
+      <tr><td><a href="https://github.com/HolyThiccDaddy/toktickit/pull/24">#24</a></td><td>#10 / feature/10-ticket-detail</td><td>08882a2</td><td class="status-pass">Approved and merged</td></tr>
+      <tr><td><a href="https://github.com/HolyThiccDaddy/toktickit/pull/25">#25</a></td><td>#11 / feature/11-e2e-release</td><td>92c4942</td><td class="status-pass">Approved and merged</td></tr>
+      <tr><td><a href="https://github.com/HolyThiccDaddy/toktickit/pull/26">#26</a></td><td>Lab 2 review documentation</td><td>dcd28d9</td><td class="status-pass">Merged</td></tr>
+      <tr><td><a href="https://github.com/HolyThiccDaddy/toktickit/pull/27">#27</a></td><td>Lab 2 release integration</td><td>a145b05</td><td class="status-pass">Merged into main</td></tr>
+    </table>
+    <p>The reciprocal review record contains authored PR #19, partner PRs #20-#32, requested changes, responses, and approval outcomes. <a href="https://github.com/HolyThiccDaddy/toktickit/blob/main/docs/lab-02/reviewer.md">Open the full rendered reviewer.md record</a>.</p>
+
+    <h2 class="answer-heading page-break">Answer Part 2: Specification-Driven Development (5 Points)</h2>
+    <p>The Lab 2 contract is recorded in <a href="https://github.com/HolyThiccDaddy/toktickit/blob/main/docs/lab-02/specification.md">specification.md</a>, <a href="https://github.com/HolyThiccDaddy/toktickit/blob/main/docs/lab-02/api-spec.md">api-spec.md</a>, and <a href="https://github.com/HolyThiccDaddy/toktickit/blob/main/docs/lab-02/ui-spec.md">ui-spec.md</a>. The specification defines the requester-facing scope, API behavior, data design, Zen Green UI rules, acceptance criteria, and Definition of Done.</p>
+    <table class="compact">
+      <tr><th>Contract area</th><th>Recorded evidence</th><th>Implementation mapping</th></tr>
+      <tr><td>Functional requirements</td><td>FR-01 to FR-12</td><td>Requester selection, references, ticket creation, search/filter/sort/page, owned detail, attachments, and ownership protection</td></tr>
+      <tr><td>Business rules</td><td>BR-01 to BR-11</td><td>Atomic ticket numbers, status NEW, test-only requester context, validation, attachment limits, soft removal, ownership, and rollback</td></tr>
+      <tr><td>Database design</td><td>RequesterUser, Category, RelatedSystem, Ticket, Attachment, TicketCounter</td><td>Versioned Prisma migrations plus idempotent seed data</td></tr>
+      <tr><td>API contract</td><td>Sections 3.1 to 3.9</td><td>Active references, create/list/detail, attachment upload/download/soft-remove</td></tr>
+      <tr><td>Acceptance criteria</td><td>AC-01 to AC-11</td><td>Traceable to the unit, API, UI, style, responsive, and E2E tests in Part 3</td></tr>
+      <tr><td>Definition of Done</td><td>Section 10</td><td>Implementation, tests, docs, review, visual inspection, and release workflow</td></tr>
+    </table>
+
+    <h3 class="subheading">2.1 Rendered specification excerpt</h3>
+    <div class="evidence">
+      <div class="evidence-title">Lab 2 Engineering Contract</div>
+      <div class="evidence-body">
+        <img src="../../artifacts/lab-02/screenshots/report/08_specification_terminal.png" alt="PowerShell terminal showing the Lab 2 specification">
+        <figcaption>Terminal capture of the Lab 2 sprint specification and included/excluded scope.</figcaption>
+        <figcaption><a href="https://github.com/HolyThiccDaddy/toktickit/blob/main/docs/lab-02/specification.md">Open the complete specification</a>.</figcaption>
+      </div>
+    </div>
+    <div class="evidence">
+      <div class="evidence-title">2.2 Contract-before-implementation Timeline</div>
+      <div class="evidence-body">
+        <img src="../../artifacts/lab-02/screenshots/report/04_contract_timeline.png" alt="GitHub main commit history showing the Lab 2 specification merge before implementation pull requests">
+        <figcaption>GitHub main-branch commit history showing specification PR #19 before database PR #20, requester-context PR #21, and E2E/release PR #25.</figcaption>
+      </div>
+    </div>
+
+    <h2 class="answer-heading">Answer Part 3: Test-Driven Development and Verification (10 Points)</h2>
+    <p>The test plan defines unit, API integration, UI component, style/responsive, and Playwright E2E layers. The source table records all required test IDs and the AC traceability matrix. <a href="https://github.com/HolyThiccDaddy/toktickit/blob/main/docs/lab-02/tests.md">Open docs/lab-02/tests.md</a>.</p>
+
+    <h3 class="subheading">3.1 Planned Test Specification Table</h3>
+    <div class="evidence">
+      <div class="evidence-title">Test Plan Terminal Evidence</div>
+      <div class="evidence-body">
+        <img src="../../artifacts/lab-02/screenshots/report/09_tests_terminal.png" alt="PowerShell terminal showing the Lab 2 test plan and results document">
+        <figcaption>Terminal capture of `docs/lab-02/tests.md`, showing the test strategy, issue traceability, and planned test table.</figcaption>
+      </div>
+    </div>
+    <table class="compact">
+      <tr><th>ID</th><th>Scope / AC</th><th>What it verifies</th><th>Automated test file</th><th>Status</th></tr>
+      <tr><td>UNIT-01</td><td>BR-01, FR-04</td><td>Ticket number format and zero-padding</td><td><code>server/tests/lab-02/ticket-number.unit.test.ts</code></td><td class="status-pass">Passed</td></tr>
+      <tr><td>UNIT-02</td><td>BR-06, AC-05</td><td>Extension, MIME, magic bytes, and size validation</td><td><code>server/tests/lab-02/attachment-validator.unit.test.ts</code></td><td class="status-pass">Passed</td></tr>
+      <tr><td>API-01..06</td><td>AC-01, AC-03..05, AC-11</td><td>Active references, create validation, valid/rejected attachments, rollback</td><td><code>server/tests/lab-02/requesters.api.test.ts</code><br><code>server/tests/lab-02/create-ticket.api.test.ts</code></td><td class="status-pass">Passed</td></tr>
+      <tr><td>API-07..09</td><td>AC-06, AC-07</td><td>Requester-owned list, filters, search, sort, and pagination</td><td><code>server/tests/lab-02/my-tickets.api.test.ts</code></td><td class="status-pass">Passed</td></tr>
+      <tr><td>API-10..16</td><td>AC-08..10</td><td>Owned detail, cross-owner denial, attachment lifecycle and download blocking</td><td><code>server/tests/lab-02/ticket-detail.api.test.ts</code></td><td class="status-pass">Passed</td></tr>
+      <tr><td>UI-01..03</td><td>AC-01, AC-02</td><td>Requester selector, loading/empty/error, validated session context</td><td><code>client/tests/lab-02/RequesterSelector.test.tsx</code></td><td class="status-pass">Passed</td></tr>
+      <tr><td>UI-04..07</td><td>AC-03..05, AC-11</td><td>Create form validation, busy state, file rejection, and data preservation</td><td><code>client/tests/lab-02/CreateTicket.test.tsx</code></td><td class="status-pass">Passed</td></tr>
+      <tr><td>UI-08..09</td><td>AC-06, AC-07</td><td>My Tickets list, filters, empty and no-results states</td><td><code>client/tests/lab-02/MyTickets.test.tsx</code></td><td class="status-pass">Passed</td></tr>
+      <tr><td>UI-10..11</td><td>AC-08, AC-09</td><td>Read-only detail and reason-required removal modal</td><td><code>client/tests/lab-02/TicketDetail.test.tsx</code></td><td class="status-pass">Passed</td></tr>
+      <tr><td>STYLE-01</td><td>UI Spec Section 7</td><td>Zen Green tokens, fields, buttons, and badges</td><td><code>client/tests/lab-02/ThemeStyles.test.tsx</code></td><td class="status-pass">Passed</td></tr>
+      <tr><td>RESP-01</td><td>UI Spec Section 8.7</td><td>Table/card switch, touch targets, and form stacking</td><td><code>client/tests/lab-02/ResponsiveLayout.test.tsx</code></td><td class="status-pass">Passed</td></tr>
+      <tr><td>E2E-01..02</td><td>AC-01..10</td><td>Requester flow, list isolation, and cross-owner protection</td><td><code>e2e/lab-02/requester-ticket-flow.spec.ts</code><br><code>e2e/lab-02/multi-requester-isolation.spec.ts</code></td><td class="status-pass">Passed</td></tr>
+      <tr><td>E2E-03</td><td>AC-01, AC-02, AC-04, AC-06, AC-08</td><td>Responsive requester workspace, Create Ticket, My Tickets, and Ticket Detail journey at all three viewport sizes; no horizontal overflow</td><td><code>e2e/lab-02/responsive.visual.spec.ts</code></td><td class="status-pass">Passed (desktop/tablet/mobile)</td></tr>
+    </table>
+
+    <h3 class="subheading">3.2 Acceptance-Criterion Traceability Matrix</h3>
+    <table class="compact">
+      <tr><th>Acceptance criterion</th><th>Covered tests</th><th>Verification scope</th></tr>
+      <tr><td>AC-01 Requester initialization</td><td>API-01, UI-01, UI-02, E2E-01, E2E-03</td><td>Active selector data with loading, empty, and error states</td></tr>
+      <tr><td>AC-02 Context persistence</td><td>UI-03, E2E-01, E2E-03</td><td>Header identity and requester-specific queries across routes</td></tr>
+      <tr><td>AC-03 Form validation</td><td>API-03, UI-04</td><td>Field-level errors and no invalid API submission</td></tr>
+      <tr><td>AC-04 Ticket creation</td><td>API-02, UI-05, UNIT-01, E2E-01, E2E-03</td><td>Saved ticket, status NEW, and unique official number</td></tr>
+      <tr><td>AC-05 Attachment validation</td><td>API-04, API-05, API-13, UI-06, UNIT-02</td><td>Permitted files, 5 MB limit, MIME/extension/count checks</td></tr>
+      <tr><td>AC-06 Multi-tenant ownership</td><td>API-07, UI-08, E2E-01, E2E-02, E2E-03</td><td>Requester-scoped list and isolation</td></tr>
+      <tr><td>AC-07 Search and filtering</td><td>API-08, API-09, UI-08, UI-09</td><td>Search, category/priority/status filters, sorting, pagination</td></tr>
+      <tr><td>AC-08 Read-only detail</td><td>API-10, UI-10, E2E-01, E2E-03</td><td>Owned detail fields are displayed without edit controls</td></tr>
+      <tr><td>AC-09 Soft removal</td><td>API-14, API-15, API-16, UI-11, E2E-01</td><td>Reason retained, metadata visible, removed download blocked</td></tr>
+      <tr><td>AC-10 Unauthorized detail</td><td>API-11, E2E-02</td><td>Cross-owner detail access returns 403</td></tr>
+      <tr><td>AC-11 Compensation and preservation</td><td>API-06, UI-07</td><td>Rollback, cleanup, no orphan, and preserved form values</td></tr>
+    </table>
+
+    <h3 class="subheading">3.3 Recorded Final Results</h3>
+    <table class="compact">
+      <tr><th>Check</th><th>Command recorded in tests.md</th><th>Result recorded</th></tr>
+      <tr><td>Issue #7 server/client regression and build</td><td><code>cd server && npm test</code><br><code>cd server && npm run build</code><br><code>cd client && npm test</code><br><code>cd client && npm run build</code></td><td class="status-pass">Passed: server 4 files/10 tests; client 2 files/8 tests</td></tr>
+      <tr><td>Issue #8 server/client regression and build</td><td>Same server/client commands</td><td class="status-pass">Passed twice: server 7 files/25 tests; client 4 files/19 tests</td></tr>
+      <tr><td>Issue #9 server/client regression and build</td><td>Same server/client commands</td><td class="status-pass">Passed twice: server 8 files/45 tests; client 5 files/27 tests</td></tr>
+      <tr><td>Issue #10 server/client regression and build</td><td>Same server/client commands</td><td class="status-pass">Passed twice: server 9 files/56 tests; client 6 files/34 tests</td></tr>
+      <tr><td>Issue #11 E2E and database safety</td><td><code>cd client && npx playwright test</code></td><td class="status-pass">Passed: 5 tests total - 2 functional desktop tests plus 3 responsive-project tests; deterministic fixtures loaded into <code>toktickit_test</code></td></tr>
+    </table>
+    <h3 class="subheading">3.4 Actual Test and Build Output</h3>
+    <div class="evidence">
+      <div class="evidence-title">Server tests - npm test -- --run</div>
+      <div class="evidence-body">
+        <img class="terminal-capture" src="../../artifacts/lab-02/screenshots/report/10_server_test_run_1.png" alt="PowerShell terminal showing the first server test run with 9 files and 56 tests passed">
+        <figcaption>First real terminal run: 9 test files and 56 tests passed.</figcaption>
+        <img class="terminal-capture" src="../../artifacts/lab-02/screenshots/report/11_server_test_run_2.png" alt="PowerShell terminal showing the repeated server test run with 9 files and 56 tests passed">
+        <figcaption>Repeated real terminal run: 9 test files and 56 tests passed again.</figcaption>
+      </div>
+    </div>
+    <div class="evidence">
+      <div class="evidence-title">Client tests - npm test -- --run</div>
+      <div class="evidence-body">
+        <img class="terminal-capture" src="../../artifacts/lab-02/screenshots/report/12_client_test.png" alt="PowerShell terminal showing client tests with 8 files and 41 tests passed">
+        <figcaption>Real terminal run: 8 test files and 41 tests passed.</figcaption>
+      </div>
+    </div>
+    <div class="evidence">
+      <div class="evidence-title">E2E tests - npm run test:e2e</div>
+      <div class="evidence-body">
+        <img class="terminal-capture" src="../../artifacts/lab-02/screenshots/report/14_e2e_test.png" alt="PowerShell terminal showing five Playwright E2E tests passed">
+        <figcaption>Real Playwright terminal run: all five requester and responsive E2E tests passed.</figcaption>
+      </div>
+    </div>
+    <div class="evidence">
+      <div class="evidence-title">Test database migration and repeated seed</div>
+      <div class="evidence-body">
+        <img class="terminal-capture" src="../../artifacts/lab-02/screenshots/report/15_test_db_migration.png" alt="PowerShell terminal showing migrations applied to the toktickit_test database">
+        <figcaption>Real terminal migration run against the dedicated `toktickit_test` database; no pending migrations remain.</figcaption>
+        <img class="terminal-capture" src="../../artifacts/lab-02/screenshots/report/16_repeated_seed_run_1.png" alt="PowerShell terminal showing the first idempotent seed run">
+        <figcaption>First real terminal seed run.</figcaption>
+        <img class="terminal-capture" src="../../artifacts/lab-02/screenshots/report/17_repeated_seed_run_2.png" alt="PowerShell terminal showing the repeated idempotent seed run">
+        <figcaption>Second real terminal seed run with the same deterministic counts.</figcaption>
+      </div>
+    </div>
+    <p>Full readable terminal logs: <a href="../../artifacts/lab-02/logs/server-test.txt">server tests</a>, <a href="../../artifacts/lab-02/logs/server-build.txt">server build</a>, <a href="../../artifacts/lab-02/logs/client-test.txt">client tests</a>, <a href="../../artifacts/lab-02/logs/client-build.txt">client build</a>, <a href="../../artifacts/lab-02/logs/migration-test-db.txt">migration</a>, <a href="../../artifacts/lab-02/logs/seed-test-db.txt">repeated seed</a>, and <a href="../../artifacts/lab-02/logs/e2e-test.txt">Playwright E2E</a>.</p>
+    <div class="gap"><strong>Evidence note:</strong> These are the command results captured during this report run. The Issue #6 seed suite is included in the 9-file/56-test server result, and the migration/seed logs prove the dedicated <code>toktickit_test</code> setup and repeatability.</div>
+
+    <h2 class="answer-heading page-break">Answer Part 4: AI Use and Reflection (5 Points)</h2>
+    <p>The project used Codex as a pair-programming and review-analysis assistant. The source log is <a href="https://github.com/HolyThiccDaddy/toktickit/blob/main/docs/lab-02/ai-use.md">docs/lab-02/ai-use.md</a>.</p>
+    <table class="compact">
+      <tr><th>Prompt name</th><th>Actual prompt or instruction</th><th>My reflection</th></tr>
+      <tr><td>Repository readiness</td><td>Verify the current branch and update it from the latest lab2-staging merge.</td><td>Confirmed the feature branch and release ancestry before changes.</td></tr>
+      <tr><td>E2E design</td><td>Implement deterministic Playwright coverage for requester flow and multi-requester isolation.</td><td>Turned the acceptance criteria into real browser journeys.</td></tr>
+      <tr><td>Test safety</td><td>Ensure destructive setup cannot run against a non-test database.</td><td>The strict <code>_test</code> guard and isolated upload root improved repeatability.</td></tr>
+      <tr><td>Responsive verification</td><td>Inspect desktop, tablet, and mobile layouts and capture reviewable evidence.</td><td>Combined behavior assertions with viewport screenshots.</td></tr>
+      <tr><td>Documentation</td><td>Update the Lab 2 test plan, peer-review record, and AI-use reflection.</td><td>Made review history and test outcomes traceable.</td></tr>
+      <tr><td>Review feedback</td><td>Check the implementation against the partner's review comments before release.</td><td>Reconciled the requested setup, cleanup, evidence, and documentation changes with the actual source and test results.</td></tr>
+      <tr><td>Submission report</td><td>Map the Lab 2 evidence into the Lab 1 report structure and replace missing evidence placeholders.</td><td>Preserved the Part 1-9 hierarchy and linked every visual artifact to its source path.</td></tr>
+      <tr><td>Final audit</td><td>Re-check stale Lab 1 wording, pending checkboxes, incomplete E2E traceability, and source/PDF mismatches.</td><td>Updated the source documents, regenerated the PDF, and verified the final rendered pages.</td></tr>
+    </table>
+    <p><strong>My Reflection:</strong> AI was useful for translating a long engineering contract into small, testable acceptance slices and for checking review feedback against the repository. Human verification remained necessary for branch ancestry, database safety, test output, screenshots, and the final course-delivery checklist.</p>
+    <p>The source log contains eight selected interactions (within the Lab 2 requirement of six to ten), including the final audit used to reconcile the PDF with the repository.</p>
+
+    <h2 class="answer-heading">Answer Part 5: Development Requester Selection Screen (0 Points)</h2>
+    <p>The Development Requester selector is a Lab 2 testing mechanism, not real authentication. It loads active requesters from the API, excludes the inactive seed, shows the Lab 3 authentication disclaimer, and persists the selected requester context for the requester-facing screens.</p>
+    <div class="evidence">
+      <div class="evidence-title">5.1 Development Requester Workspace</div>
+      <div class="evidence-body">
+        <img src="../../artifacts/lab-02/screenshots/release/desktop_requester_workspace.png" alt="Desktop Development Requester workspace">
+        <figcaption>Desktop evidence from <code>artifacts/lab-02/screenshots/release/desktop_requester_workspace.png</code>.</figcaption>
+      </div>
+    </div>
+    <div class="gallery">
+      <div class="evidence"><div class="evidence-title">5.2 Loading State</div><div class="evidence-body"><img src="../../artifacts/lab-02/screenshots/course-evidence/requester_loading.png" alt="Development Requester loading state"><figcaption>Live API request held open to show the loading state.</figcaption></div></div>
+      <div class="evidence"><div class="evidence-title">5.3 Failure and Retry</div><div class="evidence-body"><img src="../../artifacts/lab-02/screenshots/course-evidence/requester_failure.png" alt="Development Requester failure and retry state"><figcaption>Simulated requester API failure with Retry Connection action.</figcaption></div></div>
+      <div class="evidence"><div class="evidence-title">5.4 Selected Requester Workspace</div><div class="evidence-body"><img src="../../artifacts/lab-02/screenshots/course-evidence/requester_selected.png" alt="Selected requester workspace"><figcaption>Selected Jennifer Anderson context before opening Create Ticket.</figcaption></div></div>
+    </div>
+
+    <h2 class="answer-heading page-break">Answer Part 6: Working Ticket Screen - Create Mode (10 Points)</h2>
+    <p>Create Ticket uses the selected Development Requester, active Category and Related System reference data, mandatory field validation, attachment validation, backend-generated ticket number/date, and a safe failure state that preserves form values.</p>
+    <table class="compact">
+      <tr><th>Required evidence</th><th>Repository evidence</th><th>Status</th></tr>
+      <tr><td>Selected requester populates the form and saved ticket requesterId matches</td><td><code>client/tests/lab-02/CreateTicket.test.tsx</code>, <code>server/tests/lab-02/create-ticket.api.test.ts</code>, E2E requester flow</td><td class="status-pass">Test recorded as passed</td></tr>
+      <tr><td>Desktop initial screen and database reference data</td><td><code>release/desktop_create_ticket.png</code></td><td class="status-pass">Screenshot present</td></tr>
+      <tr><td>Validation failure with field-level messages</td><td><code>create-ticket/01_validation_failure.png</code></td><td class="status-pass">Screenshot captured</td></tr>
+      <tr><td>Submitting / busy state</td><td><code>create-ticket/02_submitting.png</code></td><td class="status-pass">Screenshot captured</td></tr>
+      <tr><td>Success with backend number and saved values</td><td><code>release/desktop_create_success.png</code>, tablet and mobile equivalents</td><td class="status-pass">Screenshots present</td></tr>
+      <tr><td>API failure with preserved values</td><td><code>create-ticket/03_api_failure_preserved.png</code></td><td class="status-pass">Screenshot captured</td></tr>
+      <tr><td>One valid and one invalid attachment</td><td><code>create-ticket/04_invalid_attachment.png</code></td><td class="status-pass">Screenshot captured</td></tr>
+    </table>
+    <div class="gallery">
+      <div class="evidence"><div class="evidence-title">6.1 Desktop - Initial Create Ticket</div><div class="evidence-body"><img src="../../artifacts/lab-02/screenshots/release/desktop_create_ticket.png" alt="Desktop Create Ticket initial screen"><figcaption>Present in release evidence.</figcaption></div></div>
+      <div class="evidence"><div class="evidence-title">6.2 Desktop - Success</div><div class="evidence-body"><img src="../../artifacts/lab-02/screenshots/release/desktop_create_success.png" alt="Desktop Create Ticket success screen"><figcaption>Present in release evidence; ticket number and backend-created date are displayed after API success.</figcaption></div></div>
+      <div class="evidence"><div class="evidence-title">6.3 Tablet - Initial Create Ticket</div><div class="evidence-body"><img src="../../artifacts/lab-02/screenshots/release/tablet_create_ticket.png" alt="Tablet Create Ticket initial screen"><figcaption>Present in release evidence.</figcaption></div></div>
+      <div class="evidence"><div class="evidence-title">6.4 Mobile - Success</div><div class="evidence-body"><img src="../../artifacts/lab-02/screenshots/release/mobile_create_success.png" alt="Mobile Create Ticket success screen"><figcaption>Present in release evidence.</figcaption></div></div>
+    </div>
+    <div class="gallery">
+      <div class="evidence"><div class="evidence-title">6.5 Validation Failure</div><div class="evidence-body"><img src="../../artifacts/lab-02/screenshots/create-ticket/01_validation_failure.png" alt="Create Ticket validation failure"><figcaption>Required fields show field-level messages and the API is not invoked.</figcaption></div></div>
+      <div class="evidence"><div class="evidence-title">6.6 Submitting State</div><div class="evidence-body"><img src="../../artifacts/lab-02/screenshots/create-ticket/02_submitting.png" alt="Create Ticket submitting state"><figcaption>Submit button is disabled and shows the spinner while the request is pending.</figcaption></div></div>
+      <div class="evidence"><div class="evidence-title">6.7 API Failure with Values Preserved</div><div class="evidence-body"><img src="../../artifacts/lab-02/screenshots/create-ticket/03_api_failure_preserved.png" alt="Create Ticket API failure with preserved values"><figcaption>Simulated 500 response leaves the typed summary and description visible.</figcaption></div></div>
+      <div class="evidence"><div class="evidence-title">6.8 Valid and Invalid Attachments</div><div class="evidence-body"><img src="../../artifacts/lab-02/screenshots/create-ticket/04_invalid_attachment.png" alt="Create Ticket invalid attachment validation"><figcaption>Two files are selected; the invalid text file is rejected with the explicit file error.</figcaption></div></div>
+    </div>
+
+    <h2 class="answer-heading page-break">Answer Part 7: Working My Tickets Screen (10 Points)</h2>
+    <p>My Tickets is requester-scoped and supports search, category/priority/status filters, multi-column sorting, pagination, empty/no-results states, and requester switching. The source test plan records API-07 to API-09, UI-08 to UI-09, and both E2E isolation checks.</p>
+    <table class="compact">
+      <tr><th>Required state</th><th>Evidence path</th><th>Result</th></tr>
+      <tr><td>Requester-owned desktop table and sort indicator</td><td><code>my-tickets/01_ticket_list_desktop.png</code></td><td class="status-pass">Passed</td></tr>
+      <tr><td>Combined search and filters</td><td><code>my-tickets/02_search_and_filter.png</code></td><td class="status-pass">Passed</td></tr>
+      <tr><td>Pagination</td><td><code>my-tickets/03_pagination.png</code></td><td class="status-pass">Passed</td></tr>
+      <tr><td>Empty account</td><td><code>my-tickets/04_empty_state.png</code></td><td class="status-pass">Passed</td></tr>
+      <tr><td>Mobile ticket cards</td><td><code>my-tickets/05_mobile_card_view.png</code></td><td class="status-pass">Passed</td></tr>
+      <tr><td>Requester switch / isolation</td><td><code>my-tickets/06_requester_isolation.png</code></td><td class="status-pass">Passed</td></tr>
+      <tr><td>Filtered no-results and Clear Filters</td><td><code>my-tickets/07_no_results.png</code></td><td class="status-pass">Passed</td></tr>
+      <tr><td>Tablet table at 768px</td><td><code>my-tickets/08_tablet_table_view.png</code></td><td class="status-pass">Passed</td></tr>
+    </table>
+    <div class="gallery">
+      <div class="evidence"><div class="evidence-title">7.1 Desktop List</div><div class="evidence-body"><img src="../../artifacts/lab-02/screenshots/my-tickets/01_ticket_list_desktop.png" alt="Desktop My Tickets list"></div></div>
+      <div class="evidence"><div class="evidence-title">7.2 Search and Filter</div><div class="evidence-body"><img src="../../artifacts/lab-02/screenshots/my-tickets/02_search_and_filter.png" alt="My Tickets search and filters"></div></div>
+      <div class="evidence"><div class="evidence-title">7.3 Pagination</div><div class="evidence-body"><img src="../../artifacts/lab-02/screenshots/my-tickets/03_pagination.png" alt="My Tickets pagination"></div></div>
+      <div class="evidence"><div class="evidence-title">7.4 Empty Account</div><div class="evidence-body"><img src="../../artifacts/lab-02/screenshots/my-tickets/04_empty_state.png" alt="My Tickets empty state"></div></div>
+      <div class="evidence"><div class="evidence-title">7.5 Mobile Cards</div><div class="evidence-body"><img src="../../artifacts/lab-02/screenshots/my-tickets/05_mobile_card_view.png" alt="Mobile My Tickets card view"></div></div>
+      <div class="evidence"><div class="evidence-title">7.6 Requester Isolation</div><div class="evidence-body"><img src="../../artifacts/lab-02/screenshots/my-tickets/06_requester_isolation.png" alt="My Tickets requester isolation"></div></div>
+      <div class="evidence"><div class="evidence-title">7.7 No Results</div><div class="evidence-body"><img src="../../artifacts/lab-02/screenshots/my-tickets/07_no_results.png" alt="My Tickets no results"></div></div>
+      <div class="evidence"><div class="evidence-title">7.8 Tablet Table</div><div class="evidence-body"><img src="../../artifacts/lab-02/screenshots/my-tickets/08_tablet_table_view.png" alt="Tablet My Tickets table"></div></div>
+    </div>
+
+    <h2 class="answer-heading page-break">Answer Part 8: Owned Ticket Screen - View Mode and Attachments (5 Points)</h2>
+    <p>Ticket Detail is read-only for owned tickets. Requesters can add a permitted attachment, download an active attachment, and soft-remove an attachment with a non-empty reason. Removed metadata remains visible while download is blocked. Cross-requester detail and attachment access is rejected by the API.</p>
+    <table class="compact">
+      <tr><th>Required state</th><th>Evidence path</th><th>Result</th></tr>
+      <tr><td>Read-only ticket detail</td><td><code>ticket-detail/01_ticket_detail_readonly.png</code></td><td class="status-pass">Passed</td></tr>
+      <tr><td>Active attachment list and download/remove controls</td><td><code>ticket-detail/02_attachment_list.png</code></td><td class="status-pass">Passed</td></tr>
+      <tr><td>Removal modal with required reason</td><td><code>ticket-detail/03_soft_removal_modal.png</code></td><td class="status-pass">Passed</td></tr>
+      <tr><td>Soft-removed metadata and blocked download</td><td><code>ticket-detail/04_soft_removed_state.png</code></td><td class="status-pass">Passed</td></tr>
+      <tr><td>Unauthorized ticket / attachment access</td><td><code>server/tests/lab-02/ticket-detail.api.test.ts</code>, <code>e2e/lab-02/multi-requester-isolation.spec.ts</code></td><td class="status-pass">Automated evidence recorded</td></tr>
+    </table>
+    <div class="gallery">
+      <div class="evidence"><div class="evidence-title">8.1 Read-only Detail</div><div class="evidence-body"><img src="../../artifacts/lab-02/screenshots/ticket-detail/01_ticket_detail_readonly.png" alt="Read-only ticket detail"></div></div>
+      <div class="evidence"><div class="evidence-title">8.2 Active Attachment List</div><div class="evidence-body"><img src="../../artifacts/lab-02/screenshots/ticket-detail/02_attachment_list.png" alt="Active attachment list"></div></div>
+      <div class="evidence"><div class="evidence-title">8.3 Soft-removal Modal</div><div class="evidence-body"><img src="../../artifacts/lab-02/screenshots/ticket-detail/03_soft_removal_modal.png" alt="Soft removal modal"></div></div>
+      <div class="evidence"><div class="evidence-title">8.4 Soft-removed State</div><div class="evidence-body"><img src="../../artifacts/lab-02/screenshots/ticket-detail/04_soft_removed_state.png" alt="Soft removed attachment state"></div></div>
+    </div>
+
+    <h2 class="answer-heading page-break">Answer Part 9: Zen Green UI and Responsive Evidence (5 Points)</h2>
+    <p>The rendered UI contract is <a href="https://github.com/HolyThiccDaddy/toktickit/blob/main/docs/lab-02/ui-spec.md">docs/lab-02/ui-spec.md</a>. The application uses reusable Zen Green tokens, explicit input and validation states, primary/secondary/destructive button hierarchy, read-only detail fields, and responsive table/card behavior.</p>
+    <table class="compact">
+      <tr><th>Token or rule</th><th>Contract value</th><th>Evidence</th></tr>
+      <tr><td>Header / primary</td><td><code>#006B3C</code></td><td>ThemeStyles.test.tsx and release screenshots</td></tr>
+      <tr><td>Hover / active</td><td><code>#0B7A46</code></td><td>ThemeStyles.test.tsx</td></tr>
+      <tr><td>Pale surface</td><td><code>#EAF6EF</code></td><td>ThemeStyles.test.tsx</td></tr>
+      <tr><td>Body surface</td><td><code>#F5F7F6</code></td><td>ThemeStyles.test.tsx</td></tr>
+      <tr><td>Breakpoints</td><td>Desktop >= 992px; tablet 768-991px; mobile < 768px</td><td>ResponsiveLayout.test.tsx and Playwright responsive spec</td></tr>
+      <tr><td>Accessibility / layout</td><td>Labels, focus, non-color states, touch targets >= 44px, no clipping or horizontal overflow</td><td>UI tests, responsive tests, and Issue #11 E2E result</td></tr>
+    </table>
+
+    <div class="gallery">
+      <div class="evidence"><div class="evidence-title">9.1 Desktop Requester Workspace</div><div class="evidence-body"><img src="../../artifacts/lab-02/screenshots/release/desktop_requester_workspace.png" alt="Desktop requester workspace"></div></div>
+      <div class="evidence"><div class="evidence-title">9.2 Tablet Requester Workspace</div><div class="evidence-body"><img src="../../artifacts/lab-02/screenshots/release/tablet_requester_workspace.png" alt="Tablet requester workspace"></div></div>
+      <div class="evidence"><div class="evidence-title">9.3 Mobile Requester Workspace</div><div class="evidence-body"><img src="../../artifacts/lab-02/screenshots/release/mobile_requester_workspace.png" alt="Mobile requester workspace"></div></div>
+      <div class="evidence"><div class="evidence-title">9.4 Desktop Ticket Detail</div><div class="evidence-body"><img src="../../artifacts/lab-02/screenshots/release/desktop_ticket_detail.png" alt="Desktop ticket detail"></div></div>
+      <div class="evidence"><div class="evidence-title">9.5 Tablet Ticket Detail</div><div class="evidence-body"><img src="../../artifacts/lab-02/screenshots/release/tablet_ticket_detail.png" alt="Tablet ticket detail"></div></div>
+      <div class="evidence"><div class="evidence-title">9.6 Mobile Ticket Detail</div><div class="evidence-body"><img src="../../artifacts/lab-02/screenshots/release/mobile_ticket_detail.png" alt="Mobile ticket detail"></div></div>
+    </div>
+
+    <h3 class="subheading">9.7 Responsive and Visual Checklist</h3>
+    <ul class="checklist">
+      <li class="checked">Zen Green palette tokens are asserted in <code>ThemeStyles.test.tsx</code>.</li>
+      <li class="checked">Typography, spacing, labels, and required-field markers are covered by the UI contract and style tests.</li>
+      <li class="checked">Primary, outline, warning, and destructive button hierarchy is defined in <code>ui-spec.md</code>.</li>
+      <li class="checked">Desktop layout is covered by release screenshots and the responsive E2E journey.</li>
+      <li class="checked">Tablet layout is covered at 768px with a responsive table.</li>
+      <li class="checked">Mobile layout is covered with stacked forms and ticket cards.</li>
+      <li class="checked">Recorded Issue #11 result reports no clipping, overlap, horizontal overflow, or console errors.</li>
+    </ul>
+    <p>The source checklist in <code>docs/lab-02/tests.md</code> is now checked to match the automated and visual results recorded above.</p>
+
+    <p class="footer-note">Report snapshot checked against the GitHub default branch on 2026-09-04. This single HTML file embeds its CSS and uses repository-relative image paths so it can be opened from the repository and printed to A4 PDF. Repository evidence captures, source-document links, test output, and merge metadata are included in the report.</p>
+  </main>
+</body>
+</html>
