@@ -7,6 +7,7 @@
 
 | PR | Issue | Branch | Merge commit | Reviewer verdict |
 |---|---|---|---|---|
+| [#19](https://github.com/HolyThiccDaddy/toktickit/pull/19) | #5 Lab 2 Specification, Test Plan, UI Spec, and API Spec | `feature/5-spec-test-plan` | `296350c` | Approved after the requested contract, test-plan, selector-state, seed, and database-justification updates. |
 | [#20](https://github.com/HolyThiccDaddy/toktickit/pull/20) | #6 Database Schema and Idempotent Seed | `feature/6-db-seed` | `81d1c33` | Approved and merged. |
 | [#21](https://github.com/HolyThiccDaddy/toktickit/pull/21) | #7 Requester Context | `feature/7-requester-context` | `37f7e40` | Approved and merged after validation, fixture, and Lab 1 regression updates. |
 | [#22](https://github.com/HolyThiccDaddy/toktickit/pull/22) | #8 Create Ticket | `feature/8-create-ticket` | `26b2e9c` | Approved and merged. |
@@ -20,6 +21,7 @@
 
 ### Conversations on PRs I Authored
 
+- **PR [#19](https://github.com/HolyThiccDaddy/toktickit/pull/19) (`feature/5-spec-test-plan`):** The reviewer requested contract updates for attachment-failure compensation, true idempotency wording, backend attachment-boundary tests, unit/style/responsive test coverage, Requester Selection loading/empty/failure states, seed quantities, and a database-design justification. I addressed the comments in commits `0c73a62` and `d9839c4`; osizk then approved with “Everything looks good. I'll merge it now.” and merged `296350c` into `lab2-staging`.
 - **PR [#20](https://github.com/HolyThiccDaddy/toktickit/pull/20) (`feature/6-db-seed`):** The reviewer requested the missing attachment relation, concurrency-safe ticket counter, idempotent seed tests, isolated `.env.test` execution, and Node.js 18 compatibility. Follow-up comments recorded the test-database and environment-file fixes, then the Node 18 compatibility fix; after the re-review requests, osizk approved and asked to merge before `81d1c33` landed.
 - **PR [#21](https://github.com/HolyThiccDaddy/toktickit/pull/21) (`feature/7-requester-context`):** The reviewer requested validated requester persistence, deterministic requester fixtures, and preservation of the Lab 1 Check System behavior. After the fixes, osizk confirmed the points were resolved and that the client tests and builds passed, and I agreed to merge `37f7e40`.
 - **PR [#22](https://github.com/HolyThiccDaddy/toktickit/pull/22) (`feature/8-create-ticket`):** The reviewer requested atomic attachment staging, an isolated upload root for tests, valid-header field-validation coverage, and backend-generated ticket dates. The follow-up review approved the updates and asked to merge; I agreed before `26b2e9c` landed.
@@ -81,7 +83,7 @@
 
 ## Release evidence
 
-PR [#25](https://github.com/HolyThiccDaddy/toktickit/pull/25) was merged into `lab2-staging` with merge commit `92c4942c`. The final release integration PR [#27](https://github.com/HolyThiccDaddy/toktickit/pull/27) merged `lab2-staging` into `main` with merge commit `a145b057`.
+Contract PR [#19](https://github.com/HolyThiccDaddy/toktickit/pull/19) was reviewed and merged into `lab2-staging` with merge commit `296350c` before the implementation PRs. PR [#25](https://github.com/HolyThiccDaddy/toktickit/pull/25) was then merged into `lab2-staging` with merge commit `92c4942c`. The final release integration PR [#27](https://github.com/HolyThiccDaddy/toktickit/pull/27) merged `lab2-staging` into `main` with merge commit `a145b057`.
 
 The follow-up README publication PRs [#28](https://github.com/HolyThiccDaddy/toktickit/pull/28) and [#29](https://github.com/HolyThiccDaddy/toktickit/pull/29) merged the Lab 2 README update into `lab2-staging` and then `main`.
 
