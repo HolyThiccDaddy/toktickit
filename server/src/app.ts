@@ -3,13 +3,19 @@ import cors from "cors";
 import multer from "multer";
 import { getPrisma } from "./prisma.js";
 import ticketsRouter, { createAttachmentsRouter } from "./tickets.js";
+import { authRouter, sessionMiddleware } from "./auth.js";
 
 // The Express app is exported separately from app.listen() (see index.ts) so
 // Supertest can import `app` without opening a port. Do not merge these files.
 export const app = express();
 
-app.use(cors());          // already wired: lets the Vite dev server call this API
+app.use(cors({ origin: true, credentials: true })); // allow the Vite UI to send the HttpOnly session cookie
 app.use(express.json());
+// A cookie is the only source of authenticated identity. The middleware is
+// intentionally session-aware even while legacy Lab 2 header routes remain
+// available until the requester-regression issue removes that compatibility.
+app.use(sessionMiddleware);
+app.use("/api/auth", authRouter());
 app.use("/api/tickets", ticketsRouter);
 app.use("/api/attachments", createAttachmentsRouter());
 

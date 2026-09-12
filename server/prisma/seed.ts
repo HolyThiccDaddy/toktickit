@@ -1,4 +1,31 @@
 import { getPrisma } from "../src/prisma.js";
+import { hashPassword, migrationPendingHash } from "../src/auth.js";
+
+const requesterCredentials = [
+  { id: 1, email: "jennifer.anderson@example.com", password: "RequesterOne!2026" },
+  { id: 2, email: "michael.brown@example.com", password: "RequesterTwo!2026" },
+  { id: 3, email: "sarah.johnson@example.com", password: "RequesterThree!2026" },
+  { id: 4, email: "david.lee@example.com", password: "RequesterFour!2026" },
+  { id: 5, email: "robert.taylor@example.com", password: "RequesterFive!2026" },
+] as const;
+const staffCredentials = [
+  { id: 101, email: "alex.staff@example.com", password: "StaffOne!2026", displayName: "Alex Staff", department: "Information Technology", active: true },
+  { id: 102, email: "casey.staff@example.com", password: "StaffTwo!2026", displayName: "Casey Staff", department: "Information Technology", active: true },
+  { id: 103, email: "jamie.staff@example.com", password: "StaffThree!2026", displayName: "Jamie Staff", department: "Information Technology", active: true },
+  { id: 104, email: "inactive.staff@example.com", password: "StaffFour!2026", displayName: "Inactive Staff", department: "Information Technology", active: false },
+] as const;
+const administratorCredentials = [
+  { id: 201, email: "admin@example.com", password: "AdminOne!2026", displayName: "TokTickIT Administrator", department: "Information Technology", active: true },
+] as const;
+
+export const SEED_CREDENTIALS = {
+  requesters: requesterCredentials,
+  staff: staffCredentials,
+  administrators: administratorCredentials,
+  all: [...requesterCredentials, ...staffCredentials, ...administratorCredentials],
+} as const;
+
+export const allSeedCredentials = SEED_CREDENTIALS.all;
 
 export async function seed(prisma = getPrisma()) {
   // 1. Seed Categories (4 required categories)
@@ -38,20 +65,84 @@ export async function seed(prisma = getPrisma()) {
 
   // 3. Seed Development Requesters (4 active, 1 inactive)
   const requesters = [
-    { name: "Jennifer Anderson", email: "jennifer.anderson@example.com", department: "Human Resources", isActive: true },
-    { name: "Michael Brown", email: "michael.brown@example.com", department: "Information Technology", isActive: true },
-    { name: "Sarah Johnson", email: "sarah.johnson@example.com", department: "Finance & Accounting", isActive: true },
-    { name: "David Lee", email: "david.lee@example.com", department: "Marketing & Communications", isActive: true },
-    { name: "Robert Taylor", email: "robert.taylor@example.com", department: "Operations", isActive: false },
+    { id: 1, name: "Jennifer Anderson", email: "jennifer.anderson@example.com", department: "Human Resources", isActive: true },
+    { id: 2, name: "Michael Brown", email: "michael.brown@example.com", department: "Information Technology", isActive: true },
+    { id: 3, name: "Sarah Johnson", email: "sarah.johnson@example.com", department: "Finance & Accounting", isActive: true },
+    { id: 4, name: "David Lee", email: "david.lee@example.com", department: "Marketing & Communications", isActive: true },
+    { id: 5, name: "Robert Taylor", email: "robert.taylor@example.com", department: "Operations", isActive: false },
   ];
 
   for (const req of requesters) {
     await prisma.requesterUser.upsert({
       where: { email: req.email },
       update: { name: req.name, department: req.department, isActive: req.isActive },
-      create: { name: req.name, email: req.email, department: req.department, isActive: req.isActive },
+      create: { id: req.id, name: req.name, email: req.email, department: req.department, isActive: req.isActive },
     });
   }
+
+  // 4b. Mirror Lab 2 requesters into the authenticated User model, then add
+  // deterministic local-only IT Staff and Administrator fixtures. Existing
+  // hashes are preserved so re-seeding never resets a changed password.
+  const requesterCredentials = new Map<string, (typeof SEED_CREDENTIALS.requesters)[number]>(SEED_CREDENTIALS.requesters.map((credential) => [credential.email, credential]));
+  const upsertUser = async (fixture: {
+    id: number;
+    email: string;
+    password: string;
+    displayName: string;
+    department: string;
+    role: "REQUESTER" | "IT_STAFF" | "ADMIN";
+    active: boolean;
+  }) => {
+    const existing = await prisma.user.findUnique({ where: { email: fixture.email }, select: { passwordHash: true, mustChangePassword: true } });
+    const passwordHash = !existing || existing.passwordHash === migrationPendingHash
+      ? await hashPassword(fixture.password)
+      : existing.passwordHash;
+    return prisma.user.upsert({
+      where: { email: fixture.email },
+      update: {
+        displayName: fixture.displayName,
+        department: fixture.department,
+        role: fixture.role,
+        active: fixture.active,
+        ...(existing?.passwordHash === migrationPendingHash ? { passwordHash } : {}),
+      },
+      create: {
+        id: fixture.id,
+        email: fixture.email,
+        displayName: fixture.displayName,
+        department: fixture.department,
+        role: fixture.role,
+        passwordHash,
+        mustChangePassword: true,
+        active: fixture.active,
+      },
+    });
+  };
+
+  for (const requester of requesters) {
+    const credential = requesterCredentials.get(requester.email);
+    if (!credential) continue;
+    await upsertUser({
+      id: requester.id,
+      email: requester.email,
+      password: credential.password,
+      displayName: requester.name,
+      department: requester.department,
+      role: "REQUESTER",
+      active: requester.isActive,
+    });
+  }
+  for (const staff of SEED_CREDENTIALS.staff) {
+    await upsertUser({ ...staff, role: "IT_STAFF" });
+  }
+  for (const admin of SEED_CREDENTIALS.administrators) {
+    await upsertUser({ ...admin, role: "ADMIN" });
+  }
+
+  // Explicit requester/staff IDs keep fixtures deterministic. Move the
+  // PostgreSQL sequence past the largest fixture for future admin-created
+  // users.
+  await prisma.$executeRawUnsafe(`SELECT setval(pg_get_serial_sequence('"User"', 'id'), GREATEST(COALESCE((SELECT MAX("id") FROM "User"), 1), 1), true)`);
 
   // 4. Initialize TicketCounter for current year if not exists
   const currentYear = new Date().getFullYear();

@@ -17,6 +17,7 @@ const allowedTypes: Record<string, string[]> = {
 class AttachmentLimitError extends Error {}
 
 function requesterIdFrom(req: Request) {
+  if (req.auth?.user.id) return req.auth.user.id;
   const value = Number(req.header("x-requester-id"));
   return Number.isInteger(value) && value > 0 ? value : null;
 }
@@ -95,7 +96,7 @@ export function createTicketsRouter(options: TicketsRouterOptions = {}) {
         select: {
           id: true, ticketNumber: true, summary: true, description: true,
           requestedPriority: true, currentStatus: true, createdAt: true,
-          requester: { select: { id: true, name: true, email: true } },
+          requester: { select: { id: true, displayName: true, email: true } },
           category: { select: { id: true, name: true } },
           relatedSystem: { select: { id: true, name: true } },
           attachments: {
@@ -106,7 +107,11 @@ export function createTicketsRouter(options: TicketsRouterOptions = {}) {
       });
       if (!ticket) return res.status(404).json({ error: "Ticket not found" });
       if (ticket.requester.id !== requesterId) return res.status(403).json({ error: "You do not have access to this ticket" });
-      return res.status(200).json({ ...ticket, attachments: ticket.attachments.map(attachmentMetadata) });
+      return res.status(200).json({
+        ...ticket,
+        requester: { id: ticket.requester.id, name: ticket.requester.displayName, email: ticket.requester.email },
+        attachments: ticket.attachments.map(attachmentMetadata),
+      });
     } catch {
       return res.status(500).json({ error: "Failed to fetch ticket" });
     }
@@ -292,7 +297,7 @@ export function createTicketsRouter(options: TicketsRouterOptions = {}) {
         attachmentData.push({ originalFilename: file.originalname, storageKey, mimeType: file.mimetype, fileSize: file.size, uploaderId: requesterId });
       }
       const createdTicket = await tx.ticket.create({
-        data: { ticketNumber, summary, description, requestedPriority: requestedPriority as "LOW" | "MEDIUM" | "HIGH" | "URGENT", requesterId, categoryId, relatedSystemId, attachments: { create: attachmentData } },
+        data: { ticketNumber, summary, description, requestedPriority: requestedPriority as "LOW" | "MEDIUM" | "HIGH" | "URGENT", itPriority: requestedPriority as "LOW" | "MEDIUM" | "HIGH" | "URGENT", requesterId, categoryId, relatedSystemId, attachments: { create: attachmentData } },
         include: { attachments: { select: { id: true, originalFilename: true, mimeType: true, fileSize: true, isDeleted: true, createdAt: true } } },
       });
       await rm(stagingRoot!, { recursive: true, force: true });
