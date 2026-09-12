@@ -53,7 +53,9 @@ export async function hashPassword(password: string) {
 
 export async function verifyPassword(password: string, encodedHash: string) {
   try {
-    const [algorithm, n, r, p, saltText, keyText] = encodedHash.split("$");
+    const parts = encodedHash.split("$");
+    if (parts.length !== 6) return false;
+    const [algorithm, n, r, p, saltText, keyText] = parts;
     if (algorithm !== "scrypt" || n !== String(scryptOptions.N) || r !== String(scryptOptions.r) || p !== String(scryptOptions.p) || !saltText || !keyText) return false;
     const salt = Buffer.from(saltText, "base64url");
     const expected = Buffer.from(keyText, "base64url");
@@ -76,7 +78,13 @@ function parseCookies(header: string | undefined) {
     if (separator <= 0) continue;
     const key = part.slice(0, separator).trim();
     const value = part.slice(separator + 1).trim();
-    if (key) cookies[key] = decodeURIComponent(value);
+    if (!key) continue;
+    try {
+      cookies[key] = decodeURIComponent(value);
+    } catch {
+      // A malformed cookie is an invalid session, not a server failure. The
+      // protected route will return the normal unauthenticated response.
+    }
   }
   return cookies;
 }
@@ -130,7 +138,6 @@ function apiError(res: Response, status: number, code: string, message: string, 
 
 function pathAllowedDuringPasswordChange(path: string) {
   return [
-    "/api/auth/login",
     "/api/auth/me",
     "/api/auth/csrf",
     "/api/auth/change-password",

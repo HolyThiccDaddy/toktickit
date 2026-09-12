@@ -9,7 +9,16 @@ import { authRouter, sessionMiddleware } from "./auth.js";
 // Supertest can import `app` without opening a port. Do not merge these files.
 export const app = express();
 
-app.use(cors({ origin: true, credentials: true })); // allow the Vite UI to send the HttpOnly session cookie
+const configuredClientOrigin = process.env.CLIENT_ORIGIN?.trim();
+const allowedClientOrigins = new Set([
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+  ...(configuredClientOrigin ? [configuredClientOrigin] : []),
+]);
+app.use(cors({
+  origin: (origin, callback) => callback(null, !origin || allowedClientOrigins.has(origin)),
+  credentials: true,
+})); // allow only the configured UI to send the HttpOnly session cookie
 app.use(express.json());
 // A cookie is the only source of authenticated identity. The middleware is
 // intentionally session-aware even while legacy Lab 2 header routes remain

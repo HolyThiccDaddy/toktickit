@@ -1,6 +1,6 @@
 # Lab 3 API Specification
 
-Status: Draft contract for peer review before implementation
+Status: Approved contract (PR #40 merged into `lab3-staging`); implementation is incremental by issue.
 
 ## Conventions
 
@@ -15,7 +15,7 @@ Status: Draft contract for peer review before implementation
 
 ## Response schemas and success status codes
 
-All JSON responses use the `{ data: ... }` envelope. The following named schemas are the shared contract for the backend, frontend, and tests:
+New Lab 3 JSON responses use the `{ data: ... }` envelope. The following named schemas are the shared contract for the backend, frontend, and tests. Legacy Lab 2 routes temporarily retain their existing response shapes during the incremental migration described below.
 
 - `UserSummary`: `{ id: number, email: string, displayName: string, role: "REQUESTER" | "IT_STAFF" | "ADMIN", active: boolean, mustChangePassword: boolean }`.
 - `SessionData`: `{ user: UserSummary, expiresAt: string }`; the server also sets or clears the HttpOnly session cookie as described above.
@@ -133,4 +133,4 @@ The queue accepts `q`, `status`, `itPriority`, `assigneeId`, `categoryId`, `sort
 
 ## Compatibility and migration
 
-Lab 2 routes keep their response shapes where practical, but requester identity is now session-derived rather than supplied through `X-Requester-Id`. Existing ticket, attachment, category, system, and counter identifiers remain stable through the migration.
+During the incremental Issue #36 foundation, the existing Lab 2 routes remain temporarily compatible: a request with no session may still use `X-Requester-Id` and those legacy routes keep their existing raw response shapes so the Lab 2 regression suite keeps running. As soon as any session cookie is present, the server ignores that header (including for stale or malformed cookies) and uses only the validated session identity. Issue #37 removes this compatibility path and the Development Requester selector; the authenticated requester APIs then adopt the named response envelopes above. Existing ticket, attachment, category, system, and counter identifiers remain stable through the migration.

@@ -1,6 +1,6 @@
 # Lab 3 - Peer Review Record
 
-Status: Draft; second-review changes addressed locally; peer re-review is pending.
+Status: Contract approved after peer review; implementation and release evidence are pending.
 
 **Author:** Thira Rungruangkaset - GitHub: @HolyThiccDaddy
 **Peer reviewer:** Ashira Sangkaset - GitHub: @osizk
@@ -9,7 +9,7 @@ Status: Draft; second-review changes addressed locally; peer re-review is pendin
 
 | PR | Scope | Reviewer verdict | Follow-up |
 |---|---|---|---|
-| [#40](https://github.com/HolyThiccDaddy/toktickit/pull/40) | Lab 3 specification, API contract, UI specification, and test plan | Request changes; second round addressed locally | Peer re-review and approval remain pending after the contract update |
+| [#40](https://github.com/HolyThiccDaddy/toktickit/pull/40) | Lab 3 specification, API contract, UI specification, and test plan | Approved by @osizk after the second review; merged into `lab3-staging` as `40ca398` | Contract approval recorded; implementation and release evidence remain open |
 
 ## Review protocol
 
@@ -36,6 +36,10 @@ The reviewer requested precise API response schemas and success codes. The API c
 The reviewer requested complete data-model decisions. The specification now includes a model table with types, nullability, relationships, indexes, deletion behavior, migration mapping, and preservation of Lab 2 identifiers and ownership.
 
 The reviewer requested the actual IT Priority enum. The contract now defines `LOW`, `MEDIUM`, `HIGH`, and `URGENT`, requires the migrated or newly created Ticket to copy Requested Priority into IT Priority, and maps validation to the API and test plan.
+
+## Contract approval - 2026-09-12
+
+The reviewer approved the corrected contract in [PR #40](https://github.com/HolyThiccDaddy/toktickit/pull/40#pullrequestreview-5186011435). GitHub merged it into `lab3-staging` as [commit `40ca398`](https://github.com/HolyThiccDaddy/toktickit/commit/40ca3983e3e706c72d757e2155562aada788a374), satisfying the Issue #36 dependency.
 
 ## Implementation and release history
 

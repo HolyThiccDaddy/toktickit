@@ -1,6 +1,6 @@
 # Lab 3 Test Plan and Results
 
-Status: Planned before implementation; no Lab 3 result is claimed yet.
+Status: In progress. The Issue #36 authentication and migration slice has executed results below; requester, staff, administrator, UI, and full E2E layers remain planned for their subsequent Lab 3 issues.
 
 ## 1. Testing strategy
 
@@ -61,4 +61,12 @@ T-06 must exercise a Requester-owned Ticket Detail, successful Public Comment su
 
 ## 6. Executed results
 
-No Lab 3 implementation or test command has been run yet. This section will be filled from real terminal output after the contract is reviewed and implementation begins.
+- Issue #36 authentication API: `server/tests/lab-03/auth.api.test.ts` — 9 tests passed, including generic inactive-account failures, first-login API-gate bypass checks, expired sessions, and CSRF expiry.
+- Issue #36 migration and deterministic-fixture regression: `server/tests/lab-03/migration-regression.api.test.ts` — 5 tests passed, including canonical ownership links, repeated-seed equality, and preservation of Lab 2 reference/counter/ticket/attachment rows.
+- Full server regression: `server npm test` — 11 test files, 70 tests passed on each of two serial runs.
+- Full client regression: `client npm test` — 8 test files, 41 tests passed on each of two runs.
+- Server and client production builds passed on repeated runs.
+- `npx prisma validate` passed.
+- `npx prisma migrate deploy` applied the two Lab 3 migrations to the isolated `toktickit_test` database.
+
+The release checklist remains unchecked until the later requester, staff, administrator, UI, responsive, and E2E issues are implemented and evidenced.
