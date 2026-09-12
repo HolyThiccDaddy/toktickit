@@ -9,7 +9,7 @@ Status: Draft; no review verdict has been recorded.
 
 | PR | Scope | Reviewer verdict | Follow-up |
 |---|---|---|---|
-| Pending | Lab 3 specification, API contract, UI specification, and test plan | Pending review | Add GitHub PR link and record each requested change before implementation |
+| [#40](https://github.com/HolyThiccDaddy/toktickit/pull/40) | Lab 3 specification, API contract, UI specification, and test plan | Pending review | Peer review requested from @osizk; record each comment, response, and approval before implementation |
 
 ## Review protocol
 
