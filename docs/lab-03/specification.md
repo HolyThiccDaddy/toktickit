@@ -1,6 +1,6 @@
 # Lab 3 Sprint Engineering Specification
 
-Status: Draft contract for peer review before implementation
+Status: Approved contract (PR #40 merged into `lab3-staging`); implementation is incremental by issue.
 
 ## 1. Sprint goal
 
@@ -94,7 +94,7 @@ Closed and Cancelled are terminal. Any transition not listed above, or any trans
 
 ## 7. Migration and implementation choices
 
-Extend the existing requester identity into a single User model (or an equivalent transactional rename/map) while preserving primary keys and all foreign-key relationships. Existing Development Requesters become REQUESTER users with active=true and mustChangePassword=true; their Ticket requester foreign keys remain unchanged. Assign deterministic local-only initial passwords and document the change-password path without committing secrets. Add role, passwordHash, mustChangePassword, active, and timestamps. Add AuthSession, ticket assignee, IT priority, requesterResolutionIndicatedAt, status values, PublicComment, and InternalNote. Apply and verify the migration before application code is released, remove the Development Requester selector and `X-Requester-Id` trust boundary once session authentication is live, and preserve all Lab 2 records.
+Extend the existing requester identity into a single canonical User model (or an equivalent transactional rename/map) while preserving primary keys and all foreign-key relationships. Existing Development Requesters become REQUESTER users with active=true and mustChangePassword=true; their Ticket requester foreign keys remain unchanged. Assign deterministic local-only initial passwords and document the change-password path without committing secrets. Add role, passwordHash, mustChangePassword, active, and timestamps. Add AuthSession, ticket assignee, IT priority, requesterResolutionIndicatedAt, status values, PublicComment, and InternalNote. Apply and verify the migration before application code is released and preserve all Lab 2 records. The Issue #36 foundation keeps the legacy RequesterUser mirror and header compatibility only for unauthenticated Lab 2 regression calls; a validated session always wins and stale cookies never fall back to that header. Issue #37 removes the Development Requester selector and the remaining `X-Requester-Id` trust boundary.
 
 ### 7.1 Data-model decisions
 
@@ -116,10 +116,10 @@ The migration keeps the existing integer identifiers so Lab 2 foreign keys and t
 | `Ticket.itPriority` | Enum `LOW \| MEDIUM \| HIGH \| URGENT` required | Initially copies `requestedPriority`; mutable only by IT_STAFF/ADMIN | Index `[currentStatus, itPriority, updatedAt]` |
 | `Ticket.currentStatus` | Enum `NEW \| OPEN \| IN_PROGRESS \| WAITING_FOR_REQUESTER \| RESOLVED \| CLOSED \| REOPENED \| CANCELLED`, default `NEW` | Validated by BR-08; CLOSED/CANCELLED are terminal | Included in queue index above |
 | `Ticket.requesterResolutionIndicatedAt` | `DateTime?` nullable | Records the Requester indication without changing formal status | Index optional; no cascade side effect |
-| `PublicComment` | `id Int` PK, `ticketId Int` required FK, `authorId Int` required FK, `body String` required, `createdAt DateTime` required | One Ticket has many comments; each comment has one User author; append-only | Index `[ticketId, createdAt]`; Ticket/User deletion restricted |
-| `InternalNote` | `id Int` PK, `ticketId Int` required FK, `authorId Int` required FK, `body String` required, `createdAt DateTime` required | One Ticket has many notes; each note has one IT_STAFF/ADMIN author; append-only | Index `[ticketId, createdAt]`; Ticket/User deletion restricted |
+| `PublicComment` | `id Int` PK, `ticketId Int` required FK, `authorId Int` required FK, `body String` required, `createdAt DateTime` required | One Ticket has many comments; each comment has one User author; append-only | Index `[ticketId, createdAt]`; deleting a Ticket cascades its comments, while User deletion is restricted |
+| `InternalNote` | `id Int` PK, `ticketId Int` required FK, `authorId Int` required FK, `body String` required, `createdAt DateTime` required | One Ticket has many notes; each note has one IT_STAFF/ADMIN author; append-only | Index `[ticketId, createdAt]`; deleting a Ticket cascades its notes, while User deletion is restricted |
 
-Migration sets `User.role=REQUESTER`, maps the existing requester name/email/active fields, hashes deterministic local-only initial passwords, sets `mustChangePassword=true`, copies `requestedPriority` into the new `itPriority`, preserves all requester/category/system/attachment/counter keys, and removes the Development Requester selector after session authentication is live.
+Migration sets `User.role=REQUESTER`, maps every existing requester name/email/active row, and writes a non-login `__MIGRATION_PENDING__` marker. The immediately following idempotent seed walks the actual `RequesterUser` table, replaces every pending marker with a deterministic local-only scrypt hash (including requesters added during Lab 2), preserves hashes already changed by a user, sets `mustChangePassword=true` only for newly provisioned credentials, copies `requestedPriority` into the new `itPriority`, and preserves all requester/category/system/attachment/counter keys. Staff and Administrator fixture IDs are allocated by PostgreSQL after the migrated rows rather than hard-coded. The Issue #36 foundation records the canonical session boundary while Issue #37 removes the Development Requester selector after the authenticated requester regression is in place.
 
 ## 8. Acceptance criteria
 

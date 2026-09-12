@@ -20,7 +20,8 @@ const prisma = getPrisma();
 try {
   await prisma.$executeRawUnsafe(`
     TRUNCATE TABLE
-      "Attachment", "Ticket", "TicketCounter", "RequesterUser", "RelatedSystem", "Category"
+      "AuthSession", "InternalNote", "PublicComment", "Attachment", "Ticket",
+      "TicketCounter", "User", "RequesterUser", "RelatedSystem", "Category"
     RESTART IDENTITY CASCADE
   `);
   await seed(prisma);

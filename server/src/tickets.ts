@@ -1,9 +1,10 @@
 import { randomUUID } from "node:crypto";
 import { mkdir, mkdtemp, readFile, rename, rm, writeFile } from "node:fs/promises";
 import { extname, resolve } from "node:path";
-import { Router, type Request } from "express";
+import { Router, type Request, type RequestHandler } from "express";
 import multer from "multer";
 import type { Prisma } from "@prisma/client";
+import { apiError, requireCsrf, sessionCookieName } from "./auth.js";
 import { getPrisma } from "./prisma.js";
 
 const maxFileSize = 5_242_880;
@@ -17,9 +18,36 @@ const allowedTypes: Record<string, string[]> = {
 class AttachmentLimitError extends Error {}
 
 function requesterIdFrom(req: Request) {
+  if (req.auth?.user.id) return req.auth.user.id;
+  // Do not let a stale/revoked/malformed session cookie fall back to the
+  // legacy header identity. That would let a deactivated account bypass the
+  // authenticated boundary while the incremental Lab 2 compatibility path is
+  // still enabled.
+  const hasSessionCookie = req.header("cookie")?.split(";").some((part) => {
+    const separator = part.indexOf("=");
+    return separator > 0 && part.slice(0, separator).trim() === sessionCookieName;
+  });
+  if (hasSessionCookie) return null;
   const value = Number(req.header("x-requester-id"));
   return Number.isInteger(value) && value > 0 ? value : null;
 }
+
+async function findActiveRequester(req: Request, requesterId: number) {
+  if (req.auth) {
+    if (req.auth.user.role !== "REQUESTER") return null;
+    return getPrisma().user.findFirst({ where: { id: requesterId, role: "REQUESTER", active: true }, select: { id: true } });
+  }
+  return getPrisma().requesterUser.findFirst({ where: { id: requesterId, isActive: true }, select: { id: true } });
+}
+
+const requireRequesterMutation: RequestHandler = (req, res, next) => {
+  // Header-based Lab 2 calls remain temporarily compatible until the
+  // requester-regression issue removes that boundary. Once a session exists,
+  // enforce the Lab 3 role and CSRF rules for every state-changing operation.
+  if (!req.auth) return next();
+  if (req.auth.user.role !== "REQUESTER") return apiError(res, 403, "FORBIDDEN", "Only Requesters may perform this operation");
+  return requireCsrf(req, res, next);
+};
 
 function attachmentMetadata(attachment: {
   id: number; originalFilename: string; fileSize: number; mimeType: string;
@@ -88,14 +116,14 @@ export function createTicketsRouter(options: TicketsRouterOptions = {}) {
 
     try {
       const prisma = getPrisma();
-      const requester = await prisma.requesterUser.findFirst({ where: { id: requesterId, isActive: true }, select: { id: true } });
+      const requester = await findActiveRequester(req, requesterId);
       if (!requester) return res.status(403).json({ error: "Requester is invalid or inactive" });
       const ticket = await prisma.ticket.findUnique({
         where: { id: ticketId },
         select: {
           id: true, ticketNumber: true, summary: true, description: true,
           requestedPriority: true, currentStatus: true, createdAt: true,
-          requester: { select: { id: true, name: true, email: true } },
+          requester: { select: { id: true, displayName: true, email: true } },
           category: { select: { id: true, name: true } },
           relatedSystem: { select: { id: true, name: true } },
           attachments: {
@@ -106,13 +134,17 @@ export function createTicketsRouter(options: TicketsRouterOptions = {}) {
       });
       if (!ticket) return res.status(404).json({ error: "Ticket not found" });
       if (ticket.requester.id !== requesterId) return res.status(403).json({ error: "You do not have access to this ticket" });
-      return res.status(200).json({ ...ticket, attachments: ticket.attachments.map(attachmentMetadata) });
+      return res.status(200).json({
+        ...ticket,
+        requester: { id: ticket.requester.id, name: ticket.requester.displayName, email: ticket.requester.email },
+        attachments: ticket.attachments.map(attachmentMetadata),
+      });
     } catch {
       return res.status(500).json({ error: "Failed to fetch ticket" });
     }
   });
 
-  router.post("/:id/attachments", upload.single("file"), async (req, res) => {
+  router.post("/:id/attachments", requireRequesterMutation, upload.single("file"), async (req, res) => {
     const requesterId = requesterIdFrom(req);
     if (requesterId === null) return res.status(401).json({ error: "Requester identity is required" });
     const ticketId = Number(req.params.id);
@@ -123,7 +155,7 @@ export function createTicketsRouter(options: TicketsRouterOptions = {}) {
     let stagingRoot: string | undefined;
     try {
       const prisma = getPrisma();
-      const requester = await prisma.requesterUser.findFirst({ where: { id: requesterId, isActive: true }, select: { id: true } });
+      const requester = await findActiveRequester(req, requesterId);
       if (!requester) return res.status(403).json({ error: "Requester is invalid or inactive" });
       const ticket = await prisma.ticket.findUnique({ where: { id: ticketId }, select: { id: true, requesterId: true } });
       if (!ticket) return res.status(404).json({ error: "Ticket not found" });
@@ -163,8 +195,8 @@ export function createTicketsRouter(options: TicketsRouterOptions = {}) {
   });
 
   router.get("/", async (req, res) => {
-    const requesterId = Number(req.header("x-requester-id"));
-    if (!Number.isInteger(requesterId) || requesterId < 1) {
+    const requesterId = requesterIdFrom(req);
+    if (requesterId === null || !Number.isInteger(requesterId) || requesterId < 1) {
       return res.status(401).json({ error: "Requester identity is required" });
     }
 
@@ -192,9 +224,7 @@ export function createTicketsRouter(options: TicketsRouterOptions = {}) {
 
     try {
       const prisma = getPrisma();
-      const requester = await prisma.requesterUser.findFirst({
-        where: { id: requesterId, isActive: true }, select: { id: true },
-      });
+      const requester = await findActiveRequester(req, requesterId);
       if (!requester) return res.status(403).json({ error: "Requester is invalid or inactive" });
 
       const where: Prisma.TicketWhereInput = {
@@ -232,9 +262,9 @@ export function createTicketsRouter(options: TicketsRouterOptions = {}) {
     }
   });
 
-  router.post("/", upload.array("files", 5), async (req, res) => {
-  const requesterId = Number(req.header("x-requester-id"));
-  if (!Number.isInteger(requesterId) || requesterId < 1) return res.status(401).json({ error: "Requester identity is required" });
+  router.post("/", requireRequesterMutation, upload.array("files", 5), async (req, res) => {
+  const requesterId = requesterIdFrom(req);
+  if (requesterId === null || !Number.isInteger(requesterId) || requesterId < 1) return res.status(401).json({ error: "Requester identity is required" });
 
   const summary = typeof req.body.summary === "string" ? req.body.summary.trim() : "";
   const description = typeof req.body.description === "string" ? req.body.description.trim() : "";
@@ -255,7 +285,7 @@ export function createTicketsRouter(options: TicketsRouterOptions = {}) {
   let stagingRoot: string | undefined;
   try {
     const prisma = getPrisma();
-    const requester = await prisma.requesterUser.findFirst({ where: { id: requesterId, isActive: true }, select: { id: true } });
+    const requester = await findActiveRequester(req, requesterId);
     if (!requester) return res.status(403).json({ error: "Requester is invalid or inactive" });
     const [category, relatedSystem] = await Promise.all([
       prisma.category.findFirst({ where: { id: categoryId, isActive: true }, select: { id: true } }),
@@ -292,7 +322,7 @@ export function createTicketsRouter(options: TicketsRouterOptions = {}) {
         attachmentData.push({ originalFilename: file.originalname, storageKey, mimeType: file.mimetype, fileSize: file.size, uploaderId: requesterId });
       }
       const createdTicket = await tx.ticket.create({
-        data: { ticketNumber, summary, description, requestedPriority: requestedPriority as "LOW" | "MEDIUM" | "HIGH" | "URGENT", requesterId, categoryId, relatedSystemId, attachments: { create: attachmentData } },
+        data: { ticketNumber, summary, description, requestedPriority: requestedPriority as "LOW" | "MEDIUM" | "HIGH" | "URGENT", itPriority: requestedPriority as "LOW" | "MEDIUM" | "HIGH" | "URGENT", requesterId, categoryId, relatedSystemId, attachments: { create: attachmentData } },
         include: { attachments: { select: { id: true, originalFilename: true, mimeType: true, fileSize: true, isDeleted: true, createdAt: true } } },
       });
       await rm(stagingRoot!, { recursive: true, force: true });
@@ -323,7 +353,7 @@ export function createAttachmentsRouter(options: Pick<TicketsRouterOptions, "get
     if (!Number.isInteger(attachmentId) || attachmentId < 1) return res.status(404).json({ error: "Attachment not found" });
     try {
       const prisma = getPrisma();
-      const requester = await prisma.requesterUser.findFirst({ where: { id: requesterId, isActive: true }, select: { id: true } });
+      const requester = await findActiveRequester(req, requesterId);
       if (!requester) return res.status(403).json({ error: "Requester is invalid or inactive" });
       const attachment = await prisma.attachment.findUnique({
         where: { id: attachmentId },
@@ -346,14 +376,14 @@ export function createAttachmentsRouter(options: Pick<TicketsRouterOptions, "get
     }
   });
 
-  router.delete("/:id", async (req, res) => {
+  router.delete("/:id", requireRequesterMutation, async (req, res) => {
     const requesterId = requesterIdFrom(req);
     if (requesterId === null) return res.status(401).json({ error: "Requester identity is required" });
     const attachmentId = Number(req.params.id);
     if (!Number.isInteger(attachmentId) || attachmentId < 1) return res.status(404).json({ error: "Attachment not found" });
     try {
       const prisma = getPrisma();
-      const requester = await prisma.requesterUser.findFirst({ where: { id: requesterId, isActive: true }, select: { id: true } });
+      const requester = await findActiveRequester(req, requesterId);
       if (!requester) return res.status(403).json({ error: "Requester is invalid or inactive" });
       const attachment = await prisma.attachment.findUnique({ where: { id: attachmentId }, select: { id: true, isDeleted: true, ticket: { select: { requesterId: true } } } });
       if (!attachment) return res.status(404).json({ error: "Attachment not found" });
