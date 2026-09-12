@@ -1,7 +1,8 @@
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { randomUUID } from "node:crypto";
 import { getPrisma } from "../../src/prisma.js";
-import { seed, SEED_CREDENTIALS } from "../../prisma/seed.js";
+import { hashPassword, migrationPendingHash, verifyPassword } from "../../src/auth.js";
+import { initialPasswordForRequester, seed, SEED_CREDENTIALS } from "../../prisma/seed.js";
 
 const prisma = getPrisma();
 
@@ -49,6 +50,98 @@ describe("Lab 3 migration and deterministic fixtures", () => {
     expect(await prisma.user.count()).toBe(new Set(SEED_CREDENTIALS.all.map((credential) => credential.email)).size);
     const user = await prisma.user.findFirstOrThrow();
     expect(user.passwordHash).toMatch(/^scrypt\$/);
+  });
+
+  it("allocates staff and administrator IDs without colliding with a migrated requester", async () => {
+    const legacyRequester = {
+      id: 101,
+      name: "Legacy High-ID Requester",
+      email: "legacy.high-id@example.com",
+      department: "Operations",
+      isActive: true,
+    };
+
+    await prisma.user.deleteMany({ where: { role: { not: "REQUESTER" } } });
+    await prisma.requesterUser.deleteMany({ where: { id: legacyRequester.id } });
+    await prisma.requesterUser.create({ data: legacyRequester });
+    // Mirror the row that the migration creates before seed initializes its
+    // credentials. Setting the sequence makes the collision scenario exact.
+    await prisma.user.create({
+      data: {
+        id: legacyRequester.id,
+        email: legacyRequester.email,
+        displayName: legacyRequester.name,
+        department: legacyRequester.department,
+        role: "REQUESTER",
+        passwordHash: migrationPendingHash,
+        mustChangePassword: true,
+        active: legacyRequester.isActive,
+      },
+    });
+    await prisma.$executeRawUnsafe(`SELECT setval(pg_get_serial_sequence('"User"', 'id'), ${legacyRequester.id}, true)`);
+
+    try {
+      await seed(prisma);
+      const migrated = await prisma.user.findUniqueOrThrow({ where: { id: legacyRequester.id } });
+      const staff = await prisma.user.findMany({ where: { role: "IT_STAFF" }, select: { id: true } });
+      const administrators = await prisma.user.findMany({ where: { role: "ADMIN" }, select: { id: true } });
+
+      expect(migrated.email).toBe(legacyRequester.email);
+      expect(migrated.passwordHash).toMatch(/^scrypt\$/);
+      expect(staff.map((user) => user.id)).not.toContain(legacyRequester.id);
+      expect(administrators.map((user) => user.id)).not.toContain(legacyRequester.id);
+      expect(staff).toHaveLength(4);
+      expect(administrators).toHaveLength(1);
+    } finally {
+      await prisma.user.deleteMany({ where: { id: legacyRequester.id } });
+      await prisma.requesterUser.deleteMany({ where: { id: legacyRequester.id } });
+      await seed(prisma);
+    }
+  });
+
+  it("initializes and preserves credentials for a migrated requester outside the fixtures", async () => {
+    const legacyRequester = {
+      id: 777,
+      name: "Lab 2 Added Requester",
+      email: "lab2-added.requester@example.com",
+      department: "Research",
+      isActive: true,
+    };
+
+    await prisma.user.deleteMany({ where: { role: { not: "REQUESTER" } } });
+    await prisma.requesterUser.deleteMany({ where: { id: legacyRequester.id } });
+    await prisma.requesterUser.create({ data: legacyRequester });
+    await prisma.user.create({
+      data: {
+        id: legacyRequester.id,
+        email: legacyRequester.email,
+        displayName: legacyRequester.name,
+        department: legacyRequester.department,
+        role: "REQUESTER",
+        passwordHash: migrationPendingHash,
+        mustChangePassword: true,
+        active: legacyRequester.isActive,
+      },
+    });
+
+    try {
+      await seed(prisma);
+      const initialized = await prisma.user.findUniqueOrThrow({ where: { id: legacyRequester.id } });
+      expect(initialized.passwordHash).toMatch(/^scrypt\$/);
+      expect(initialized.mustChangePassword).toBe(true);
+      expect(await verifyPassword(initialPasswordForRequester(legacyRequester), initialized.passwordHash)).toBe(true);
+
+      const changedHash = await hashPassword("LegacyRequesterChanged!2026");
+      await prisma.user.update({ where: { id: legacyRequester.id }, data: { passwordHash: changedHash, mustChangePassword: false } });
+      await seed(prisma);
+      const preserved = await prisma.user.findUniqueOrThrow({ where: { id: legacyRequester.id } });
+      expect(preserved.passwordHash).toBe(changedHash);
+      expect(preserved.mustChangePassword).toBe(false);
+    } finally {
+      await prisma.user.deleteMany({ where: { id: legacyRequester.id } });
+      await prisma.requesterUser.deleteMany({ where: { id: legacyRequester.id } });
+      await seed(prisma);
+    }
   });
 
   it("preserves Requested Priority as the initial IT Priority for newly created tickets", async () => {

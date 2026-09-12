@@ -9,13 +9,13 @@ const requesterCredentials = [
   { id: 5, email: "robert.taylor@example.com", password: "RequesterFive!2026" },
 ] as const;
 const staffCredentials = [
-  { id: 101, email: "alex.staff@example.com", password: "StaffOne!2026", displayName: "Alex Staff", department: "Information Technology", active: true },
-  { id: 102, email: "casey.staff@example.com", password: "StaffTwo!2026", displayName: "Casey Staff", department: "Information Technology", active: true },
-  { id: 103, email: "jamie.staff@example.com", password: "StaffThree!2026", displayName: "Jamie Staff", department: "Information Technology", active: true },
-  { id: 104, email: "inactive.staff@example.com", password: "StaffFour!2026", displayName: "Inactive Staff", department: "Information Technology", active: false },
+  { email: "alex.staff@example.com", password: "StaffOne!2026", displayName: "Alex Staff", department: "Information Technology", active: true },
+  { email: "casey.staff@example.com", password: "StaffTwo!2026", displayName: "Casey Staff", department: "Information Technology", active: true },
+  { email: "jamie.staff@example.com", password: "StaffThree!2026", displayName: "Jamie Staff", department: "Information Technology", active: true },
+  { email: "inactive.staff@example.com", password: "StaffFour!2026", displayName: "Inactive Staff", department: "Information Technology", active: false },
 ] as const;
 const administratorCredentials = [
-  { id: 201, email: "admin@example.com", password: "AdminOne!2026", displayName: "TokTickIT Administrator", department: "Information Technology", active: true },
+  { email: "admin@example.com", password: "AdminOne!2026", displayName: "TokTickIT Administrator", department: "Information Technology", active: true },
 ] as const;
 
 export const SEED_CREDENTIALS = {
@@ -26,6 +26,20 @@ export const SEED_CREDENTIALS = {
 } as const;
 
 export const allSeedCredentials = SEED_CREDENTIALS.all;
+
+const requesterCredentialsByEmail = new Map<string, (typeof requesterCredentials)[number]>(
+  requesterCredentials.map((credential) => [credential.email, credential]),
+);
+
+/**
+ * Return a deterministic local-only initial password for every migrated
+ * requester. Standard fixtures keep their documented credentials; a requester
+ * that was added during Lab 2 derives a non-secret fallback from its preserved
+ * numeric ID. Re-seeding never replaces a hash that is no longer pending.
+ */
+export function initialPasswordForRequester(requester: { id: number; email: string }) {
+  return requesterCredentialsByEmail.get(requester.email)?.password ?? `MigratedRequester-${requester.id}!2026`;
+}
 
 export async function seed(prisma = getPrisma()) {
   // 1. Seed Categories (4 required categories)
@@ -83,9 +97,8 @@ export async function seed(prisma = getPrisma()) {
   // 4b. Mirror Lab 2 requesters into the authenticated User model, then add
   // deterministic local-only IT Staff and Administrator fixtures. Existing
   // hashes are preserved so re-seeding never resets a changed password.
-  const requesterCredentials = new Map<string, (typeof SEED_CREDENTIALS.requesters)[number]>(SEED_CREDENTIALS.requesters.map((credential) => [credential.email, credential]));
   const upsertUser = async (fixture: {
-    id: number;
+    id?: number;
     email: string;
     password: string;
     displayName: string;
@@ -104,10 +117,10 @@ export async function seed(prisma = getPrisma()) {
         department: fixture.department,
         role: fixture.role,
         active: fixture.active,
-        ...(existing?.passwordHash === migrationPendingHash ? { passwordHash } : {}),
+        ...(existing?.passwordHash === migrationPendingHash ? { passwordHash, mustChangePassword: true } : {}),
       },
       create: {
-        id: fixture.id,
+        ...(fixture.id === undefined ? {} : { id: fixture.id }),
         email: fixture.email,
         displayName: fixture.displayName,
         department: fixture.department,
@@ -119,19 +132,27 @@ export async function seed(prisma = getPrisma()) {
     });
   };
 
-  for (const requester of requesters) {
-    const credential = requesterCredentials.get(requester.email);
-    if (!credential) continue;
+  // Read the actual legacy table after the standard fixtures are upserted so
+  // requesters added during Lab 2 also receive an initial credential.
+  const requesterRows = await prisma.requesterUser.findMany({ orderBy: { id: "asc" } });
+  for (const requester of requesterRows) {
     await upsertUser({
       id: requester.id,
       email: requester.email,
-      password: credential.password,
+      password: initialPasswordForRequester(requester),
       displayName: requester.name,
       department: requester.department,
       role: "REQUESTER",
       active: requester.isActive,
     });
   }
+
+  // Explicitly migrated requester IDs do not advance PostgreSQL's serial
+  // sequence. Align it before creating new-role fixtures so auto-allocation
+  // starts after the highest preserved user ID.
+  const alignUserSequence = async () => prisma.$executeRawUnsafe(`SELECT setval(pg_get_serial_sequence('"User"', 'id'), GREATEST(COALESCE((SELECT MAX("id") FROM "User"), 1), 1), true)`);
+  await alignUserSequence();
+
   for (const staff of SEED_CREDENTIALS.staff) {
     await upsertUser({ ...staff, role: "IT_STAFF" });
   }
@@ -139,10 +160,11 @@ export async function seed(prisma = getPrisma()) {
     await upsertUser({ ...admin, role: "ADMIN" });
   }
 
-  // Explicit requester/staff IDs keep fixtures deterministic. Move the
-  // PostgreSQL sequence past the largest fixture for future admin-created
-  // users.
-  await prisma.$executeRawUnsafe(`SELECT setval(pg_get_serial_sequence('"User"', 'id'), GREATEST(COALESCE((SELECT MAX("id") FROM "User"), 1), 1), true)`);
+  // Requester IDs mirror the migrated Lab 2 rows. Staff and Administrator IDs
+  // are deliberately allocated by PostgreSQL so they cannot collide with a
+  // legacy requester ID. Move the sequence past all resulting rows for future
+  // admin-created users.
+  await alignUserSequence();
 
   // 4. Initialize TicketCounter for current year if not exists
   const currentYear = new Date().getFullYear();
@@ -155,7 +177,7 @@ export async function seed(prisma = getPrisma()) {
   return {
     categoriesCount: categories.length,
     relatedSystemsCount: relatedSystems.length,
-    requestersCount: requesters.length,
+    requestersCount: requesterRows.length,
   };
 }
 

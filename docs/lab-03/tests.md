@@ -62,8 +62,8 @@ T-06 must exercise a Requester-owned Ticket Detail, successful Public Comment su
 ## 6. Executed results
 
 - Issue #36 authentication API: `server/tests/lab-03/auth.api.test.ts` — 9 tests passed, including generic inactive-account failures, first-login API-gate bypass checks, expired sessions, and CSRF expiry.
-- Issue #36 migration and deterministic-fixture regression: `server/tests/lab-03/migration-regression.api.test.ts` — 5 tests passed, including canonical ownership links, repeated-seed equality, and preservation of Lab 2 reference/counter/ticket/attachment rows.
-- Full server regression: `server npm test` — 11 test files, 70 tests passed on each of two serial runs.
+- Issue #36 migration and deterministic-fixture regression: `server/tests/lab-03/migration-regression.api.test.ts` — 7 tests passed, including canonical ownership links, repeated-seed equality, preservation of Lab 2 reference/counter/ticket/attachment rows, a legacy requester ID collision, and a non-fixture requester credential.
+- Full server regression: `server npm test` — 11 test files, 72 tests passed on each of two serial runs.
 - Full client regression: `client npm test` — 8 test files, 41 tests passed on each of two runs.
 - Server and client production builds passed on repeated runs.
 - `npx prisma validate` passed.
