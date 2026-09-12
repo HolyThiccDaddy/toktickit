@@ -11,6 +11,55 @@ Status: Draft contract for peer review before implementation
 - GET endpoints are safe. Every authenticated POST, PATCH, and DELETE requires the CSRF token returned by GET `/api/auth/csrf` in `X-CSRF-Token`; the public login request is the exception.
 - `401 UNAUTHENTICATED` means no valid session; `403 FORBIDDEN` means a valid session lacks the role or ownership; protected ticket resources may return `404 NOT_FOUND` for both missing and unauthorized records.
 - Validation is `400 VALIDATION_ERROR`; duplicate or invalid state is `409 CONFLICT`; unexpected failures are `500 INTERNAL_ERROR`.
+- A session with `mustChangePassword=true` is authenticated but restricted. Until the password is changed, it may call only `/auth/me`, `/auth/csrf`, `/auth/change-password`, and `/auth/logout`. Every other protected endpoint returns `403 PASSWORD_CHANGE_REQUIRED` without performing a mutation.
+
+## Response schemas and success status codes
+
+All JSON responses use the `{ data: ... }` envelope. The following named schemas are the shared contract for the backend, frontend, and tests:
+
+- `UserSummary`: `{ id: number, email: string, displayName: string, role: "REQUESTER" | "IT_STAFF" | "ADMIN", active: boolean, mustChangePassword: boolean }`.
+- `SessionData`: `{ user: UserSummary, expiresAt: string }`; the server also sets or clears the HttpOnly session cookie as described above.
+- `PageMeta`: `{ page: number, pageSize: number, total: number, totalPages: number, sortBy?: string, sortDir?: "asc" | "desc" }`.
+- `CategorySummary`: `{ id: number, name: string, description: string | null }`.
+- `RelatedSystemSummary`: `{ id: number, name: string, description: string | null }`.
+- `AttachmentSummary`: `{ id: number, originalFilename: string, mimeType: string, fileSize: number, isDeleted: boolean, createdAt: string }`; storage keys are never returned.
+- `TicketSummary`: `{ id: number, ticketNumber: string, summary: string, requestedPriority: "LOW" | "MEDIUM" | "HIGH" | "URGENT", itPriority: "LOW" | "MEDIUM" | "HIGH" | "URGENT", currentStatus: "NEW" | "OPEN" | "IN_PROGRESS" | "WAITING_FOR_REQUESTER" | "RESOLVED" | "CLOSED" | "REOPENED" | "CANCELLED", requester: UserSummary, owner: UserSummary | null, createdAt: string, updatedAt: string }`.
+- `TicketDetail`: `TicketSummary` plus `{ description: string, category: CategorySummary, relatedSystem: RelatedSystemSummary, requesterResolutionIndicatedAt: string | null, attachments: AttachmentSummary[], publicComments: PublicComment[], internalNotes?: InternalNote[] }`; `internalNotes` is omitted for Requesters.
+- `PublicComment`: `{ id: number, ticketId: number, author: UserSummary, body: string, createdAt: string }`.
+- `InternalNote`: `{ id: number, ticketId: number, author: UserSummary, body: string, createdAt: string }`.
+
+Endpoint success contracts are:
+
+| Method | Path | Success status and response |
+|---|---|---|
+| POST | `/auth/login` | `200 OK`, `{ data: SessionData }`; a must-change user receives a restricted session |
+| POST | `/auth/logout` | `204 No Content`; session cookie is cleared |
+| GET | `/auth/me` | `200 OK`, `{ data: UserSummary }` |
+| GET | `/auth/csrf` | `200 OK`, `{ data: { csrfToken: string, expiresAt: string } }` |
+| POST | `/auth/change-password` | `200 OK`, `{ data: UserSummary }` with `mustChangePassword=false` |
+| GET | `/categories` | `200 OK`, `{ data: CategorySummary[] }` |
+| GET | `/related-systems` | `200 OK`, `{ data: RelatedSystemSummary[] }` |
+| POST | `/tickets` | `201 Created`, `{ data: TicketDetail }` |
+| GET | `/tickets` | `200 OK`, `{ data: { items: TicketSummary[], meta: PageMeta } }` |
+| GET | `/tickets/:ticketId` | `200 OK`, `{ data: TicketDetail }` |
+| POST | `/tickets/:ticketId/attachments` | `201 Created`, `{ data: AttachmentSummary }` |
+| GET | `/attachments/:attachmentId/download` | `200 OK` binary stream with safe filename and MIME headers |
+| DELETE | `/attachments/:attachmentId` | `204 No Content` |
+| GET | `/tickets/:ticketId/comments` | `200 OK`, `{ data: PublicComment[] }` |
+| POST | `/tickets/:ticketId/comments` | `201 Created`, `{ data: PublicComment }` |
+| POST | `/tickets/:ticketId/requester-resolution` | `200 OK`, `{ data: { ticketId: number, indicatedAt: string } }` |
+| GET | `/staff/tickets` | `200 OK`, `{ data: { items: TicketSummary[], meta: PageMeta } }` |
+| GET | `/staff/tickets/:ticketId` | `200 OK`, `{ data: TicketDetail }` with `internalNotes` |
+| POST | `/staff/tickets/:ticketId/claim` | `200 OK`, `{ data: TicketDetail }` |
+| PATCH | `/staff/tickets/:ticketId/assignment` | `200 OK`, `{ data: TicketDetail }` |
+| PATCH | `/staff/tickets/:ticketId/priority` | `200 OK`, `{ data: TicketDetail }` |
+| PATCH | `/staff/tickets/:ticketId/status` | `200 OK`, `{ data: TicketDetail }` |
+| GET | `/tickets/:ticketId/notes` | `200 OK`, `{ data: InternalNote[] }` |
+| POST | `/tickets/:ticketId/notes` | `201 Created`, `{ data: InternalNote }` |
+| GET | `/admin/users` | `200 OK`, `{ data: UserSummary[] }` |
+| POST | `/admin/users` | `201 Created`, `{ data: UserSummary }` |
+| PATCH | `/admin/users/:userId` | `200 OK`, `{ data: UserSummary }` |
+| POST | `/admin/users/:userId/initial-password` | `200 OK`, `{ data: { userId: number, mustChangePassword: true } }` |
 
 ## Authentication
 
@@ -18,9 +67,9 @@ Status: Draft contract for peer review before implementation
 |---|---|---|---|
 | POST | /auth/login | Public | Body `{ email, password }`; wrong credentials return `401 INVALID_CREDENTIALS`. After the submitted password is verified, an inactive account returns `403 ACCOUNT_INACTIVE` and no session. An active account receives a fresh session. |
 | POST | /auth/logout | Authenticated | Invalidates current session and clears cookie. |
-| GET | /auth/me | Authenticated | Returns `{ id, email, displayName, role, mustChangePassword, active }`. |
-| GET | /auth/csrf | Authenticated | Returns a short-lived CSRF token bound to the session. |
-| POST | /auth/change-password | Authenticated + CSRF | Body `{ currentPassword, newPassword }`; enforces 12–128 characters, updates scrypt hash, and clears mustChangePassword. |
+| GET | /auth/me | Authenticated | Returns `{ data: UserSummary }`; allowed while the first-login gate is active. |
+| GET | /auth/csrf | Authenticated | Returns `{ data: { csrfToken, expiresAt } }`; allowed while the first-login gate is active. |
+| POST | /auth/change-password | Authenticated + CSRF | Body `{ currentPassword, newPassword }`; enforces 12–128 characters, updates scrypt hash, clears mustChangePassword, and returns `{ data: UserSummary }`. |
 
 Login creates a fresh session after credential verification. Session expiry is eight hours. Secure is enabled in production; HttpOnly and SameSite=Lax are always enabled. No password or hash is returned.
 
@@ -30,7 +79,7 @@ Login creates a fresh session after credential verification. Session expiry is e
 |---|---|---|---|
 | GET | /categories | Authenticated | Lab 2 category list. |
 | GET | /related-systems | Authenticated | Lab 2 related-system list. |
-| POST | /tickets | REQUESTER + CSRF | Creates a NEW ticket owned by the session user; ignores any requester ID in body/query. |
+| POST | /tickets | REQUESTER + CSRF | Creates a NEW ticket owned by the session user; ignores any requester ID in body/query and initializes `itPriority` to the submitted `requestedPriority`. |
 | GET | /tickets | REQUESTER | Returns only the session user's tickets with Lab 2 search, filters, sorting, and pagination. |
 | GET | /tickets/:ticketId | Owner REQUESTER, IT_STAFF, or ADMIN | Returns ticket detail subject to role and ownership. |
 | POST | /tickets/:ticketId/attachments | Owner REQUESTER + CSRF | Validates type, extension, magic bytes, size, count, and ownership before storing. |
@@ -50,7 +99,7 @@ Requester endpoints never trust `requesterId`, `ownerId`, `authorId`, or role va
 | GET | /staff/tickets/:ticketId | IT_STAFF or ADMIN | Staff detail including assignment, IT priority, status, public comments, and internal notes. |
 | POST | /staff/tickets/:ticketId/claim | IT_STAFF or ADMIN + CSRF | Assigns the ticket to the current staff/admin user when claimable; conflict if already claimed. |
 | PATCH | /staff/tickets/:ticketId/assignment | IT_STAFF or ADMIN + CSRF | Body `{ assigneeId|null }`; target must be an active IT_STAFF or ADMIN user, or null to unassign. |
-| PATCH | /staff/tickets/:ticketId/priority | IT_STAFF or ADMIN + CSRF | Body `{ itPriority }`; validates documented enum. |
+| PATCH | /staff/tickets/:ticketId/priority | IT_STAFF or ADMIN + CSRF | Body `{ itPriority }`; accepts only `LOW`, `MEDIUM`, `HIGH`, or `URGENT`. |
 | PATCH | /staff/tickets/:ticketId/status | IT_STAFF or ADMIN + CSRF | Body `{ status, confirm? }`; enforces the complete eight-status matrix in specification.md and requires `confirm=true` for transitions marked as requiring confirmation. |
 | GET | /tickets/:ticketId/notes | IT_STAFF or ADMIN | Returns internal notes; requester receives 403/404 and never sees note content. |
 | POST | /tickets/:ticketId/notes | IT_STAFF or ADMIN + CSRF | Body `{ body }`; rejects empty/whitespace-only text and text over 2,000 characters, then creates an append-only internal note authored and timestamped by the session user. |
@@ -74,6 +123,7 @@ The queue accepts `q`, `status`, `itPriority`, `assigneeId`, `categoryId`, `sort
 
 - Missing session: HTTP 401 with code `UNAUTHENTICATED`.
 - Wrong role: HTTP 403 with code `FORBIDDEN`.
+- Must-change-password session calling another protected endpoint: HTTP 403 with code `PASSWORD_CHANGE_REQUIRED`.
 - Unauthorized ticket lookup: HTTP 404 with code `NOT_FOUND`.
 - Invalid password or field: HTTP 400 with code `VALIDATION_ERROR`.
 - Duplicate email, claim race, or invalid status transition: HTTP 409 with code `CONFLICT`.

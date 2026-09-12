@@ -73,7 +73,7 @@ TokTickIT needs a small internal service-desk workflow. Requesters must sign in 
 | NEW, OPEN, IN_PROGRESS, WAITING_FOR_REQUESTER, REOPENED | CANCELLED | IT_STAFF, ADMIN | Yes | 409 `CONFLICT`; no mutation |
 
 Closed and Cancelled are terminal. Any transition not listed above, or any transition requested by a Requester, is rejected without mutation. The Requester “problem appears resolved” indication never changes formal status.
-- BR-09 IT priority is separate from requester priority and accepts the documented enum only.
+- BR-09 IT Priority is separate from Requested Priority and uses the shared enum `LOW`, `MEDIUM`, `HIGH`, or `URGENT`. A newly migrated or created Ticket copies `requestedPriority` to `itPriority`; only IT_STAFF or ADMIN may change it later.
 - BR-10 Public comments are visible to the ticket requester, IT Staff, and Administrator; internal notes are visible only to IT Staff and Administrator. Both are append-only, record backend author and creation time, reject empty or whitespace-only content, enforce a 2,000-character maximum to keep operational messages readable and payloads bounded, and render user text safely without interpreting HTML.
 - BR-11 Deactivated users cannot log in, claim, reassign, or create new protected content.
 - BR-12 An Administrator cannot deactivate their own account, change their own role away from ADMIN, or deactivate/remove the last active Administrator. Deactivation is used instead of deletion.
@@ -96,6 +96,31 @@ Closed and Cancelled are terminal. Any transition not listed above, or any trans
 
 Extend the existing requester identity into a single User model (or an equivalent transactional rename/map) while preserving primary keys and all foreign-key relationships. Existing Development Requesters become REQUESTER users with active=true and mustChangePassword=true; their Ticket requester foreign keys remain unchanged. Assign deterministic local-only initial passwords and document the change-password path without committing secrets. Add role, passwordHash, mustChangePassword, active, and timestamps. Add AuthSession, ticket assignee, IT priority, requesterResolutionIndicatedAt, status values, PublicComment, and InternalNote. Apply and verify the migration before application code is released, remove the Development Requester selector and `X-Requester-Id` trust boundary once session authentication is live, and preserve all Lab 2 records.
 
+### 7.1 Data-model decisions
+
+The migration keeps the existing integer identifiers so Lab 2 foreign keys and ticket numbers remain stable. One User has exactly one role; user deactivation is used instead of deletion so historical ownership and authored communication remain queryable.
+
+| Model / field | Type and nullability | Relationship / behavior | Indexes and deletion behavior |
+|---|---|---|---|
+| `User.id` | `Int` primary key | Preserves the existing `RequesterUser.id` values | Primary key; referenced records use `RESTRICT` because users are not deleted |
+| `User.email` | `String` required, unique | Login identifier, normalized before uniqueness validation | Unique index |
+| `User.displayName` | `String` required | Migrated from the Lab 2 requester name | — |
+| `User.role` | Enum `REQUESTER \| IT_STAFF \| ADMIN` required | Exactly one role per user | Index for Admin user filtering |
+| `User.passwordHash` | `String` required | Node `scrypt` hash; never returned or stored plaintext | — |
+| `User.mustChangePassword` | `Boolean` required, default `true` for provisioned users | Blocks normal application access until changed | Index with `active` for login checks |
+| `User.active` | `Boolean` required, default `true` | Deactivation blocks login and protected operations without deleting history | Index with `role` |
+| `User.createdAt`, `updatedAt` | `DateTime` required | Backend-managed timestamps | — |
+| `AuthSession` | `id String/UUID` PK, `tokenHash String` unique, `userId Int` required, `expiresAt DateTime` required, `revokedAt DateTime?`, `createdAt DateTime` | Many sessions belong to one User; logout sets `revokedAt` | Unique `tokenHash`; index `[userId, expiresAt]`; session rows may cascade on explicit user removal, which the API does not expose |
+| `Ticket.requesterId` | `Int` required FK to `User.id` | One Requester owns many submitted Tickets; existing values are preserved | Existing requester indexes remain; requester deletion is restricted |
+| `Ticket.ownerId` | `Int?` nullable FK to `User.id` | Zero or one primary owner; target must be active IT_STAFF or ADMIN | Index `[ownerId, currentStatus]`; owner deletion is restricted and deactivation leaves history intact |
+| `Ticket.itPriority` | Enum `LOW \| MEDIUM \| HIGH \| URGENT` required | Initially copies `requestedPriority`; mutable only by IT_STAFF/ADMIN | Index `[currentStatus, itPriority, updatedAt]` |
+| `Ticket.currentStatus` | Enum `NEW \| OPEN \| IN_PROGRESS \| WAITING_FOR_REQUESTER \| RESOLVED \| CLOSED \| REOPENED \| CANCELLED`, default `NEW` | Validated by BR-08; CLOSED/CANCELLED are terminal | Included in queue index above |
+| `Ticket.requesterResolutionIndicatedAt` | `DateTime?` nullable | Records the Requester indication without changing formal status | Index optional; no cascade side effect |
+| `PublicComment` | `id Int` PK, `ticketId Int` required FK, `authorId Int` required FK, `body String` required, `createdAt DateTime` required | One Ticket has many comments; each comment has one User author; append-only | Index `[ticketId, createdAt]`; Ticket/User deletion restricted |
+| `InternalNote` | `id Int` PK, `ticketId Int` required FK, `authorId Int` required FK, `body String` required, `createdAt DateTime` required | One Ticket has many notes; each note has one IT_STAFF/ADMIN author; append-only | Index `[ticketId, createdAt]`; Ticket/User deletion restricted |
+
+Migration sets `User.role=REQUESTER`, maps the existing requester name/email/active fields, hashes deterministic local-only initial passwords, sets `mustChangePassword=true`, copies `requestedPriority` into the new `itPriority`, preserves all requester/category/system/attachment/counter keys, and removes the Development Requester selector after session authentication is live.
+
 ## 8. Acceptance criteria
 
 - AC-01 A valid active user can log in and receives the correct role-aware shell.
@@ -105,11 +130,11 @@ Extend the existing requester identity into a single User model (or an equivalen
 - AC-05 Requester Lab 2 flows still work and remain owner-isolated.
 - AC-06 A Requester can add a valid public comment and “problem appears resolved” indication on an owned Ticket; another Requester is rejected, and the indication does not set formal status to RESOLVED or CLOSED.
 - AC-07 IT Staff and explicitly authorized Administrators can use queue search, filters, sorting, pagination, ownership/status/priority data, responsive states, and safe invalid-query feedback.
-- AC-08 IT Staff and Administrators can claim/reassign only to an active eligible owner, set IT priority, and enforce every valid/invalid status transition and confirmation rule in BR-08.
+- AC-08 IT Staff and Administrators can claim/reassign only to an active eligible owner, set IT Priority to one of `LOW|MEDIUM|HIGH|URGENT`, and enforce every valid/invalid status transition and confirmation rule in BR-08.
 - AC-09 Public comments and internal notes obey visibility rules.
 - AC-10 Admin user management supports list/search/filter/create/edit/activate/deactivate/reset, including one role and an explicit activation state on creation.
 - AC-11 Self-deactivation, self-role-change, last-active-admin protection, inactive-user protection, duplicate-email rejection, and invalid-role rejection work server-side.
-- AC-12 Migration preserves Lab 2 data and seed is deterministic/idempotent.
+- AC-12 Migration preserves Lab 2 data, copies Requested Priority into IT Priority, and seed is deterministic/idempotent.
 - AC-13 Every protected API rejects missing/forged identity and unauthorized role access.
 - AC-14 Desktop, tablet, and mobile screens have no clipping, overlap, or horizontal overflow.
 - AC-15 Required unit, API, UI, style, responsive, security, migration, and E2E checks pass before release.
