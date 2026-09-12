@@ -102,6 +102,10 @@ describe("Lab 3 authentication API", () => {
     expect(bypass.status).toBe(403);
     expect(bypass.body).toEqual({ error: { code: "PASSWORD_CHANGE_REQUIRED", message: "Change your password before continuing" } });
 
+    const mixedCaseBypass = await agent.get("/API/TiCkEtS");
+    expect(mixedCaseBypass.status).toBe(403);
+    expect(mixedCaseBypass.body).toEqual({ error: { code: "PASSWORD_CHANGE_REQUIRED", message: "Change your password before continuing" } });
+
     const mutationBypass = await agent.post("/api/tickets").send({ summary: "must-change bypass" });
     expect(mutationBypass.status).toBe(403);
     expect(mutationBypass.body).toEqual({ error: { code: "PASSWORD_CHANGE_REQUIRED", message: "Change your password before continuing" } });

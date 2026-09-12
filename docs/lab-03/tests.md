@@ -26,7 +26,7 @@ Use unit, API/integration, UI component, UI style, responsive, security/authoriz
 | T-14 | AC-14 responsive no-overflow behavior | UI style + responsive + E2E | client/tests/lab-03/ResponsiveLayout.test.tsx; all Lab 3 E2E projects; artifacts/lab-03/screenshots |
 | T-15 | AC-15 release gates | Regression + build + E2E | server/client test and build logs; e2e results; release checklist |
 
-T-03 must call a protected Ticket and Admin endpoint directly while `mustChangePassword=true` and assert `403 PASSWORD_CHANGE_REQUIRED`; only `/auth/me`, `/auth/csrf`, `/auth/change-password`, and `/auth/logout` remain available until the password change succeeds.
+T-03 must call a protected Ticket and Admin endpoint directly while `mustChangePassword=true` and assert `403 PASSWORD_CHANGE_REQUIRED`, including an uppercase or mixed-case path variant; only `/auth/me`, `/auth/csrf`, `/auth/change-password`, and `/auth/logout` remain available until the password change succeeds.
 
 T-06 must exercise a Requester-owned Ticket Detail, successful Public Comment submission, successful Problem Appears Resolved indication, rejection for a different Requester, and an assertion that the indication does not change formal status to RESOLVED or CLOSED.
 
@@ -61,7 +61,7 @@ T-06 must exercise a Requester-owned Ticket Detail, successful Public Comment su
 
 ## 6. Executed results
 
-- Issue #36 authentication API: `server/tests/lab-03/auth.api.test.ts` — 9 tests passed, including generic inactive-account failures, first-login API-gate bypass checks, expired sessions, and CSRF expiry.
+- Issue #36 authentication API: `server/tests/lab-03/auth.api.test.ts` — 9 tests passed, including generic inactive-account failures, case-insensitive first-login API-gate bypass checks, expired sessions, and CSRF expiry.
 - Issue #36 migration and deterministic-fixture regression: `server/tests/lab-03/migration-regression.api.test.ts` — 7 tests passed, including canonical ownership links, repeated-seed equality, preservation of Lab 2 reference/counter/ticket/attachment rows, a legacy requester ID collision, and a non-fixture requester credential.
 - Full server regression: `server npm test` — 11 test files, 72 tests passed on each of two serial runs.
 - Full client regression: `client npm test` — 8 test files, 41 tests passed on each of two runs.

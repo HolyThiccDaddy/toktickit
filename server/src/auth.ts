@@ -137,12 +137,13 @@ function apiError(res: Response, status: number, code: string, message: string, 
 }
 
 function pathAllowedDuringPasswordChange(path: string) {
+  const normalizedPath = path.toLowerCase();
   return [
     "/api/auth/me",
     "/api/auth/csrf",
     "/api/auth/change-password",
     "/api/auth/logout",
-  ].includes(path);
+  ].includes(normalizedPath);
 }
 
 /** Attach a validated session and enforce the global first-login gate. */
@@ -150,7 +151,8 @@ export const sessionMiddleware: RequestHandler = async (req, res, next) => {
   try {
     const context = await resolveSession(req);
     req.auth = context;
-    if (context?.user.mustChangePassword && req.path.startsWith("/api/") && !pathAllowedDuringPasswordChange(req.path)) {
+    const normalizedPath = req.path.toLowerCase();
+    if (context?.user.mustChangePassword && normalizedPath.startsWith("/api/") && !pathAllowedDuringPasswordChange(normalizedPath)) {
       return apiError(res, 403, "PASSWORD_CHANGE_REQUIRED", "Change your password before continuing");
     }
     return next();
