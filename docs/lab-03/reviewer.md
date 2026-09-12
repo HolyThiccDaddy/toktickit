@@ -1,6 +1,6 @@
 # Lab 3 - Peer Review Record
 
-Status: Contract approved after peer review; implementation and release evidence are pending.
+Status: Contract approved after peer review; implementation fixes are recorded in PR #41 and final approval/release evidence are pending.
 
 **Author:** Thira Rungruangkaset - GitHub: @HolyThiccDaddy
 **Peer reviewer:** Ashira Sangkaset - GitHub: @osizk
@@ -40,6 +40,12 @@ The reviewer requested the actual IT Priority enum. The contract now defines `LO
 ## Contract approval - 2026-09-12
 
 The reviewer approved the corrected contract in [PR #40](https://github.com/HolyThiccDaddy/toktickit/pull/40#pullrequestreview-5186011435). GitHub merged it into `lab3-staging` as [commit `40ca398`](https://github.com/HolyThiccDaddy/toktickit/commit/40ca3983e3e706c72d757e2155562aada788a374), satisfying the Issue #36 dependency.
+
+## Implementation review round 1 - 2026-09-12
+
+In [PR #41](https://github.com/HolyThiccDaddy/toktickit/pull/41#discussion_r3996194389), the reviewer found that seeding only the five hard-coded requester fixtures left additional Lab 2 requesters with the `__MIGRATION_PENDING__` marker. The reviewer also found in [the second implementation comment](https://github.com/HolyThiccDaddy/toktickit/pull/41#discussion_r3996195048) that fixed staff and Administrator IDs could collide with preserved requester IDs. Commit [`82e5caa`](https://github.com/HolyThiccDaddy/toktickit/commit/82e5caaae6acf7c2e0627e09707faa808043b098) now walks the actual `RequesterUser` table, provisions deterministic local-only credentials only for pending hashes, preserves changed hashes, allocates staff and Administrator IDs from PostgreSQL after migrated rows, and adds both regression cases.
+
+The reviewer then identified a case-sensitive first-login gate in `server/src/auth.ts` that could be bypassed with a mixed-case protected path. Commit [`9ed473a`](https://github.com/HolyThiccDaddy/toktickit/commit/9ed473ac4990c69ef46aa2b2b2fad97da511e6ce) normalizes request paths before applying the global gate and adds a `/API/TiCkEtS` regression assertion. The auth suite (9/9), full server regression (72/72 on two serial runs), production build, and Lab 2 E2E suite (5/5) passed after the fix. PR #41 is awaiting the reviewer’s follow-up review; no final implementation approval has been recorded yet.
 
 ## Implementation and release history
 
