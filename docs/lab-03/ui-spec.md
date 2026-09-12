@@ -14,12 +14,12 @@ Breakpoints: desktop at 992px and above, tablet 768–991px, mobile below 768px.
 - Authenticated users see a role-specific navigation and the current display name/role.
 - Requester navigation: Create Ticket, My Tickets.
 - IT Staff navigation: Ticket Queue, Ticket Detail when selected.
-- Administrator navigation: User Management; admins may also use staff and requester views according to the authorization matrix.
+- Administrator navigation: User Management plus Ticket Queue/Ticket Detail because the approved authorization matrix explicitly grants Admin Ticket operations; Requester views remain available only where the matrix permits them.
 - Logout is always available. A must-change-password banner/gate takes priority over normal navigation.
 
 ## Login screen
 
-Fields: email and password, show/hide password control, submit button, and an inline error region. States: idle, submitting, invalid credentials, inactive account, network failure with retry, and success redirect. Keyboard focus order and visible focus styles are required. At mobile width the form is single-column and full-width.
+Fields: email and password, show/hide password control, submit button, and an inline error region. States: idle, submitting, invalid credentials, inactive account after credential verification, network failure with retry, and success redirect. Keyboard focus order and visible focus styles are required. At mobile width the form is single-column and full-width.
 
 ## Change-password screen
 
@@ -33,15 +33,15 @@ Required states include loading, empty/no-results, API failure with retry, valid
 
 ## IT Staff Ticket Queue
 
-Provide a heading, search field, status and IT-priority filters, assignee filter, result count, and a responsive ticket list. Each row/card shows ticket number, subject/summary, requester, status, IT priority, assignee, and updated time. States: loading skeleton, empty queue, no-results, API error/retry, and populated queue. Selecting a ticket opens Staff Ticket Detail.
+Provide a heading, search field, status, IT-priority, assignee, and category filters, sortable result columns/cards, page-size and page navigation controls, result count, and a responsive ticket list. Search, filter, sort, and pagination values must match the API contract, including clear invalid-query feedback. Each row/card shows ticket number, subject/summary, requester, status, IT priority, assignee, and updated time. States: loading skeleton, empty queue, no-results, invalid-query, API error/retry, and populated queue. Selecting a ticket opens Staff Ticket Detail.
 
 ## IT Staff Ticket Detail
 
-Show ticket identity, requester, metadata, current status, IT priority, assignee, claim/reassign controls, allowed status actions, public comments, and internal notes. Distinguish public comments and notes visually and semantically. Disable or hide invalid transitions, but rely on server authorization for enforcement. Show conflict/error feedback without losing unsent text.
+Show ticket identity, requester, metadata, current status, IT priority, assignee, claim/reassign controls, allowed status actions, public comments, and internal notes. Distinguish public comments and notes visually and semantically; show the author and creation time supplied by the backend. Disable or hide invalid transitions, but rely on server authorization for enforcement. Require confirmation for transitions marked in the matrix and show conflict/error feedback without losing unsent text.
 
 ## Administrator User Management
 
-Show user list with search and role filter, plus create/edit form. Rows/cards show display name, email, role, active state, and must-change-password state. Actions: create, edit, activate/deactivate, and set initial password. States: loading, empty, no-results, validation, duplicate-email conflict, server failure/retry, and success confirmation. Do not render password values or session information.
+Show user list with search and optional role filter, plus create/edit form. Rows/cards show display name, email, role, active state, and must-change-password state. Creation and editing validate one permitted role, activation state, duplicate email, self-deactivation, and last-active-Admin safety. Actions: create, edit, activate/deactivate, and set initial password. States: loading, empty, no-results, validation, duplicate-email conflict, forbidden, server failure/retry, and success confirmation. Do not render password values or session information.
 
 ## Accessibility and responsive acceptance
 
