@@ -60,6 +60,12 @@ describe("Lab 3 authentication API", () => {
     expect(await prisma.authSession.count()).toBe(0);
   });
 
+  it("returns the stable validation envelope for malformed JSON", async () => {
+    const response = await request(app).post("/api/auth/login").set("content-type", "application/json").send("{\"email\":");
+    expect(response.status).toBe(400);
+    expect(response.body).toEqual({ error: { code: "VALIDATION_ERROR", message: "Request body must contain valid JSON" } });
+  });
+
   it("reveals inactive status only after the correct password is verified", async () => {
     const inactive = SEED_CREDENTIALS.requesters[4];
     const response = await request(app).post("/api/auth/login").send(inactive);
@@ -146,8 +152,8 @@ describe("Lab 3 authentication API", () => {
     try {
       const list = await agent.get("/api/tickets").set("X-Requester-Id", String(SEED_CREDENTIALS.requesters[1].id));
       expect(list.status).toBe(200);
-      expect(list.body.tickets.map((ticket: { id: number }) => ticket.id)).toContain(ownTicket.id);
-      expect(list.body.tickets.map((ticket: { id: number }) => ticket.id)).not.toContain(foreignTicket.id);
+      expect(list.body.data.items.map((ticket: { id: number }) => ticket.id)).toContain(ownTicket.id);
+      expect(list.body.data.items.map((ticket: { id: number }) => ticket.id)).not.toContain(foreignTicket.id);
     } finally {
       await prisma.ticket.deleteMany({ where: { id: { in: [ownTicket.id, foreignTicket.id] } } });
     }
