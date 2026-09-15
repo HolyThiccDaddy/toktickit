@@ -27,7 +27,7 @@ async function login(credentials: { email: string; password: string }) {
   return { agent, csrfToken: csrf.body.data.csrfToken as string };
 }
 
-async function createTicket(requesterId: number, suffix: string, currentStatus: "NEW" | "CLOSED" = "NEW") {
+async function createTicket(requesterId: number, suffix: string, currentStatus: "NEW" | "RESOLVED" | "CLOSED" = "NEW") {
   return prisma.ticket.create({
     data: {
       ticketNumber: `TKT-2026-${suffix}`,
@@ -131,5 +131,14 @@ describe("Issue 37 requester comments and resolution indication", () => {
     const response = await agent.post(`/api/tickets/${ticket.id}/requester-resolution`).set("X-CSRF-Token", csrfToken);
     expect(response.status).toBe(409);
     expect(response.body).toEqual({ error: { code: "CONFLICT", message: "A terminal ticket cannot be marked as appearing resolved" } });
+  });
+
+  it("allows an indication on a RESOLVED ticket", async () => {
+    const ticket = await createTicket(1, "372007", "RESOLVED");
+    const { agent, csrfToken } = await login(requesterOne);
+    const response = await agent.post(`/api/tickets/${ticket.id}/requester-resolution`).set("X-CSRF-Token", csrfToken);
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({ data: { ticketId: ticket.id, indicatedAt: expect.any(String) } });
+    expect((await prisma.ticket.findUniqueOrThrow({ where: { id: ticket.id } })).currentStatus).toBe("RESOLVED");
   });
 });

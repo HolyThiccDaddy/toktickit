@@ -57,4 +57,15 @@ describe("Requester Ticket Detail conversation actions", () => {
     expect(button).toBeDisabled();
     expect(indicateResolution).not.toHaveBeenCalled();
   });
+
+  it("offers the resolution action for a RESOLVED ticket", async () => {
+    vi.spyOn(api, "getTicket").mockResolvedValue({ ...detail, currentStatus: "RESOLVED" });
+    const indicateResolution = vi.spyOn(api, "indicateResolution").mockResolvedValue({ ticketId: detail.id, indicatedAt: "2026-09-03T09:05:00.000Z" });
+    render(<TicketDetail user={user} ticketId={detail.id} onBack={vi.fn()} />);
+    await screen.findByRole("heading", { name: detail.ticketNumber });
+    const button = screen.getByRole("button", { name: "Problem appears resolved" });
+    expect(button).not.toBeDisabled();
+    fireEvent.click(button);
+    await waitFor(() => expect(indicateResolution).toHaveBeenCalledWith(detail.id));
+  });
 });

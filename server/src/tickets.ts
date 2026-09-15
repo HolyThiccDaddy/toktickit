@@ -10,7 +10,7 @@ import { getPrisma } from "./prisma.js";
 const maxFileSize = 5_242_880;
 const upload = multer({ storage: multer.memoryStorage(), limits: { files: 5, fileSize: maxFileSize } });
 const priorities = new Set(["LOW", "MEDIUM", "HIGH", "URGENT"] as const);
-const terminalStatuses = new Set(["RESOLVED", "CLOSED", "CANCELLED"] as const);
+const terminalStatuses = new Set(["CLOSED", "CANCELLED"] as const);
 const allowedTypes: Record<string, string[]> = {
   ".jpg": ["image/jpeg"], ".jpeg": ["image/jpeg"], ".png": ["image/png"],
   ".webp": ["image/webp"], ".pdf": ["application/pdf"],

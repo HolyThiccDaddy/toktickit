@@ -109,6 +109,14 @@ export class ApiError extends Error {
 }
 
 let csrfToken: string | null = null;
+let unauthorizedHandler: (() => void) | null = null;
+
+export function setUnauthorizedHandler(handler: (() => void) | null) {
+  unauthorizedHandler = handler;
+  return () => {
+    if (unauthorizedHandler === handler) unauthorizedHandler = null;
+  };
+}
 
 async function readJson(response: Response): Promise<Record<string, unknown>> {
   try { return await response.json() as Record<string, unknown>; } catch { return {}; }
@@ -130,10 +138,18 @@ function errorFrom(body: Record<string, unknown>, fallback: string, status: numb
   return new ApiError(message, fieldErrorsFrom(body), code, status);
 }
 
+function responseError(response: Response, body: Record<string, unknown>, fallback: string) {
+  if (response.status === 401) {
+    csrfToken = null;
+    unauthorizedHandler?.();
+  }
+  return errorFrom(body, fallback, response.status);
+}
+
 async function requestJson<T>(path: string, init: RequestInit = {}, fallback = "Request failed"): Promise<T> {
   const response = await fetch(`${API_URL}${path}`, { credentials: "include", ...init });
   const body = await readJson(response);
-  if (!response.ok) throw errorFrom(body, fallback, response.status);
+  if (!response.ok) throw responseError(response, body, fallback);
   return (body.data ?? body) as T;
 }
 
@@ -209,14 +225,14 @@ export async function addAttachment(ticketId: number, file: File): Promise<Ticke
 
 export async function downloadAttachment(attachmentId: number): Promise<{ blob: Blob; filename: string }> {
   const response = await fetch(`${API_URL}/api/attachments/${attachmentId}/download`, { credentials: "include" });
-  if (!response.ok) throw errorFrom(await readJson(response), "Unable to download attachment", response.status);
+  if (!response.ok) throw responseError(response, await readJson(response), "Unable to download attachment");
   const disposition = response.headers.get("content-disposition") ?? "";
   return { blob: await response.blob(), filename: disposition.match(/filename="?([^";]+)"?/i)?.[1] ?? "attachment" };
 }
 
 export async function removeAttachment(attachmentId: number, deletionReason: string): Promise<TicketAttachment | void> {
   const response = await fetch(`${API_URL}/api/attachments/${attachmentId}`, { method: "DELETE", credentials: "include", headers: { "content-type": "application/json", ...await csrfHeaders() }, body: JSON.stringify({ deletionReason }) });
-  if (!response.ok) throw errorFrom(await readJson(response), "Unable to remove attachment", response.status);
+  if (!response.ok) throw responseError(response, await readJson(response), "Unable to remove attachment");
   if (response.status === 204) return undefined;
   const body = await readJson(response);
   return (body.data ?? body.attachment ?? body) as TicketAttachment;
@@ -236,6 +252,6 @@ export async function indicateResolution(ticketId: number): Promise<{ ticketId: 
 
 export async function checkSystem(): Promise<SystemStatus> {
   const healthRes = await fetch(`${API_URL}/api/health`, { credentials: "include" });
-  if (!healthRes.ok) throw new Error("Unable to connect to TokTickIT API");
+  if (!healthRes.ok) throw responseError(healthRes, await readJson(healthRes), "Unable to connect to TokTickIT API");
   return { online: true, categories: await getCategories() };
 }

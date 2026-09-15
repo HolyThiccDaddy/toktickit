@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { ApiError, checkSystem, getCurrentUser, logout, type Category, type UserSummary } from "./api.js";
+import { ApiError, checkSystem, getCurrentUser, logout, setUnauthorizedHandler, type Category, type UserSummary } from "./api.js";
 import CreateTicket from "./CreateTicket.js";
 import Login from "./Login.js";
 import ChangePassword from "./ChangePassword.js";
@@ -55,6 +55,16 @@ export default function App() {
   const [state, setState] = useState<"loading" | "signed-out" | "signed-in" | "error">("loading");
   const [user, setUser] = useState<UserSummary | null>(null);
   const [error, setError] = useState("");
+  const [signOutError, setSignOutError] = useState("");
+
+  const handleUnauthorized = useCallback(() => {
+    setUser(null);
+    setState("signed-out");
+    setError("");
+    setSignOutError("");
+  }, []);
+
+  useEffect(() => setUnauthorizedHandler(handleUnauthorized), [handleUnauthorized]);
 
   const refresh = useCallback(async () => {
     setState("loading");
@@ -62,22 +72,35 @@ export default function App() {
       setUser(await getCurrentUser());
       setState("signed-in");
     } catch (reason) {
-      if (reason instanceof ApiError && reason.status === 401) { setUser(null); setState("signed-out"); return; }
+      if (reason instanceof ApiError && reason.status === 401) { handleUnauthorized(); return; }
       setError(reason instanceof Error ? reason.message : "Unable to load your session");
       setState("error");
     }
-  }, []);
+  }, [handleUnauthorized]);
   useEffect(() => { void refresh(); }, [refresh]);
 
   async function signOut() {
-    try { await logout(); } catch { /* the local session is cleared even if the server is unreachable */ }
-    setUser(null); setState("signed-out");
+    setSignOutError("");
+    try {
+      await logout();
+      setUser(null);
+      setState("signed-out");
+    } catch (reason) {
+      if (reason instanceof ApiError && reason.status === 401) { handleUnauthorized(); return; }
+      setSignOutError(reason instanceof Error ? reason.message : "Unable to sign out. Please try again.");
+    }
   }
 
   if (state === "loading") return <main className="min-vh-100 d-flex align-items-center justify-content-center"><p role="status">Loading your TokTickIT session...</p></main>;
   if (state === "error") return <main className="min-vh-100 d-flex align-items-center justify-content-center p-3"><section className="alert alert-danger" role="alert"><strong>Unable to load session.</strong><p className="mb-2">{error}</p><button className="btn btn-outline-danger" type="button" onClick={() => void refresh()}>Retry</button></section></main>;
-  if (!user) return <Login onAuthenticated={(next) => { setUser(next); setState("signed-in"); }} />;
-  if (user.mustChangePassword) return <ChangePassword user={user} onChanged={(next) => setUser(next)} onSignOut={() => void signOut()} />;
-  if (user.role !== "REQUESTER") return <AccessDenied user={user} onSignOut={() => void signOut()} />;
-  return <RequesterWorkspace user={user} onSignOut={() => void signOut()} />;
+  if (!user) return <Login onAuthenticated={(next) => { setSignOutError(""); setUser(next); setState("signed-in"); }} />;
+  const authenticatedView = user.mustChangePassword
+    ? <ChangePassword user={user} onChanged={(next) => setUser(next)} onSignOut={() => void signOut()} />
+    : user.role !== "REQUESTER"
+      ? <AccessDenied user={user} onSignOut={() => void signOut()} />
+      : <RequesterWorkspace user={user} onSignOut={() => void signOut()} />;
+  return <>
+    {signOutError && <div className="alert alert-danger m-3" role="alert"><p className="mb-2">{signOutError}</p><button className="btn btn-outline-danger" type="button" onClick={() => void signOut()}>Retry sign out</button></div>}
+    {authenticatedView}
+  </>;
 }
