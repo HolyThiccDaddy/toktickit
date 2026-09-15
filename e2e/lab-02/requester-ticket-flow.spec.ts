@@ -1,23 +1,19 @@
 import { expect, test } from "../playwright.js";
 import { fileURLToPath } from "node:url";
+import { e2eAccounts, signInAs } from "../support/auth.js";
 
 const attachmentFixture = fileURLToPath(new URL("../../artifacts/lab-02/screenshots/ticket-detail/01_ticket_detail_readonly.png", import.meta.url));
 
-test.describe("Issue #11 requester ticket flow", () => {
-  test("selects a requester, creates a ticket, opens detail, and removes an attachment", async ({ page }) => {
-    await page.goto("/");
-    await expect(page.getByRole("heading", { name: "Select Development Requester" })).toBeVisible();
-
-    await page.getByLabel("Development Requester").selectOption({ label: "Jennifer Anderson - Human Resources" });
-    await page.getByRole("button", { name: "Continue" }).click();
-    await expect(page.getByRole("heading", { name: /TokTickIT IT Service Desk/ })).toBeVisible();
-    await expect(page.getByText("Jennifer Anderson", { exact: true })).toBeVisible();
+test.describe("Issue #37 authenticated requester ticket flow", () => {
+  test("signs in, creates a ticket, opens detail, and removes an attachment", async ({ page }) => {
+    await signInAs(page, e2eAccounts.david);
+    await expect(page.getByText("David Lee", { exact: true })).toBeVisible();
 
     await page.getByRole("button", { name: "+ Create Ticket" }).click();
     await expect(page.getByRole("heading", { name: "Create Ticket" })).toBeVisible();
     await page.getByLabel("Category").selectOption({ label: "Hardware" });
     await page.getByLabel("Related System").selectOption({ label: "Email" });
-    await page.getByLabel("Ticket Summary").fill("E2E requester ticket flow");
+    await page.getByLabel("Ticket Summary").fill("E2E authenticated requester flow");
     await page.getByLabel("Description").fill("Verify the complete requester ticket journey with attachment management.");
     await page.getByLabel("Requested Priority").selectOption("HIGH");
     await page.locator("#attachments").setInputFiles(attachmentFixture);
@@ -32,7 +28,7 @@ test.describe("Issue #11 requester ticket flow", () => {
 
     await page.getByRole("button", { name: "Back" }).click();
     await expect(page.getByRole("heading", { name: "My Tickets" })).toBeVisible();
-    const createdRow = page.getByRole("row").filter({ hasText: "E2E requester ticket flow" });
+    const createdRow = page.getByRole("row").filter({ hasText: "E2E authenticated requester flow" });
     await expect(createdRow).toBeVisible();
     await createdRow.getByRole("button", { name: "View", exact: true }).click();
 

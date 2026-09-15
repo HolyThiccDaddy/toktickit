@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  getCategories, getTickets, type Category, type Requester, type TicketListItem,
+  getCategories, getTickets, type Category, type TicketListItem, type UserSummary,
   type TicketPriority, type TicketSortField,
 } from "./api.js";
 
 type SortOrder = "asc" | "desc";
 
-export default function MyTickets({ requester, onCreate, onView }: { requester: Requester; onCreate: () => void; onView?: (ticketId: number) => void }) {
+export default function MyTickets({ user, onCreate, onView }: { user: UserSummary; onCreate: () => void; onView?: (ticketId: number) => void }) {
+  const displayName = user.displayName;
   const [tickets, setTickets] = useState<TicketListItem[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
@@ -27,7 +28,7 @@ export default function MyTickets({ requester, onCreate, onView }: { requester: 
     const requestNumber = ++latestRequest.current;
     setLoading(true); setError("");
     try {
-      const result = await getTickets(requester.id, {
+      const result = await getTickets({
         search: search.trim() || undefined,
         categoryId: categoryId ? Number(categoryId) : undefined,
         requestedPriority: (priority || undefined) as TicketPriority | undefined,
@@ -35,14 +36,14 @@ export default function MyTickets({ requester, onCreate, onView }: { requester: 
         sortBy, sortOrder, page, limit: 10,
       });
       if (requestNumber === latestRequest.current) {
-        setTickets(result.tickets); setPagination(result.pagination);
+        setTickets(result.tickets ?? result.items ?? []); setPagination(result.pagination ?? { total: result.meta?.total ?? 0, page: result.meta?.page ?? 1, limit: result.meta?.pageSize ?? 10, totalPages: result.meta?.totalPages ?? 0 });
       }
     } catch {
       if (requestNumber === latestRequest.current) setError("Unable to load your tickets. Please verify the backend connection and try again.");
     } finally {
       if (requestNumber === latestRequest.current) setLoading(false);
     }
-  }, [requester.id, search, categoryId, priority, status, sortBy, sortOrder, page]);
+  }, [search, categoryId, priority, status, sortBy, sortOrder, page]);
 
   async function loadCategories() {
     setCategoriesLoading(true); setCategoryError("");
@@ -68,7 +69,7 @@ export default function MyTickets({ requester, onCreate, onView }: { requester: 
 
   return <section className="my-tickets" aria-labelledby="my-tickets-title">
     <div className="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
-      <div><h1 id="my-tickets-title" className="h3 text-zen mb-1">My Tickets</h1><p className="text-muted mb-0">Track IT requests submitted by {requester.name}.</p></div>
+      <div><h1 id="my-tickets-title" className="h3 text-zen mb-1">My Tickets</h1><p className="text-muted mb-0">Track IT requests submitted by {displayName}.</p></div>
       <button className="btn btn-zen" type="button" onClick={onCreate}>+ Create Ticket</button>
     </div>
     <div className="card shadow-sm p-3 mb-3"><div className="row g-3 align-items-end">

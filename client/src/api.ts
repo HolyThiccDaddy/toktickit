@@ -1,50 +1,61 @@
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
 
-export interface Category {
+export type AuthRole = "REQUESTER" | "IT_STAFF" | "ADMIN";
+export interface UserSummary {
   id: number;
-  name: string;
-}
-
-export interface SystemStatus {
-  online: boolean;
-  categories: Category[];
-}
-
-export interface Requester {
-  id: number;
-  name: string;
   email: string;
-  department: string;
-  isActive: boolean;
+  displayName: string;
+  role: AuthRole;
+  active: boolean;
+  mustChangePassword: boolean;
 }
 
+export interface SessionData { user: UserSummary; expiresAt: string; }
+export interface Category { id: number; name: string; description?: string | null; }
 export interface RelatedSystem { id: number; name: string; description: string | null; }
-export interface CreatedTicket { id: number; ticketNumber: string; summary: string; currentStatus: "NEW"; requesterId: number; createdAt: string; }
+export interface SystemStatus { online: boolean; categories: Category[]; }
 export type TicketPriority = "LOW" | "MEDIUM" | "HIGH" | "URGENT";
-export type TicketSortField = "createdAt" | "ticketNumber" | "summary" | "requestedPriority";
-export interface TicketListItem {
-  id: number;
-  ticketNumber: string;
-  summary: string;
-  requestedPriority: TicketPriority;
-  currentStatus: "NEW";
-  createdAt: string;
-  category: Category;
-  relatedSystem: { id: number; name: string };
-}
-export interface TicketListResponse {
-  tickets: TicketListItem[];
-  pagination: { total: number; page: number; limit: number; totalPages: number };
-}
+export type TicketStatus = "NEW" | "OPEN" | "IN_PROGRESS" | "WAITING_FOR_REQUESTER" | "RESOLVED" | "CLOSED" | "REOPENED" | "CANCELLED";
+export type TicketSortField = "createdAt" | "updatedAt" | "ticketNumber" | "summary" | "requestedPriority" | "itPriority";
+
 export interface TicketAttachment {
   id: number;
   originalFilename: string;
   fileSize: number;
   mimeType: string;
   isDeleted: boolean;
-  deletionReason: string | null;
-  deletedAt: string | null;
+  deletionReason?: string | null;
+  deletedAt?: string | null;
   createdAt: string;
+}
+export interface PublicComment {
+  id: number;
+  ticketId: number;
+  author: UserSummary;
+  body: string;
+  createdAt: string;
+}
+export interface InternalNote extends PublicComment {}
+export interface TicketListItem {
+  id: number;
+  ticketNumber: string;
+  summary: string;
+  requestedPriority: TicketPriority;
+  itPriority?: TicketPriority;
+  currentStatus: TicketStatus;
+  requester?: UserSummary;
+  owner?: UserSummary | null;
+  createdAt: string;
+  updatedAt?: string;
+  category: Category;
+  relatedSystem: RelatedSystem;
+}
+export interface TicketListResponse {
+  items?: TicketListItem[];
+  meta?: { page: number; pageSize: number; limit?: number; total: number; totalPages: number; sortBy?: string; sortDir?: "asc" | "desc" };
+  // Temporary aliases keep Lab 2 presentation tests readable during migration.
+  tickets?: TicketListItem[];
+  pagination?: { total: number; page: number; limit: number; totalPages: number };
 }
 export interface TicketDetail {
   id: number;
@@ -52,18 +63,33 @@ export interface TicketDetail {
   summary: string;
   description: string;
   requestedPriority: TicketPriority;
-  currentStatus: "NEW";
+  itPriority?: TicketPriority;
+  currentStatus: TicketStatus;
+  requester: UserSummary;
+  owner?: UserSummary | null;
   createdAt: string;
-  requester: Pick<Requester, "id" | "name" | "email">;
+  updatedAt?: string;
   category: Category;
-  relatedSystem: Pick<RelatedSystem, "id" | "name">;
+  relatedSystem: RelatedSystem;
+  requesterResolutionIndicatedAt?: string | null;
   attachments: TicketAttachment[];
+  publicComments?: PublicComment[];
+  internalNotes?: InternalNote[];
+}
+export interface CreatedTicket {
+  id: number;
+  ticketNumber: string;
+  summary: string;
+  currentStatus: TicketStatus;
+  requesterId?: number;
+  createdAt: string;
+  [key: string]: unknown;
 }
 export interface TicketListQuery {
   search?: string;
   categoryId?: number;
   requestedPriority?: TicketPriority;
-  currentStatus?: "NEW";
+  currentStatus?: TicketStatus;
   sortBy: TicketSortField;
   sortOrder: "asc" | "desc";
   page: number;
@@ -71,133 +97,161 @@ export interface TicketListQuery {
 }
 
 export class ApiError extends Error {
-  constructor(message: string, public readonly fieldErrors: Record<string, string> = {}) {
+  constructor(
+    message: string,
+    public readonly fieldErrors: Record<string, string> = {},
+    public readonly code = "",
+    public readonly status = 0,
+  ) {
     super(message);
     this.name = "ApiError";
   }
 }
 
-async function readJson(response: Response): Promise<Record<string, unknown>> {
-  try {
-    return await response.json() as Record<string, unknown>;
-  } catch {
-    return {};
-  }
+let csrfToken: string | null = null;
+let unauthorizedHandler: (() => void) | null = null;
+
+export function setUnauthorizedHandler(handler: (() => void) | null) {
+  unauthorizedHandler = handler;
+  return () => {
+    if (unauthorizedHandler === handler) unauthorizedHandler = null;
+  };
 }
 
-function readFieldErrors(body: Record<string, unknown>) {
-  const fieldErrors = body.fieldErrors && typeof body.fieldErrors === "object"
-    ? Object.fromEntries(Object.entries(body.fieldErrors).filter((entry): entry is [string, string] => typeof entry[1] === "string")) : {};
-  // Multer reports single-file limits under `files`; the detail UI uses `file`.
-  if (!fieldErrors.file && fieldErrors.files) fieldErrors.file = fieldErrors.files;
-  return fieldErrors;
+async function readJson(response: Response): Promise<Record<string, unknown>> {
+  try { return await response.json() as Record<string, unknown>; } catch { return {}; }
+}
+
+function fieldErrorsFrom(body: Record<string, unknown>) {
+  const nested = body.error && typeof body.error === "object" ? body.error as Record<string, unknown> : body;
+  const value = nested.fieldErrors;
+  const errors = value && typeof value === "object"
+    ? Object.fromEntries(Object.entries(value).filter((entry): entry is [string, string] => typeof entry[1] === "string")) : {};
+  if (!errors.file && errors.files) errors.file = errors.files;
+  return errors;
+}
+
+function errorFrom(body: Record<string, unknown>, fallback: string, status: number) {
+  const nested = body.error && typeof body.error === "object" ? body.error as Record<string, unknown> : body;
+  const message = typeof nested.message === "string" ? nested.message : typeof body.error === "string" ? body.error : fallback;
+  const code = typeof nested.code === "string" ? nested.code : "";
+  return new ApiError(message, fieldErrorsFrom(body), code, status);
+}
+
+function responseError(response: Response, body: Record<string, unknown>, fallback: string) {
+  if (response.status === 401) {
+    csrfToken = null;
+    unauthorizedHandler?.();
+  }
+  return errorFrom(body, fallback, response.status);
+}
+
+async function requestJson<T>(path: string, init: RequestInit = {}, fallback = "Request failed"): Promise<T> {
+  const response = await fetch(`${API_URL}${path}`, { credentials: "include", ...init });
+  const body = await readJson(response);
+  if (!response.ok) throw responseError(response, body, fallback);
+  return (body.data ?? body) as T;
+}
+
+export async function getCurrentUser(): Promise<UserSummary> {
+  return requestJson<UserSummary>("/api/auth/me", {}, "Unable to load current session");
+}
+
+export async function login(email: string, password: string): Promise<SessionData> {
+  csrfToken = null;
+  return requestJson<SessionData>("/api/auth/login", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ email, password }),
+  }, "Unable to sign in");
+}
+
+export async function getCsrf(): Promise<string> {
+  const data = await requestJson<{ csrfToken: string }>("/api/auth/csrf", {}, "Unable to prepare secure request");
+  csrfToken = data.csrfToken;
+  return csrfToken;
+}
+
+async function csrfHeaders() {
+  return { "X-CSRF-Token": csrfToken ?? await getCsrf() };
+}
+
+export async function changePassword(currentPassword: string, newPassword: string): Promise<UserSummary> {
+  return requestJson<UserSummary>("/api/auth/change-password", {
+    method: "POST", headers: { "content-type": "application/json", ...await csrfHeaders() },
+    body: JSON.stringify({ currentPassword, newPassword }),
+  }, "Unable to change password");
+}
+
+export async function logout() {
+  await requestJson<unknown>("/api/auth/logout", { method: "POST", headers: await csrfHeaders() }, "Unable to sign out");
+  csrfToken = null;
 }
 
 export async function getReferenceData(): Promise<{ categories: Category[]; relatedSystems: RelatedSystem[] }> {
-  const [categoriesResponse, systemsResponse] = await Promise.all([
-    fetch(`${API_URL}/api/categories`), fetch(`${API_URL}/api/related-systems`),
-  ]);
-  if (!categoriesResponse.ok || !systemsResponse.ok) throw new Error("Unable to load ticket reference data");
-  return { categories: await categoriesResponse.json(), relatedSystems: await systemsResponse.json() };
+  const [categories, relatedSystems] = await Promise.all([getCategories(), getRelatedSystems()]);
+  return { categories, relatedSystems };
 }
 
 export async function getCategories(): Promise<Category[]> {
-  const response = await fetch(`${API_URL}/api/categories`);
-  if (!response.ok) throw new Error("Unable to load categories");
-  return response.json();
+  return requestJson<Category[]>("/api/categories", {}, "Unable to load categories");
 }
 
-export async function createTicket(requesterId: number, formData: FormData): Promise<CreatedTicket> {
-  const response = await fetch(`${API_URL}/api/tickets`, { method: "POST", headers: { "x-requester-id": String(requesterId) }, body: formData });
-  const body = await readJson(response);
-  if (!response.ok) {
-    const message = typeof body.error === "string" ? body.error : "Unable to create ticket";
-    const fieldErrors = body.fieldErrors && typeof body.fieldErrors === "object"
-      ? Object.fromEntries(Object.entries(body.fieldErrors).filter((entry): entry is [string, string] => typeof entry[1] === "string"))
-      : {};
-    throw new ApiError(message, fieldErrors);
-  }
-  if (typeof body.ticketNumber !== "string" || typeof body.createdAt !== "string") throw new ApiError("Unable to create ticket");
-  return body as unknown as CreatedTicket;
+export async function getRelatedSystems(): Promise<RelatedSystem[]> {
+  return requestJson<RelatedSystem[]>("/api/related-systems", {}, "Unable to load related systems");
 }
 
-export async function getTickets(requesterId: number, query: TicketListQuery): Promise<TicketListResponse> {
+export async function createTicket(formData: FormData): Promise<CreatedTicket> {
+  const body = await requestJson<CreatedTicket>("/api/tickets", { method: "POST", headers: await csrfHeaders(), body: formData }, "Unable to create ticket");
+  if (!body || typeof body.ticketNumber !== "string" || typeof body.createdAt !== "string") throw new ApiError("Unable to create ticket");
+  return body;
+}
+
+export async function getTickets(query: TicketListQuery): Promise<TicketListResponse> {
   const params = new URLSearchParams();
-  Object.entries(query).forEach(([key, item]) => {
-    if (item !== undefined && item !== "") params.set(key, String(item));
-  });
-  const response = await fetch(`${API_URL}/api/tickets?${params.toString()}`, {
-    headers: { "x-requester-id": String(requesterId) },
-  });
-  if (!response.ok) throw new Error("Unable to load your tickets");
-  return response.json();
+  Object.entries(query).forEach(([key, item]) => { if (item !== undefined && item !== "") params.set(key, String(item)); });
+  const result = await requestJson<TicketListResponse>(`/api/tickets?${params.toString()}`, {}, "Unable to load your tickets");
+  return { ...result, tickets: result.items ?? result.tickets ?? [], pagination: result.pagination ?? { total: result.meta?.total ?? 0, page: result.meta?.page ?? 1, limit: result.meta?.pageSize ?? 10, totalPages: result.meta?.totalPages ?? 0 } };
 }
 
-export async function getTicket(requesterId: number, ticketId: number): Promise<TicketDetail> {
-  const response = await fetch(`${API_URL}/api/tickets/${ticketId}`, { headers: { "x-requester-id": String(requesterId) } });
-  const body = await readJson(response);
-  if (!response.ok) throw new ApiError(typeof body.error === "string" ? body.error : "Unable to load ticket details");
-  return body as unknown as TicketDetail;
+export async function getTicket(ticketId: number): Promise<TicketDetail> {
+  return requestJson<TicketDetail>(`/api/tickets/${ticketId}`, {}, "Unable to load ticket details");
 }
 
-export async function addAttachment(requesterId: number, ticketId: number, file: File): Promise<TicketAttachment> {
-  const formData = new FormData();
-  formData.set("file", file);
-  const response = await fetch(`${API_URL}/api/tickets/${ticketId}/attachments`, {
-    method: "POST", headers: { "x-requester-id": String(requesterId) }, body: formData,
-  });
-  const body = await readJson(response);
-  if (!response.ok) {
-    throw new ApiError(typeof body.error === "string" ? body.error : "Unable to add attachment", readFieldErrors(body));
-  }
-  return body as unknown as TicketAttachment;
+export async function addAttachment(ticketId: number, file: File): Promise<TicketAttachment> {
+  const body = new FormData(); body.set("file", file);
+  return requestJson<TicketAttachment>(`/api/tickets/${ticketId}/attachments`, { method: "POST", headers: await csrfHeaders(), body }, "Unable to add attachment");
 }
 
-export async function downloadAttachment(requesterId: number, attachmentId: number): Promise<{ blob: Blob; filename: string }> {
-  const response = await fetch(`${API_URL}/api/attachments/${attachmentId}/download`, { headers: { "x-requester-id": String(requesterId) } });
-  if (!response.ok) {
-    const body = await readJson(response);
-    throw new ApiError(typeof body.error === "string" ? body.error : "Unable to download attachment");
-  }
+export async function downloadAttachment(attachmentId: number): Promise<{ blob: Blob; filename: string }> {
+  const response = await fetch(`${API_URL}/api/attachments/${attachmentId}/download`, { credentials: "include" });
+  if (!response.ok) throw responseError(response, await readJson(response), "Unable to download attachment");
   const disposition = response.headers.get("content-disposition") ?? "";
-  const filename = disposition.match(/filename="?([^";]+)"?/i)?.[1] ?? "attachment";
-  return { blob: await response.blob(), filename };
+  return { blob: await response.blob(), filename: disposition.match(/filename="?([^";]+)"?/i)?.[1] ?? "attachment" };
 }
 
-export async function removeAttachment(requesterId: number, attachmentId: number, deletionReason: string): Promise<TicketAttachment> {
-  const response = await fetch(`${API_URL}/api/attachments/${attachmentId}`, {
-    method: "DELETE", headers: { "x-requester-id": String(requesterId), "content-type": "application/json" },
-    body: JSON.stringify({ deletionReason }),
-  });
+export async function removeAttachment(attachmentId: number, deletionReason: string): Promise<TicketAttachment | void> {
+  const response = await fetch(`${API_URL}/api/attachments/${attachmentId}`, { method: "DELETE", credentials: "include", headers: { "content-type": "application/json", ...await csrfHeaders() }, body: JSON.stringify({ deletionReason }) });
+  if (!response.ok) throw responseError(response, await readJson(response), "Unable to remove attachment");
+  if (response.status === 204) return undefined;
   const body = await readJson(response);
-  if (!response.ok) {
-    throw new ApiError(typeof body.error === "string" ? body.error : "Unable to remove attachment", readFieldErrors(body));
-  }
-  return body.attachment as TicketAttachment;
+  return (body.data ?? body.attachment ?? body) as TicketAttachment;
 }
 
-export async function getRequesters(): Promise<Requester[]> {
-  const response = await fetch(`${API_URL}/api/requesters`);
-  if (!response.ok) throw new Error("Failed to load requesters");
-  return response.json();
+export async function getComments(ticketId: number): Promise<PublicComment[]> {
+  return requestJson<PublicComment[]>(`/api/tickets/${ticketId}/comments`, {}, "Unable to load comments");
 }
 
-// Issue 2 + Issue 4 — call the backend.
-// Steps: fetch `${API_URL}/api/health`; if not ok, throw.
-//        then fetch `${API_URL}/api/categories`; if not ok, throw.
-//        return { online: true, categories }.
-// Throwing on failure lets the UI show a single Offline/error state.
+export async function addComment(ticketId: number, body: string): Promise<PublicComment> {
+  return requestJson<PublicComment>(`/api/tickets/${ticketId}/comments`, { method: "POST", headers: { "content-type": "application/json", ...await csrfHeaders() }, body: JSON.stringify({ body }) }, "Unable to add comment");
+}
+
+export async function indicateResolution(ticketId: number): Promise<{ ticketId: number; indicatedAt: string }> {
+  return requestJson<{ ticketId: number; indicatedAt: string }>(`/api/tickets/${ticketId}/requester-resolution`, { method: "POST", headers: await csrfHeaders() }, "Unable to record resolution indication");
+}
+
 export async function checkSystem(): Promise<SystemStatus> {
-  const healthRes = await fetch(`${API_URL}/api/health`);
-  if (!healthRes.ok) {
-    throw new Error("Unable to connect to TokTickIT API");
-  }
-
-  const catRes = await fetch(`${API_URL}/api/categories`);
-  if (!catRes.ok) {
-    throw new Error("Failed to load categories");
-  }
-  const categories: Category[] = await catRes.json();
-
-  return { online: true, categories };
+  const healthRes = await fetch(`${API_URL}/api/health`, { credentials: "include" });
+  if (!healthRes.ok) throw responseError(healthRes, await readJson(healthRes), "Unable to connect to TokTickIT API");
+  return { online: true, categories: await getCategories() };
 }
