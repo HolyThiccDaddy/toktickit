@@ -63,9 +63,9 @@ T-06 must exercise a Requester-owned Ticket Detail, successful Public Comment su
 
 - Issue #36 authentication API: `server/tests/lab-03/auth.api.test.ts` — 10 tests passed, including generic inactive-account failures, case-insensitive first-login API-gate bypass checks, malformed JSON handling, expired sessions, and CSRF expiry.
 - Issue #36 migration and deterministic-fixture regression: `server/tests/lab-03/migration-regression.api.test.ts` — 7 tests passed, including canonical ownership links, repeated-seed equality, preservation of Lab 2 reference/counter/ticket/attachment rows, a legacy requester ID collision, and a non-fixture requester credential.
-- Issue #37 requester authorization and communication regression: `server/tests/lab-03/authorization.api.test.ts` plus `server/tests/lab-03/comments-notes.api.test.ts` — 10 tests passed, covering session-derived identity, forged-header rejection, role/ownership boundaries, public-comment validation/visibility, internal-note visibility, and idempotent resolution indication.
-- Full server regression: `server npm test` — 13 test files, 52 tests passed on each of two serial runs.
-- Full client regression: `client npm test` — 11 test files, 37 tests passed on each of two serial runs, including the authenticated requester detail conversation tests.
+- Issue #37 requester authorization and communication regression: `server/tests/lab-03/authorization.api.test.ts` plus `server/tests/lab-03/comments-notes.api.test.ts` — 11 tests passed, covering session-derived identity, forged-header rejection, role/ownership boundaries, public-comment validation/visibility, internal-note visibility, idempotent resolution indication, and the RESOLVED-ticket indication case.
+- Full server regression: `server npm test` — 13 test files, 53 tests passed on each of two serial runs.
+- Full client regression: `client npm test` — 12 test files, 40 tests passed on each of two serial runs, including expired-session recovery, retryable logout failure, and the authenticated requester detail conversation tests.
 - Authenticated requester E2E regression: `client npm run test:e2e` — 6 tests passed across desktop, tablet, and mobile projects, including public comment/resolution flow.
 - Server and client production builds passed on repeated runs.
 - `npx prisma validate` passed.
