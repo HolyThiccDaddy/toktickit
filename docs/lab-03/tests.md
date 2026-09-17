@@ -56,7 +56,7 @@ T-06 must exercise a Requester-owned Ticket Detail, successful Public Comment su
 - [x] First-login sessions cannot bypass the password gate through direct API calls.
 - [x] API response schemas, status codes, data-model decisions, and IT Priority enum are covered by tests.
 - [x] Terminal logs and visual evidence are captured and linked.
-- [ ] Results below are updated only with commands actually run.
+- [x] Results below are updated only with commands actually run.
 
 ## 6. Executed results
 
@@ -66,12 +66,12 @@ T-06 must exercise a Requester-owned Ticket Detail, successful Public Comment su
 - Issue #38 staff queue and ticket operations: `server/tests/lab-03/staff-queue.api.test.ts` — 35 tests passed, covering shared queue queries, invalid-query safety, atomic claim, eligible reassignment, IT Priority, every valid BR-08 transition, required-confirmation failures, terminal/unlisted rejection without mutation, staff detail, and public/internal communication visibility.
 - Issue #38 staff UI components: `client/tests/lab-03/StaffTicketQueue.test.tsx` and `StaffTicketDetail.test.tsx` — 4 tests passed, covering queue states/filters/page size/result count, mobile card sorting controls, retryable validation failure, claim, priority/status controls, attachment download, public comments, and internal notes.
 - Issue #38 staff E2E: `client npm run test:e2e -- ../e2e/lab-03/staff-ticket-flow.spec.ts` — 2 tests passed on the desktop project, covering requester-created work entering the shared staff queue, opening staff detail, and mobile card sorting controls at 375px.
-- Issue #39 Administrator API: `server/tests/lab-03/users-admin.api.test.ts` — 3 tests passed, covering safe listing and role boundaries, create/edit/activation/initial-password reset, duplicate email, invalid role, inactive login, and self-safety rules.
-- Issue #39 Administrator UI: `client/tests/lab-03/UserManagement.test.tsx` — 2 tests passed, covering list/search controls, create/edit/activation/reset actions, and retryable API failure.
+- Issue #39 Administrator API: `server/tests/lab-03/users-admin.api.test.ts` — 4 tests passed, covering safe listing and role boundaries, create/edit/activation/initial-password reset, duplicate email, invalid role, inactive login, self-safety rules, and concurrent last-admin protection.
+- Issue #39 Administrator UI: `client/tests/lab-03/UserManagement.test.tsx` — 4 tests passed, covering list/search controls, filtered mutation refresh, stale-search response protection, create/edit/activation/reset actions, and retryable API failure.
 - Issue #39 E2E: `client npm run test:e2e -- ../e2e/lab-03 --project=desktop` — 6 tests passed, covering authentication, requester communication, staff queue/detail, and Administrator user management.
 - Issue #39 responsive E2E: `client npm run test:e2e -- ../e2e/lab-03/responsive.visual.spec.ts --project=tablet --project=mobile` — 2 tests passed; each project captured authentication, User Management, Staff Queue, and Staff Ticket Detail evidence.
-- Full server regression: `server npm test` — 15 test files, 91 tests passed.
-- Full client regression: `client npx vitest run --maxWorkers=1 --minWorkers=1` — 15 test files, 46 tests passed, including Administrator User Management, mobile staff queue sorting, and authenticated requester recovery. The serial run is the verified result.
+- Full server regression: `server npm test` — 15 test files, 92 tests passed.
+- Full client regression: `client npx vitest run --maxWorkers=1 --minWorkers=1` — 15 test files, 48 tests passed, including Administrator User Management, mobile staff queue sorting, and authenticated requester recovery. The serial run is the verified result.
 - Authenticated requester E2E baseline: the retained evidence records 6 tests passed across desktop, tablet, and mobile projects, including public comment/resolution flow; a later full rerun retained six functional passes but its desktop visual capture hit an existing screenshot-file lock, so it is not counted as a new all-pass run.
 - Server and client production builds passed after the Issue #39 implementation.
 - `npx prisma validate` passed.

@@ -1,5 +1,5 @@
 import { Router, type Request, type RequestHandler } from "express";
-import { Prisma, type UserRole } from "@prisma/client";
+import { Prisma, type PrismaClient, type User, type UserRole } from "@prisma/client";
 import { apiError, hashPassword, requireAuth, requireCsrf } from "./auth.js";
 import { getPrisma } from "./prisma.js";
 import { safeUser, validationError } from "./tickets.js";
@@ -31,6 +31,63 @@ function validatePassword(value: unknown) {
 
 function duplicateEmail(error: unknown) {
   return error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002";
+}
+
+function serializationConflict(error: unknown) {
+  return error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2034";
+}
+
+type AdminUpdateOutcome =
+  | { kind: "not-found" }
+  | { kind: "conflict"; message: string }
+  | { kind: "updated"; user: User };
+type AdminUpdateData = { email?: string; displayName?: string; role?: UserRole; active?: boolean };
+
+export async function updateAdminUserRecord(
+  prisma: PrismaClient,
+  userId: number,
+  actorId: number,
+  data: AdminUpdateData,
+): Promise<AdminUpdateOutcome> {
+  let outcome: AdminUpdateOutcome | null = null;
+  let exhaustedSerializationRetries = false;
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    try {
+      outcome = await prisma.$transaction(async (tx): Promise<AdminUpdateOutcome> => {
+        const target = await tx.user.findUnique({ where: { id: userId } });
+        if (!target) return { kind: "not-found" };
+        const nextRole = data.role ?? target.role;
+        const nextActive = data.active ?? target.active;
+        const isSelf = actorId === userId;
+        if (isSelf && (!nextActive || nextRole !== "ADMIN")) {
+          return { kind: "conflict", message: "An Administrator cannot deactivate or change their own role" };
+        }
+        if (target.role === "ADMIN" && target.active && (!nextActive || nextRole !== "ADMIN")) {
+          const activeAdmins = await tx.user.count({ where: { role: "ADMIN", active: true } });
+          if (activeAdmins <= 1) {
+            return { kind: "conflict", message: "The last active Administrator cannot be deactivated or demoted" };
+          }
+        }
+        const updated = await tx.user.update({ where: { id: userId }, data });
+        if (!nextActive) {
+          await tx.authSession.updateMany({ where: { userId, revokedAt: null }, data: { revokedAt: new Date() } });
+        }
+        return { kind: "updated", user: updated };
+      }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+      break;
+    } catch (error) {
+      if (serializationConflict(error) && attempt < 2) continue;
+      if (serializationConflict(error)) {
+        exhaustedSerializationRetries = true;
+        break;
+      }
+      throw error;
+    }
+  }
+  if (exhaustedSerializationRetries || !outcome) {
+    return { kind: "conflict", message: "The user update conflicted with another administrator change; please retry" };
+  }
+  return outcome;
 }
 
 export function createAdminRouter() {
@@ -100,7 +157,7 @@ export function createAdminRouter() {
     const allowed = new Set(["email", "displayName", "role", "active"]);
     const supplied = Object.keys(body);
     if (!supplied.length || supplied.some((key) => !allowed.has(key))) return validationError(res, { user: "Provide at least one supported user field" });
-    const data: { email?: string; displayName?: string; role?: UserRole; active?: boolean } = {};
+    const data: AdminUpdateData = {};
     const errors: Record<string, string> = {};
     if (Object.prototype.hasOwnProperty.call(body, "email")) {
       const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
@@ -124,22 +181,10 @@ export function createAdminRouter() {
 
     try {
       const prisma = getPrisma();
-      const target = await prisma.user.findUnique({ where: { id: userId } });
-      if (!target) return apiError(res, 404, "NOT_FOUND", "User not found");
-      const nextRole = data.role ?? target.role;
-      const nextActive = data.active ?? target.active;
-      const isSelf = req.auth!.user.id === userId;
-      if (isSelf && (!nextActive || nextRole !== "ADMIN")) return apiError(res, 409, "CONFLICT", "An Administrator cannot deactivate or change their own role");
-      if (target.role === "ADMIN" && target.active && (!nextActive || nextRole !== "ADMIN")) {
-        const activeAdmins = await prisma.user.count({ where: { role: "ADMIN", active: true } });
-        if (activeAdmins <= 1) return apiError(res, 409, "CONFLICT", "The last active Administrator cannot be deactivated or demoted");
-      }
-      const updated = await prisma.$transaction(async (tx) => {
-        const result = await tx.user.update({ where: { id: userId }, data });
-        if (!nextActive) await tx.authSession.updateMany({ where: { userId, revokedAt: null }, data: { revokedAt: new Date() } });
-        return result;
-      });
-      return res.status(200).json({ data: safeUser(updated) });
+      const outcome = await updateAdminUserRecord(prisma, userId, req.auth!.user.id, data);
+      if (outcome.kind === "not-found") return apiError(res, 404, "NOT_FOUND", "User not found");
+      if (outcome.kind === "conflict") return apiError(res, 409, "CONFLICT", outcome.message);
+      return res.status(200).json({ data: safeUser(outcome.user) });
     } catch (error) {
       if (duplicateEmail(error)) return apiError(res, 409, "CONFLICT", "A user with this email already exists");
       return apiError(res, 500, "INTERNAL_ERROR", "Unable to update user");

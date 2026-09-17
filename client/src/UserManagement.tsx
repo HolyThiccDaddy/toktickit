@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import {
   ApiError, createAdminUser, getAdminUsers, resetAdminUserPassword, updateAdminUser,
   type AdminUserInput, type AuthRole, type UserSummary,
@@ -25,12 +25,19 @@ export default function UserManagement({ user }: { user: UserSummary }) {
   const [resetUser, setResetUser] = useState<UserSummary | null>(null);
   const [resetPassword, setResetPassword] = useState("");
   const [resetting, setResetting] = useState(false);
+  const loadSequence = useRef(0);
 
   const load = useCallback(async () => {
+    const requestSequence = ++loadSequence.current;
     setLoading(true); setError("");
-    try { setUsers(await getAdminUsers({ q, role: role || undefined })); }
-    catch (reason) { setError(errorMessage(reason, "Unable to load users")); }
-    finally { setLoading(false); }
+    try {
+      const result = await getAdminUsers({ q, role: role || undefined });
+      if (requestSequence === loadSequence.current) setUsers(result);
+    } catch (reason) {
+      if (requestSequence === loadSequence.current) setError(errorMessage(reason, "Unable to load users"));
+    } finally {
+      if (requestSequence === loadSequence.current) setLoading(false);
+    }
   }, [q, role]);
   useEffect(() => { void load(); }, [load]);
 
@@ -46,11 +53,11 @@ export default function UserManagement({ user }: { user: UserSummary }) {
     try {
       if (editing) {
         const updated = await updateAdminUser(editing.id, { email: form.email, displayName: form.displayName, role: form.role, active: form.active });
-        setUsers((current) => current.map((item) => item.id === updated.id ? updated : item));
+        await load();
         setSuccess(`Updated ${updated.displayName}.`);
       } else {
         const created = await createAdminUser(form);
-        setUsers((current) => [...current, created].sort((a, b) => a.displayName.localeCompare(b.displayName)));
+        await load();
         setSuccess(`Created ${created.displayName}.`);
       }
       closeForm();
@@ -61,7 +68,7 @@ export default function UserManagement({ user }: { user: UserSummary }) {
     setError(""); setSuccess("");
     try {
       const updated = await updateAdminUser(next.id, { active: !next.active });
-      setUsers((current) => current.map((item) => item.id === updated.id ? updated : item));
+      await load();
       setSuccess(`${updated.displayName} is now ${updated.active ? "active" : "inactive"}.`);
     } catch (reason) { setError(errorMessage(reason, "Unable to update user")); }
   }
@@ -71,7 +78,7 @@ export default function UserManagement({ user }: { user: UserSummary }) {
     setResetting(true); setError(""); setSuccess("");
     try {
       await resetAdminUserPassword(resetUser.id, resetPassword);
-      setUsers((current) => current.map((item) => item.id === resetUser.id ? { ...item, mustChangePassword: true } : item));
+      await load();
       setSuccess(`Reset the initial password for ${resetUser.displayName}.`);
       setResetUser(null); setResetPassword("");
     } catch (reason) { setError(errorMessage(reason, "Unable to reset initial password")); }

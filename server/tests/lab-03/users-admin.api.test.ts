@@ -1,11 +1,13 @@
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import request from "supertest";
 import { app } from "../../src/app.js";
+import { updateAdminUserRecord } from "../../src/admin.js";
 import { getPrisma } from "../../src/prisma.js";
 import { hashPassword } from "../../src/auth.js";
 
 const prisma = getPrisma();
 const admin = { email: "admin@example.com", password: "AdminOne!2026" };
+const secondAdmin = { email: "admin-issue39-other@example.com", password: "AdminTwo!2026" };
 const requester = { email: "jennifer.anderson@example.com", password: "RequesterOne!2026" };
 const createdEmail = "admin-issue39-created@example.com";
 
@@ -20,7 +22,7 @@ async function login(credentials: { email: string; password: string }) {
 
 async function resetFixtures() {
   await prisma.authSession.deleteMany();
-  await prisma.user.deleteMany({ where: { email: { in: [createdEmail, "admin-issue39-other@example.com"] } } });
+  await prisma.user.deleteMany({ where: { email: { in: [createdEmail, secondAdmin.email] } } });
   await prisma.user.update({
     where: { email: admin.email },
     data: { role: "ADMIN", active: true, passwordHash: await hashPassword(admin.password), mustChangePassword: false },
@@ -36,7 +38,7 @@ describe("Issue 39 Administrator user management", () => {
 
   afterAll(async () => {
     await prisma.authSession.deleteMany();
-    await prisma.user.deleteMany({ where: { email: { in: [createdEmail, "admin-issue39-other@example.com"] } } });
+    await prisma.user.deleteMany({ where: { email: { in: [createdEmail, secondAdmin.email] } } });
     await prisma.$disconnect();
   });
 
@@ -84,5 +86,28 @@ describe("Issue 39 Administrator user management", () => {
     expect(selfDeactivate.status).toBe(409);
     const selfRoleChange = await agent.patch(`/api/admin/users/${(await prisma.user.findUniqueOrThrow({ where: { email: admin.email } })).id}`).set("X-CSRF-Token", csrfToken).send({ role: "REQUESTER" });
     expect(selfRoleChange.status).toBe(409);
+  });
+
+  it("keeps one active Administrator when two admins deactivate concurrently", async () => {
+    const createdSecondAdmin = await prisma.user.create({
+      data: {
+        email: secondAdmin.email,
+        displayName: "Second Issue 39 Administrator",
+        role: "ADMIN",
+        active: true,
+        passwordHash: await hashPassword(secondAdmin.password),
+        mustChangePassword: false,
+      },
+    });
+    const primaryAdmin = await prisma.user.findUniqueOrThrow({ where: { email: admin.email } });
+    const [firstOutcome, secondOutcome] = await Promise.all([
+      updateAdminUserRecord(prisma, createdSecondAdmin.id, primaryAdmin.id, { active: false }),
+      updateAdminUserRecord(prisma, primaryAdmin.id, createdSecondAdmin.id, { active: false }),
+    ]);
+
+    expect([firstOutcome.kind, secondOutcome.kind].sort()).toEqual(["conflict", "updated"]);
+    await expect(
+      prisma.user.count({ where: { role: "ADMIN", active: true } }),
+    ).resolves.toBe(1);
   });
 });
