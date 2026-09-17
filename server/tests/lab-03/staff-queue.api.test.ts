@@ -54,6 +54,40 @@ async function createTicket(suffix: string, data: Record<string, unknown> = {}) 
   });
 }
 
+async function currentStatus(ticketId: number) {
+  const ticket = await prisma.ticket.findUniqueOrThrow({ where: { id: ticketId }, select: { currentStatus: true } });
+  return ticket.currentStatus;
+}
+
+const validStatusTransitions = [
+  { from: "NEW", to: "OPEN", confirm: false },
+  { from: "OPEN", to: "IN_PROGRESS", confirm: false },
+  { from: "IN_PROGRESS", to: "WAITING_FOR_REQUESTER", confirm: false },
+  { from: "WAITING_FOR_REQUESTER", to: "IN_PROGRESS", confirm: false },
+  { from: "IN_PROGRESS", to: "RESOLVED", confirm: true },
+  { from: "RESOLVED", to: "CLOSED", confirm: true },
+  { from: "RESOLVED", to: "REOPENED", confirm: true },
+  { from: "REOPENED", to: "IN_PROGRESS", confirm: false },
+  { from: "NEW", to: "CANCELLED", confirm: true },
+  { from: "OPEN", to: "CANCELLED", confirm: true },
+  { from: "IN_PROGRESS", to: "CANCELLED", confirm: true },
+  { from: "WAITING_FOR_REQUESTER", to: "CANCELLED", confirm: true },
+  { from: "REOPENED", to: "CANCELLED", confirm: true },
+] as const;
+
+const confirmationRequiredTransitions = validStatusTransitions.filter((transition) => transition.confirm);
+
+const rejectedStatusTransitions = [
+  { from: "CLOSED", to: "OPEN", confirm: true },
+  { from: "CANCELLED", to: "NEW", confirm: true },
+  { from: "NEW", to: "IN_PROGRESS" },
+  { from: "OPEN", to: "RESOLVED" },
+  { from: "IN_PROGRESS", to: "CLOSED" },
+  { from: "WAITING_FOR_REQUESTER", to: "RESOLVED" },
+  { from: "RESOLVED", to: "IN_PROGRESS" },
+  { from: "REOPENED", to: "CLOSED" },
+] as const;
+
 describe("Issue 38 IT Staff queue and ticket operations", () => {
   beforeEach(prepareFixtures);
 
@@ -119,15 +153,47 @@ describe("Issue 38 IT Staff queue and ticket operations", () => {
     expect(unassigned.body.data.owner).toBeNull();
   });
 
-  it("enforces IT Priority and the complete status transition confirmation rules", async () => {
+  it("updates IT Priority without changing the formal status", async () => {
     const ticket = await createTicket("380005", { currentStatus: "IN_PROGRESS" });
     const { agent, csrfToken } = await login(staff);
     expect((await agent.patch(`/api/staff/tickets/${ticket.id}/priority`).set("X-CSRF-Token", csrfToken).send({ itPriority: "URGENT" })).status).toBe(200);
-    expect((await agent.patch(`/api/staff/tickets/${ticket.id}/status`).set("X-CSRF-Token", csrfToken).send({ status: "RESOLVED" })).status).toBe(409);
-    const changed = await agent.patch(`/api/staff/tickets/${ticket.id}/status`).set("X-CSRF-Token", csrfToken).send({ status: "RESOLVED", confirm: true });
-    expect(changed.status).toBe(200);
-    expect(changed.body.data.currentStatus).toBe("RESOLVED");
-    expect((await agent.patch(`/api/staff/tickets/${ticket.id}/status`).set("X-CSRF-Token", csrfToken).send({ status: "CANCELLED", confirm: true })).status).toBe(409);
+    expect(await currentStatus(ticket.id)).toBe("IN_PROGRESS");
+  });
+
+  it.each(validStatusTransitions)("allows the BR-08 transition $from -> $to", async ({ from, to, confirm }) => {
+    const ticket = await createTicket("380005", { currentStatus: from });
+    const { agent, csrfToken } = await login(staff);
+    const response = await agent.patch(`/api/staff/tickets/${ticket.id}/status`)
+      .set("X-CSRF-Token", csrfToken)
+      .send({ status: to, ...(confirm ? { confirm: true } : {}) });
+
+    expect(response.status).toBe(200);
+    expect(response.body.data.currentStatus).toBe(to);
+    expect(await currentStatus(ticket.id)).toBe(to);
+  });
+
+  it.each(confirmationRequiredTransitions)("rejects $from -> $to without explicit confirmation and preserves status", async ({ from, to }) => {
+    const ticket = await createTicket("380005", { currentStatus: from });
+    const { agent, csrfToken } = await login(staff);
+
+    for (const confirm of [undefined, false]) {
+      const response = await agent.patch(`/api/staff/tickets/${ticket.id}/status`)
+        .set("X-CSRF-Token", csrfToken)
+        .send({ status: to, ...(confirm === undefined ? {} : { confirm }) });
+      expect(response.status).toBe(409);
+      expect(await currentStatus(ticket.id)).toBe(from);
+    }
+  });
+
+  it.each(rejectedStatusTransitions)("rejects the unlisted or terminal transition $from -> $to without mutation", async ({ from, to, ...transition }) => {
+    const ticket = await createTicket("380005", { currentStatus: from });
+    const { agent, csrfToken } = await login(staff);
+    const response = await agent.patch(`/api/staff/tickets/${ticket.id}/status`)
+      .set("X-CSRF-Token", csrfToken)
+      .send({ status: to, ...transition });
+
+    expect(response.status).toBe(409);
+    expect(await currentStatus(ticket.id)).toBe(from);
   });
 
   it("keeps public comments visible while protecting internal notes from requesters", async () => {

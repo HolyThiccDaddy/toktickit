@@ -27,4 +27,17 @@ test.describe("Issue #38 IT Staff queue and ticket operations", () => {
     await expect(page.getByLabel("IT Priority")).toBeVisible();
     await expect(page.getByLabel("Move status")).toBeVisible();
   });
+
+  test("keeps queue sorting controls usable with mobile ticket cards", async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 844 });
+    await signInAsStaff(page, e2eAccounts.alexStaff);
+
+    await expect(page.getByTestId("staff-ticket-card-list")).toBeVisible();
+    await expect(page.getByLabel("Sort by", { exact: true })).toBeVisible();
+    await expect(page.getByLabel("Sort direction")).toBeVisible();
+    await page.getByLabel("Sort by", { exact: true }).selectOption("itPriority");
+    await page.getByLabel("Sort direction").selectOption("asc");
+    await expect(page.getByLabel("Sort by", { exact: true })).toHaveValue("itPriority");
+    await expect(page.getByLabel("Sort direction")).toHaveValue("asc");
+  });
 });

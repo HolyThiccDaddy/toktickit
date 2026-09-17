@@ -33,6 +33,26 @@ describe("IT Staff Ticket Queue", () => {
     expect(onView).toHaveBeenCalledWith(item.id);
   });
 
+  it("keeps sort controls available beside the mobile ticket cards", async () => {
+    vi.spyOn(api, "getCategories").mockResolvedValue([{ id: 1, name: "Network", description: null }]);
+    const getStaffTickets = vi.spyOn(api, "getStaffTickets").mockResolvedValue({ items: [item], meta: { page: 1, pageSize: 20, total: 1, totalPages: 1, sortBy: "updatedAt", sortDir: "desc" } });
+    const previousWidth = window.innerWidth;
+    Object.defineProperty(window, "innerWidth", { configurable: true, value: 375 });
+
+    try {
+      render(<StaffQueue user={user} onView={vi.fn()} />);
+      expect(await screen.findByTestId("staff-ticket-card-list")).toBeInTheDocument();
+      expect(screen.getByLabelText("Sort by")).toBeInTheDocument();
+      expect(screen.getByLabelText("Sort direction")).toBeInTheDocument();
+
+      fireEvent.change(screen.getByLabelText("Sort by"), { target: { value: "itPriority" } });
+      fireEvent.change(screen.getByLabelText("Sort direction"), { target: { value: "asc" } });
+      await waitFor(() => expect(getStaffTickets).toHaveBeenLastCalledWith(expect.objectContaining({ sortBy: "itPriority", sortDir: "asc", page: 1 })));
+    } finally {
+      Object.defineProperty(window, "innerWidth", { configurable: true, value: previousWidth });
+    }
+  });
+
   it("shows a retryable invalid-query error", async () => {
     vi.spyOn(api, "getCategories").mockResolvedValue([]);
     vi.spyOn(api, "getStaffTickets").mockRejectedValue(new api.ApiError("Invalid queue query parameters", { query: "Invalid" }, "VALIDATION_ERROR", 400));

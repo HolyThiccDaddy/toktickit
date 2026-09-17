@@ -7,6 +7,13 @@ import {
 
 const statuses: TicketStatus[] = ["NEW", "OPEN", "IN_PROGRESS", "WAITING_FOR_REQUESTER", "RESOLVED", "CLOSED", "REOPENED", "CANCELLED"];
 const priorities: TicketPriority[] = ["LOW", "MEDIUM", "HIGH", "URGENT"];
+const sortOptions: Array<{ value: StaffSortField; label: string }> = [
+  { value: "updatedAt", label: "Updated date" },
+  { value: "createdAt", label: "Created date" },
+  { value: "ticketNumber", label: "Ticket Number" },
+  { value: "status", label: "Status" },
+  { value: "itPriority", label: "IT Priority" },
+];
 
 function formatDate(value: string) {
   return new Date(value).toLocaleString();
@@ -101,6 +108,8 @@ export default function StaffQueue({ user, onView }: { user: UserSummary; onView
       <div className="col-sm-6 col-lg-2"><label className="form-label" htmlFor="staff-queue-priority">IT Priority</label><select id="staff-queue-priority" className="form-select" value={itPriority} onChange={(event) => update((value) => setItPriority(value as TicketPriority | ""), event.target.value)}><option value="">All priorities</option>{priorities.map((value) => <option key={value} value={value}>{value}</option>)}</select></div>
       <div className="col-sm-6 col-lg-2"><label className="form-label" htmlFor="staff-queue-assignee">Assignee ID</label><input id="staff-queue-assignee" className="form-control" inputMode="numeric" placeholder="Any assignee" value={assigneeId} onChange={(event) => update(setAssigneeId, event.target.value)} /></div>
       <div className="col-sm-6 col-lg-2"><label className="form-label" htmlFor="staff-queue-category">Category</label><select id="staff-queue-category" className="form-select" value={categoryId} onChange={(event) => update(setCategoryId, event.target.value)} disabled={categoriesLoading || Boolean(categoryError)}><option value="">All categories</option>{categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}</select></div>
+      <div className="col-sm-6 col-lg-2"><label className="form-label" htmlFor="staff-queue-sort-by">Sort by</label><select id="staff-queue-sort-by" className="form-select" value={sortBy} onChange={(event) => { setSortBy(event.target.value as StaffSortField); setPage(1); }}>{sortOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></div>
+      <div className="col-sm-6 col-lg-2"><label className="form-label" htmlFor="staff-queue-sort-dir">Sort direction</label><select id="staff-queue-sort-dir" className="form-select" value={sortDir} onChange={(event) => { setSortDir(event.target.value as "asc" | "desc"); setPage(1); }}><option value="desc">Descending</option><option value="asc">Ascending</option></select></div>
       <div className="col-sm-6 col-lg-2"><label className="form-label" htmlFor="staff-queue-page-size">Results per page</label><select id="staff-queue-page-size" className="form-select" value={pageSize} onChange={(event) => { setPageSize(Number(event.target.value)); setPage(1); }}><option value={20}>20</option><option value={50}>50</option><option value={100}>100</option></select></div>
       <div className="col-sm-6 col-lg-1"><button className="btn btn-outline-zen w-100" type="button" onClick={clearFilters} disabled={!hasFilters}>Clear</button></div>
     </div></div>
