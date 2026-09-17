@@ -5,6 +5,8 @@ import Login from "./Login.js";
 import ChangePassword from "./ChangePassword.js";
 import MyTickets from "./MyTickets.js";
 import TicketDetail from "./TicketDetail.js";
+import StaffQueue from "./StaffQueue.js";
+import StaffTicketDetail from "./StaffTicketDetail.js";
 
 type SystemState = "idle" | "loading" | "success" | "error";
 
@@ -47,8 +49,11 @@ function RequesterWorkspace({ user, onSignOut }: { user: UserSummary; onSignOut:
   </main></>;
 }
 
-function AccessDenied({ user, onSignOut }: { user: UserSummary; onSignOut: () => void }) {
-  return <main className="min-vh-100 d-flex align-items-center p-3" style={{ background: "#F5F7F6" }}><section className="card shadow-sm mx-auto p-4 w-100" style={{ maxWidth: 560 }} aria-labelledby="access-denied-title"><h1 id="access-denied-title" className="h3 text-zen">Workspace unavailable</h1><p>This account is signed in as <strong>{user.role}</strong>. The requester workspace is limited to Requester accounts.</p><button className="btn btn-outline-zen" type="button" onClick={onSignOut}>Sign out</button></section></main>;
+function StaffWorkspace({ user, onSignOut }: { user: UserSummary; onSignOut: () => void }) {
+  const [view, setView] = useState<"queue" | "detail">("queue");
+  const [selectedTicketId, setSelectedTicketId] = useState<number | null>(null);
+  const header = <header className="zen-header d-flex flex-wrap align-items-center justify-content-between gap-2 px-3 py-2 text-white w-100"><strong>TokTickIT</strong><nav className="d-flex gap-2" aria-label="Primary navigation"><button className={`zen-nav-button px-2 py-1 ${view === "queue" ? "active" : ""}`} type="button" onClick={() => setView("queue")}>Ticket Queue</button>{view === "detail" && selectedTicketId !== null && <button className="zen-nav-button px-2 py-1 active" type="button" aria-current="page" onClick={() => setView("detail")}>Ticket Detail</button>}</nav><div className="d-flex align-items-center gap-2"><span className="d-flex flex-column align-items-end"><span>{user.displayName}</span><span className="small opacity-75">{user.role}</span></span><button className="btn btn-light btn-sm" type="button" onClick={onSignOut}>Sign out</button></div></header>;
+  return <><div>{header}</div><main className="container py-4"><>{view === "queue" ? <StaffQueue user={user} onView={(ticketId) => { setSelectedTicketId(ticketId); setView("detail"); }} /> : selectedTicketId !== null ? <StaffTicketDetail user={user} ticketId={selectedTicketId} onBack={() => setView("queue")} /> : <StaffQueue user={user} onView={() => setView("queue")} />}</></main></>;
 }
 
 export default function App() {
@@ -96,9 +101,9 @@ export default function App() {
   if (!user) return <Login onAuthenticated={(next) => { setSignOutError(""); setUser(next); setState("signed-in"); }} />;
   const authenticatedView = user.mustChangePassword
     ? <ChangePassword user={user} onChanged={(next) => setUser(next)} onSignOut={() => void signOut()} />
-    : user.role !== "REQUESTER"
-      ? <AccessDenied user={user} onSignOut={() => void signOut()} />
-      : <RequesterWorkspace user={user} onSignOut={() => void signOut()} />;
+    : user.role === "REQUESTER"
+      ? <RequesterWorkspace user={user} onSignOut={() => void signOut()} />
+      : <StaffWorkspace user={user} onSignOut={() => void signOut()} />;
   return <>
     {signOutError && <div className="alert alert-danger m-3" role="alert"><p className="mb-2">{signOutError}</p><button className="btn btn-outline-danger" type="button" onClick={() => void signOut()}>Retry sign out</button></div>}
     {authenticatedView}

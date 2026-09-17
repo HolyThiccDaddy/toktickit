@@ -18,7 +18,7 @@ const allowedTypes: Record<string, string[]> = {
 
 class AttachmentLimitError extends Error {}
 
-const userSelect = {
+export const userSelect = {
   id: true,
   email: true,
   displayName: true,
@@ -33,7 +33,15 @@ const requesterAccess: RequestHandler = (req, res, next) => {
   return next();
 };
 
+function staffRole(req: Request) {
+  return req.auth?.user.role === "IT_STAFF" || req.auth?.user.role === "ADMIN";
+}
+
 const requesterMutation: RequestHandler = (req, res, next) => requireCsrf(req, res, next);
+const requesterOnlyMutation: RequestHandler = (req, res, next) => {
+  if (req.auth?.user.role !== "REQUESTER") return apiError(res, 403, "FORBIDDEN", "Only the ticket requester may remove an attachment");
+  return requireCsrf(req, res, next);
+};
 
 function requesterIdFrom(req: Request) {
   return req.auth?.user.id ?? null;
@@ -43,11 +51,11 @@ async function requesterIsActive(req: Request, requesterId: number) {
   return Boolean(req.auth && req.auth.user.id === requesterId && req.auth.user.role === "REQUESTER" && req.auth.user.active);
 }
 
-function notFound(res: Parameters<RequestHandler>[1], message = "Ticket not found") {
+export function notFound(res: Parameters<RequestHandler>[1], message = "Ticket not found") {
   return apiError(res, 404, "NOT_FOUND", message);
 }
 
-function attachmentMetadata(attachment: {
+export function attachmentMetadata(attachment: {
   id: number; originalFilename: string; fileSize: number; mimeType: string;
   isDeleted: boolean; createdAt: Date;
 }) {
@@ -61,7 +69,7 @@ function attachmentMetadata(attachment: {
   };
 }
 
-function attachmentDetailMetadata(attachment: {
+export function attachmentDetailMetadata(attachment: {
   id: number; originalFilename: string; fileSize: number; mimeType: string;
   isDeleted: boolean; deletionReason: string | null; deletedAt: Date | null; createdAt: Date;
 }) {
@@ -72,7 +80,7 @@ function attachmentDetailMetadata(attachment: {
   };
 }
 
-function safeUser(user: {
+export function safeUser(user: {
   id: number; email: string; displayName: string; role: "REQUESTER" | "IT_STAFF" | "ADMIN";
   active: boolean; mustChangePassword: boolean;
 }) {
@@ -94,7 +102,7 @@ type PublicCommentRecord = {
   author: { id: number; email: string; displayName: string; role: "REQUESTER" | "IT_STAFF" | "ADMIN"; active: boolean; mustChangePassword: boolean };
 };
 
-function publicCommentMetadata(comment: PublicCommentRecord) {
+export function publicCommentMetadata(comment: PublicCommentRecord) {
   return {
     id: comment.id,
     ticketId: comment.ticketId,
@@ -106,11 +114,11 @@ function publicCommentMetadata(comment: PublicCommentRecord) {
 
 type InternalNoteRecord = PublicCommentRecord;
 
-function internalNoteMetadata(note: InternalNoteRecord) {
+export function internalNoteMetadata(note: InternalNoteRecord) {
   return publicCommentMetadata(note);
 }
 
-const ticketInclude = {
+export const ticketInclude = {
   requester: { select: userSelect },
   owner: { select: userSelect },
   category: { select: { id: true, name: true, description: true } },
@@ -134,7 +142,7 @@ const ticketInclude = {
 
 type TicketRecord = Prisma.TicketGetPayload<{ include: typeof ticketInclude }>;
 
-function ticketMetadata(ticket: TicketRecord, includeInternalNotes = false) {
+export function ticketMetadata(ticket: TicketRecord, includeInternalNotes = false) {
   return {
     id: ticket.id,
     ticketNumber: ticket.ticketNumber,
@@ -160,12 +168,12 @@ async function ownedTicket(ticketId: number, requesterId: number) {
   return getPrisma().ticket.findFirst({ where: { id: ticketId, requesterId }, include: ticketInclude });
 }
 
-function parseTicketId(value: string) {
+export function parseTicketId(value: string) {
   const id = Number(value);
   return Number.isInteger(id) && id > 0 ? id : null;
 }
 
-function validationError(res: Parameters<RequestHandler>[1], fieldErrors: Record<string, string>, message = "Validation failed") {
+export function validationError(res: Parameters<RequestHandler>[1], fieldErrors: Record<string, string>, message = "Validation failed") {
   return apiError(res, 400, "VALIDATION_ERROR", message, fieldErrors);
 }
 
@@ -307,7 +315,7 @@ export function createTicketsRouter(options: TicketsRouterOptions = {}) {
   });
 
   router.get("/:id/notes", (_req, res) => apiError(res, 403, "FORBIDDEN", "Only IT Staff or Administrators may access internal notes"));
-  router.post("/:id/notes", requesterMutation, (_req, res) => apiError(res, 403, "FORBIDDEN", "Only IT Staff or Administrators may access internal notes"));
+  router.post("/:id/notes", (_req, res) => apiError(res, 403, "FORBIDDEN", "Only IT Staff or Administrators may access internal notes"));
 
   router.post("/:id/requester-resolution", requesterMutation, async (req, res) => {
     const requesterId = requesterIdFrom(req);
@@ -466,7 +474,7 @@ export function createTicketsRouter(options: TicketsRouterOptions = {}) {
 export function createAttachmentsRouter(options: Pick<TicketsRouterOptions, "getUploadRoot"> = {}) {
   const router = Router();
   const getUploadRoot = options.getUploadRoot ?? (() => resolve(process.env.TOKTICKIT_UPLOAD_ROOT ?? resolve(process.cwd(), "uploads")));
-  router.use(requireAuth(), requesterAccess);
+  router.use(requireAuth());
 
   router.get("/:id/download", async (req, res) => {
     const requesterId = requesterIdFrom(req);
@@ -477,7 +485,7 @@ export function createAttachmentsRouter(options: Pick<TicketsRouterOptions, "get
         where: { id: attachmentId },
         select: { id: true, originalFilename: true, storageKey: true, mimeType: true, isDeleted: true, ticket: { select: { requesterId: true } } },
       });
-      if (!attachment || attachment.ticket.requesterId !== requesterId) return notFound(res, "Attachment not found");
+      if (!attachment || (!staffRole(req) && attachment.ticket.requesterId !== requesterId)) return notFound(res, "Attachment not found");
       if (attachment.isDeleted) return apiError(res, 410, "GONE", "Attachment has been removed");
       const uploadRoot = resolve(getUploadRoot());
       const filePath = resolve(uploadRoot, attachment.storageKey);
@@ -493,7 +501,7 @@ export function createAttachmentsRouter(options: Pick<TicketsRouterOptions, "get
     }
   });
 
-  router.delete("/:id", requesterMutation, async (req, res) => {
+  router.delete("/:id", requesterOnlyMutation, async (req, res) => {
     const requesterId = requesterIdFrom(req);
     const attachmentId = parseTicketId(req.params.id);
     if (requesterId === null || attachmentId === null) return notFound(res, "Attachment not found");

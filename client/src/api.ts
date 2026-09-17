@@ -17,6 +17,7 @@ export interface SystemStatus { online: boolean; categories: Category[]; }
 export type TicketPriority = "LOW" | "MEDIUM" | "HIGH" | "URGENT";
 export type TicketStatus = "NEW" | "OPEN" | "IN_PROGRESS" | "WAITING_FOR_REQUESTER" | "RESOLVED" | "CLOSED" | "REOPENED" | "CANCELLED";
 export type TicketSortField = "createdAt" | "updatedAt" | "ticketNumber" | "summary" | "requestedPriority" | "itPriority";
+export type StaffSortField = "ticketNumber" | "createdAt" | "updatedAt" | "status" | "itPriority";
 
 export interface TicketAttachment {
   id: number;
@@ -56,6 +57,33 @@ export interface TicketListResponse {
   // Temporary aliases keep Lab 2 presentation tests readable during migration.
   tickets?: TicketListItem[];
   pagination?: { total: number; page: number; limit: number; totalPages: number };
+}
+export interface StaffTicketListItem {
+  id: number;
+  ticketNumber: string;
+  summary: string;
+  requestedPriority: TicketPriority;
+  itPriority: TicketPriority;
+  currentStatus: TicketStatus;
+  requester: UserSummary;
+  owner: UserSummary | null;
+  createdAt: string;
+  updatedAt: string;
+}
+export interface StaffTicketListResponse {
+  items: StaffTicketListItem[];
+  meta: { page: number; pageSize: number; total: number; totalPages: number; sortBy: StaffSortField; sortDir: "asc" | "desc" };
+}
+export interface StaffTicketListQuery {
+  q?: string;
+  status?: TicketStatus;
+  itPriority?: TicketPriority;
+  assigneeId?: number;
+  categoryId?: number;
+  sortBy: StaffSortField;
+  sortDir: "asc" | "desc";
+  page: number;
+  pageSize: number;
 }
 export interface TicketDetail {
   id: number;
@@ -216,6 +244,40 @@ export async function getTickets(query: TicketListQuery): Promise<TicketListResp
 
 export async function getTicket(ticketId: number): Promise<TicketDetail> {
   return requestJson<TicketDetail>(`/api/tickets/${ticketId}`, {}, "Unable to load ticket details");
+}
+
+export async function getStaffTickets(query: StaffTicketListQuery): Promise<StaffTicketListResponse> {
+  const params = new URLSearchParams();
+  Object.entries(query).forEach(([key, item]) => { if (item !== undefined && item !== "") params.set(key, String(item)); });
+  return requestJson<StaffTicketListResponse>(`/api/staff/tickets?${params.toString()}`, {}, "Unable to load the staff ticket queue");
+}
+
+export async function getStaffTicket(ticketId: number): Promise<TicketDetail> {
+  return requestJson<TicketDetail>(`/api/staff/tickets/${ticketId}`, {}, "Unable to load ticket details");
+}
+
+export async function claimStaffTicket(ticketId: number): Promise<TicketDetail> {
+  return requestJson<TicketDetail>(`/api/staff/tickets/${ticketId}/claim`, { method: "POST", headers: await csrfHeaders() }, "Unable to claim ticket");
+}
+
+export async function assignStaffTicket(ticketId: number, assigneeId: number | null): Promise<TicketDetail> {
+  return requestJson<TicketDetail>(`/api/staff/tickets/${ticketId}/assignment`, { method: "PATCH", headers: { "content-type": "application/json", ...await csrfHeaders() }, body: JSON.stringify({ assigneeId }) }, "Unable to update ticket assignment");
+}
+
+export async function updateStaffPriority(ticketId: number, itPriority: TicketPriority): Promise<TicketDetail> {
+  return requestJson<TicketDetail>(`/api/staff/tickets/${ticketId}/priority`, { method: "PATCH", headers: { "content-type": "application/json", ...await csrfHeaders() }, body: JSON.stringify({ itPriority }) }, "Unable to update IT Priority");
+}
+
+export async function updateStaffStatus(ticketId: number, status: TicketStatus, confirm = false): Promise<TicketDetail> {
+  return requestJson<TicketDetail>(`/api/staff/tickets/${ticketId}/status`, { method: "PATCH", headers: { "content-type": "application/json", ...await csrfHeaders() }, body: JSON.stringify({ status, confirm }) }, "Unable to update ticket status");
+}
+
+export async function getInternalNotes(ticketId: number): Promise<InternalNote[]> {
+  return requestJson<InternalNote[]>(`/api/tickets/${ticketId}/notes`, {}, "Unable to load internal notes");
+}
+
+export async function addInternalNote(ticketId: number, body: string): Promise<InternalNote> {
+  return requestJson<InternalNote>(`/api/tickets/${ticketId}/notes`, { method: "POST", headers: { "content-type": "application/json", ...await csrfHeaders() }, body: JSON.stringify({ body }) }, "Unable to add internal note");
 }
 
 export async function addAttachment(ticketId: number, file: File): Promise<TicketAttachment> {
