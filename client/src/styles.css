@@ -21,6 +21,7 @@ body { background: var(--zen-body); }
 .ticket-table th { background: var(--zen-pale); color: #1b2e24; white-space: nowrap; }
 .ticket-table th button { border: 0; padding: 0; background: transparent; color: inherit; font-weight: 600; }
 .ticket-card-list { display: none; }
+.admin-user-card-list { display: none; }
 .ticket-skeleton-line { display: block; width: 100%; height: 0.85rem; border-radius: 999px; background: linear-gradient(90deg, #e3e9e6 25%, #f5f7f6 50%, #e3e9e6 75%); background-size: 200% 100%; animation: ticket-skeleton 1.25s ease-in-out infinite; }
 .ticket-skeleton-cards article { gap: 0.9rem; }
 @keyframes ticket-skeleton { from { background-position: 200% 0; } to { background-position: -200% 0; } }
@@ -45,5 +46,7 @@ body { background: var(--zen-body); }
   .ticket-table { display: none; }
   .ticket-skeleton-table { display: none; }
   .ticket-card-list { display: grid; gap: 1rem; }
+  .admin-user-table { display: none; }
+  .admin-user-card-list { display: grid; gap: 1rem; }
   .my-tickets .btn { min-height: 44px; }
 }

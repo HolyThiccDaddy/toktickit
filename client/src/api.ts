@@ -11,6 +11,7 @@ export interface UserSummary {
 }
 
 export interface SessionData { user: UserSummary; expiresAt: string; }
+export interface AdminUserInput { email: string; displayName: string; role: AuthRole; active: boolean; initialPassword: string; }
 export interface Category { id: number; name: string; description?: string | null; }
 export interface RelatedSystem { id: number; name: string; description: string | null; }
 export interface SystemStatus { online: boolean; categories: Category[]; }
@@ -278,6 +279,25 @@ export async function getInternalNotes(ticketId: number): Promise<InternalNote[]
 
 export async function addInternalNote(ticketId: number, body: string): Promise<InternalNote> {
   return requestJson<InternalNote>(`/api/tickets/${ticketId}/notes`, { method: "POST", headers: { "content-type": "application/json", ...await csrfHeaders() }, body: JSON.stringify({ body }) }, "Unable to add internal note");
+}
+
+export async function getAdminUsers(query: { q?: string; role?: AuthRole } = {}): Promise<UserSummary[]> {
+  const params = new URLSearchParams();
+  if (query.q?.trim()) params.set("q", query.q.trim());
+  if (query.role) params.set("role", query.role);
+  return requestJson<UserSummary[]>(`/api/admin/users${params.toString() ? `?${params.toString()}` : ""}`, {}, "Unable to load users");
+}
+
+export async function createAdminUser(input: AdminUserInput): Promise<UserSummary> {
+  return requestJson<UserSummary>("/api/admin/users", { method: "POST", headers: { "content-type": "application/json", ...await csrfHeaders() }, body: JSON.stringify(input) }, "Unable to create user");
+}
+
+export async function updateAdminUser(userId: number, input: Partial<Pick<UserSummary, "email" | "displayName" | "role" | "active">>): Promise<UserSummary> {
+  return requestJson<UserSummary>(`/api/admin/users/${userId}`, { method: "PATCH", headers: { "content-type": "application/json", ...await csrfHeaders() }, body: JSON.stringify(input) }, "Unable to update user");
+}
+
+export async function resetAdminUserPassword(userId: number, initialPassword: string): Promise<{ userId: number; mustChangePassword: true }> {
+  return requestJson<{ userId: number; mustChangePassword: true }>(`/api/admin/users/${userId}/initial-password`, { method: "POST", headers: { "content-type": "application/json", ...await csrfHeaders() }, body: JSON.stringify({ initialPassword }) }, "Unable to reset initial password");
 }
 
 export async function addAttachment(ticketId: number, file: File): Promise<TicketAttachment> {

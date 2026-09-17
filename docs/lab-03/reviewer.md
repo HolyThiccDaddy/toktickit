@@ -1,6 +1,6 @@
 # Lab 3 - Peer Review Record
 
-Status: Contract approved after peer review; implementation fixes are recorded in PR #41 and final approval/release evidence are pending.
+Status: Contract approved after peer review; Issues #36–#38 are merged into `lab3-staging`, and Issue #39 implementation/release evidence is complete on the feature branch pending peer review.
 
 **Author:** Thira Rungruangkaset - GitHub: @HolyThiccDaddy
 **Peer reviewer:** Ashira Sangkaset - GitHub: @osizk
@@ -49,4 +49,6 @@ The reviewer then identified a case-sensitive first-login gate in `server/src/au
 
 ## Implementation and release history
 
-To be completed after the contract PR, feature PRs, release PR, and final evidence are available. Keep the source-of-truth links and verdicts synchronized with GitHub.
+Issue #38 was merged into `lab3-staging` through [PR #43](https://github.com/HolyThiccDaddy/toktickit/pull/43). Issue #39 adds Administrator user management and the remaining release evidence on the current feature branch. The implementation includes the Administrator-only `/api/admin/users` API, safe user summaries, create/edit/activation/reset operations, duplicate-email and role validation, first-login password provisioning, session revocation on deactivation/reset, self-administration safeguards, the responsive User Management screen, functional authentication/user-administration E2E coverage, and real desktop/tablet/mobile screenshots for authentication, User Management, Staff Queue, and Staff Ticket Detail.
+
+The current Issue #39 verification is recorded in `docs/lab-03/tests.md`: 15 server test files/91 tests, 15 client test files/46 tests, six desktop Lab 3 E2E tests, two responsive tablet/mobile E2E tests, and production builds passed. Add the feature PR link, peer-review comments, final approval, and release-merge commit here after the branch is pushed and reviewed.

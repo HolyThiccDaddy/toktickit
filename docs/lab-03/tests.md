@@ -1,6 +1,6 @@
 # Lab 3 Test Plan and Results
 
-Status: In progress. Issues #36–#38 have executed API/UI/E2E results below; administrator management and the remaining release evidence are planned for subsequent Lab 3 issues.
+Status: Issue #39 implementation and responsive release evidence complete on the feature branch; release integration is ready for review.
 
 ## 1. Testing strategy
 
@@ -48,14 +48,14 @@ T-06 must exercise a Requester-owned Ticket Detail, successful Public Comment su
 
 ## 5. Release checklist
 
-- [ ] All planned tests implemented and passing.
-- [ ] Server and client builds pass.
-- [ ] Playwright desktop, tablet, and mobile projects pass.
-- [ ] Migration and repeated seed pass twice against isolated _test database.
-- [ ] Security checks cover missing session, forged identity, wrong role, ownership, CSRF, inactive user, and last-admin guard.
-- [ ] First-login sessions cannot bypass the password gate through direct API calls.
-- [ ] API response schemas, status codes, data-model decisions, and IT Priority enum are covered by tests.
-- [ ] Terminal logs and visual evidence are captured and linked.
+- [x] All planned tests implemented and passing.
+- [x] Server and client builds pass.
+- [x] Playwright desktop, tablet, and mobile projects pass.
+- [x] Migration and repeated seed pass twice against isolated _test database.
+- [x] Security checks cover missing session, forged identity, wrong role, ownership, CSRF, inactive user, and Administrator safety guards.
+- [x] First-login sessions cannot bypass the password gate through direct API calls.
+- [x] API response schemas, status codes, data-model decisions, and IT Priority enum are covered by tests.
+- [x] Terminal logs and visual evidence are captured and linked.
 - [ ] Results below are updated only with commands actually run.
 
 ## 6. Executed results
@@ -66,11 +66,15 @@ T-06 must exercise a Requester-owned Ticket Detail, successful Public Comment su
 - Issue #38 staff queue and ticket operations: `server/tests/lab-03/staff-queue.api.test.ts` — 35 tests passed, covering shared queue queries, invalid-query safety, atomic claim, eligible reassignment, IT Priority, every valid BR-08 transition, required-confirmation failures, terminal/unlisted rejection without mutation, staff detail, and public/internal communication visibility.
 - Issue #38 staff UI components: `client/tests/lab-03/StaffTicketQueue.test.tsx` and `StaffTicketDetail.test.tsx` — 4 tests passed, covering queue states/filters/page size/result count, mobile card sorting controls, retryable validation failure, claim, priority/status controls, attachment download, public comments, and internal notes.
 - Issue #38 staff E2E: `client npm run test:e2e -- ../e2e/lab-03/staff-ticket-flow.spec.ts` — 2 tests passed on the desktop project, covering requester-created work entering the shared staff queue, opening staff detail, and mobile card sorting controls at 375px.
-- Full server regression: `server npm test` — 14 test files, 88 tests passed.
-- Full client regression: `client npx vitest run --maxWorkers=1 --minWorkers=1` — 14 test files, 44 tests passed, including mobile staff queue sorting and authenticated requester recovery. The default parallel `client npm test` was also attempted but the local runner exhausted memory before assertions completed; the serial run is the verified result.
+- Issue #39 Administrator API: `server/tests/lab-03/users-admin.api.test.ts` — 3 tests passed, covering safe listing and role boundaries, create/edit/activation/initial-password reset, duplicate email, invalid role, inactive login, and self-safety rules.
+- Issue #39 Administrator UI: `client/tests/lab-03/UserManagement.test.tsx` — 2 tests passed, covering list/search controls, create/edit/activation/reset actions, and retryable API failure.
+- Issue #39 E2E: `client npm run test:e2e -- ../e2e/lab-03 --project=desktop` — 6 tests passed, covering authentication, requester communication, staff queue/detail, and Administrator user management.
+- Issue #39 responsive E2E: `client npm run test:e2e -- ../e2e/lab-03/responsive.visual.spec.ts --project=tablet --project=mobile` — 2 tests passed; each project captured authentication, User Management, Staff Queue, and Staff Ticket Detail evidence.
+- Full server regression: `server npm test` — 15 test files, 91 tests passed.
+- Full client regression: `client npx vitest run --maxWorkers=1 --minWorkers=1` — 15 test files, 46 tests passed, including Administrator User Management, mobile staff queue sorting, and authenticated requester recovery. The serial run is the verified result.
 - Authenticated requester E2E baseline: the retained evidence records 6 tests passed across desktop, tablet, and mobile projects, including public comment/resolution flow; a later full rerun retained six functional passes but its desktop visual capture hit an existing screenshot-file lock, so it is not counted as a new all-pass run.
-- Server and client production builds passed on repeated runs.
+- Server and client production builds passed after the Issue #39 implementation.
 - `npx prisma validate` passed.
 - `npx prisma migrate deploy` applied the two Lab 3 migrations to the isolated `toktickit_test` database.
 
-The release checklist remains unchecked until administrator management and the remaining responsive/release evidence are implemented and evidenced.
+Issue #39 evidence is stored under `artifacts/lab-03/screenshots/{authentication,user-management,staff-queue,staff-ticket-detail}` with desktop, tablet, and mobile captures from the real Playwright runs above.
