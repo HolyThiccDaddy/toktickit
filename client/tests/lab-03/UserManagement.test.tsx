@@ -38,6 +38,56 @@ describe("Administrator User Management", () => {
     await waitFor(() => expect(reset).toHaveBeenCalledWith(target.id, "ResetUserInitial!2026"));
   });
 
+  it("sends only changed fields when another administrator changes the account while editing", async () => {
+    const getAdminUsers = vi.spyOn(api, "getAdminUsers")
+      .mockResolvedValueOnce([target])
+      .mockResolvedValueOnce([{ ...target, displayName: "Updated Alex", active: false }]);
+    const updateAdminUser = vi.spyOn(api, "updateAdminUser").mockResolvedValue({ ...target, displayName: "Updated Alex", active: false });
+    render(<UserManagement user={admin} />);
+
+    await waitFor(() => expect(screen.getAllByText(target.displayName).length).toBeGreaterThan(0));
+    fireEvent.click(screen.getAllByRole("button", { name: "Edit" })[0]);
+    fireEvent.change(screen.getByLabelText("Display name"), { target: { value: "Updated Alex" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+
+    await waitFor(() => expect(updateAdminUser).toHaveBeenCalledWith(target.id, { displayName: "Updated Alex" }));
+    expect(updateAdminUser.mock.calls[0][1]).toEqual({ displayName: "Updated Alex" });
+    await waitFor(() => expect(getAdminUsers).toHaveBeenCalledTimes(2));
+  });
+
+  it("refreshes after save with the latest filters selected while the update was pending", async () => {
+    let resolveUpdate!: (value: api.UserSummary) => void;
+    const updatePromise = new Promise<api.UserSummary>((resolve) => { resolveUpdate = resolve; });
+    let resolveFilter!: (users: api.UserSummary[]) => void;
+    const filterPromise = new Promise<api.UserSummary[]>((resolve) => { resolveFilter = resolve; });
+    let resolvePostSave!: (users: api.UserSummary[]) => void;
+    const postSavePromise = new Promise<api.UserSummary[]>((resolve) => { resolvePostSave = resolve; });
+    const getAdminUsers = vi.spyOn(api, "getAdminUsers")
+      .mockResolvedValueOnce([target])
+      .mockImplementationOnce(() => filterPromise)
+      .mockImplementationOnce(() => postSavePromise);
+    const updateAdminUser = vi.spyOn(api, "updateAdminUser").mockReturnValue(updatePromise);
+    render(<UserManagement user={admin} />);
+
+    await waitFor(() => expect(screen.getAllByText(target.displayName).length).toBeGreaterThan(0));
+    fireEvent.click(screen.getAllByRole("button", { name: "Edit" })[0]);
+    fireEvent.change(screen.getByLabelText("Display name"), { target: { value: "Updated Alex" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+    await waitFor(() => expect(updateAdminUser).toHaveBeenCalledWith(target.id, { displayName: "Updated Alex" }));
+
+    const roleControls = screen.getAllByLabelText("Role");
+    fireEvent.change(roleControls[0], { target: { value: "IT_STAFF" } });
+    await waitFor(() => expect(getAdminUsers).toHaveBeenLastCalledWith({ q: "", role: "IT_STAFF" }));
+
+    resolveUpdate({ ...target, displayName: "Updated Alex" });
+    await waitFor(() => expect(getAdminUsers).toHaveBeenCalledTimes(3));
+    expect(getAdminUsers).toHaveBeenLastCalledWith({ q: "", role: "IT_STAFF" });
+
+    resolveFilter([]);
+    resolvePostSave([{ ...target, displayName: "Updated Alex", role: "IT_STAFF" }]);
+    await waitFor(() => expect(screen.queryByRole("button", { name: "Save changes" })).not.toBeInTheDocument());
+  });
+
   it("refreshes the visible list after a role mutation so active filters stay accurate", async () => {
     const getAdminUsers = vi
       .spyOn(api, "getAdminUsers")
