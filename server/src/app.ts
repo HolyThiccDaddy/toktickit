@@ -4,6 +4,7 @@ import multer from "multer";
 import { getPrisma } from "./prisma.js";
 import ticketsRouter, { createAttachmentsRouter } from "./tickets.js";
 import { createStaffCommunicationRouter, createStaffRouter } from "./staff.js";
+import { createAdminRouter } from "./admin.js";
 import { apiError, authRouter, requireAuth, sessionMiddleware } from "./auth.js";
 
 // The Express app is exported separately from app.listen() (see index.ts) so
@@ -26,6 +27,7 @@ app.use(express.json());
 app.use(sessionMiddleware);
 app.use("/api/auth", authRouter());
 app.use("/api/staff", createStaffRouter());
+app.use("/api/admin", createAdminRouter());
 app.use("/api/tickets", createStaffCommunicationRouter());
 app.use("/api/tickets", ticketsRouter);
 app.use("/api/attachments", createAttachmentsRouter());
