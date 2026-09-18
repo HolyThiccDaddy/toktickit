@@ -26,20 +26,23 @@ export default function UserManagement({ user }: { user: UserSummary }) {
   const [resetPassword, setResetPassword] = useState("");
   const [resetting, setResetting] = useState(false);
   const loadSequence = useRef(0);
+  const filtersRef = useRef<{ q: string; role: AuthRole | "" }>({ q, role });
+  filtersRef.current = { q, role };
 
   const load = useCallback(async () => {
     const requestSequence = ++loadSequence.current;
     setLoading(true); setError("");
+    const { q: currentQ, role: currentRole } = filtersRef.current;
     try {
-      const result = await getAdminUsers({ q, role: role || undefined });
+      const result = await getAdminUsers({ q: currentQ, role: currentRole || undefined });
       if (requestSequence === loadSequence.current) setUsers(result);
     } catch (reason) {
       if (requestSequence === loadSequence.current) setError(errorMessage(reason, "Unable to load users"));
     } finally {
       if (requestSequence === loadSequence.current) setLoading(false);
     }
-  }, [q, role]);
-  useEffect(() => { void load(); }, [load]);
+  }, []);
+  useEffect(() => { void load(); }, [q, role, load]);
 
   function openCreate() {
     setEditing(null); setForm({ ...blankForm }); setFormOpen(true); setError(""); setSuccess("");
@@ -52,13 +55,22 @@ export default function UserManagement({ user }: { user: UserSummary }) {
     event.preventDefault(); setSaving(true); setError(""); setSuccess("");
     try {
       if (editing) {
-        const updated = await updateAdminUser(editing.id, { email: form.email, displayName: form.displayName, role: form.role, active: form.active });
-        await load();
-        setSuccess(`Updated ${updated.displayName}.`);
+        const changes: Partial<Pick<UserSummary, "email" | "displayName" | "role" | "active">> = {};
+        if (form.email !== editing.email) changes.email = form.email;
+        if (form.displayName !== editing.displayName) changes.displayName = form.displayName;
+        if (form.role !== editing.role) changes.role = form.role;
+        if (form.active !== editing.active) changes.active = form.active;
+        if (Object.keys(changes).length) {
+          const updated = await updateAdminUser(editing.id, changes);
+          await load();
+          setSuccess("Updated " + updated.displayName + ".");
+        } else {
+          setSuccess("No changes made.");
+        }
       } else {
         const created = await createAdminUser(form);
         await load();
-        setSuccess(`Created ${created.displayName}.`);
+        setSuccess("Created " + created.displayName + ".");
       }
       closeForm();
     } catch (reason) { setError(errorMessage(reason, editing ? "Unable to update user" : "Unable to create user")); }
@@ -69,7 +81,7 @@ export default function UserManagement({ user }: { user: UserSummary }) {
     try {
       const updated = await updateAdminUser(next.id, { active: !next.active });
       await load();
-      setSuccess(`${updated.displayName} is now ${updated.active ? "active" : "inactive"}.`);
+      setSuccess(updated.displayName + " is now " + (updated.active ? "active" : "inactive") + ".");
     } catch (reason) { setError(errorMessage(reason, "Unable to update user")); }
   }
   async function reset(event: FormEvent) {
@@ -79,7 +91,7 @@ export default function UserManagement({ user }: { user: UserSummary }) {
     try {
       await resetAdminUserPassword(resetUser.id, resetPassword);
       await load();
-      setSuccess(`Reset the initial password for ${resetUser.displayName}.`);
+      setSuccess("Reset the initial password for " + resetUser.displayName + ".");
       setResetUser(null); setResetPassword("");
     } catch (reason) { setError(errorMessage(reason, "Unable to reset initial password")); }
     finally { setResetting(false); }
