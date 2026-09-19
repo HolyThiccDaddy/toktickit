@@ -141,12 +141,12 @@ Migration sets `User.role=REQUESTER`, maps every existing requester name/email/a
 
 ## 9. Definition of done
 
-- [ ] Contract documents reviewed and linked to GitHub issues.
-- [ ] Migration and implementation tests pass twice where determinism matters.
-- [ ] Server/client builds and the complete E2E suite pass.
-- [ ] Security and ownership cases are covered by executable tests.
-- [ ] Required screenshots and terminal logs are captured from real runs.
-- [ ] Reviewer record, AI-use record, release PR, and final PDF evidence are updated from main.
+- [x] Contract documents reviewed and linked to GitHub issues.
+- [x] Migration and implementation tests pass twice where determinism matters.
+- [x] Server/client builds and the complete E2E suite pass.
+- [x] Security and ownership cases are covered by executable tests.
+- [x] Required screenshots and terminal logs are captured from real runs.
+- [x] Reviewer record, AI-use record, release PR, and final PDF evidence are updated from main.
 
 ## 10. Assumptions to confirm in review
 
