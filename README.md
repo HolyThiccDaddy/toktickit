@@ -1,6 +1,6 @@
-# TokTickIT — Lab 2 Requester Ticketing MVP
+# TokTickIT — Lab 3 Authenticated Requester Ticketing
 
-TokTickIT is a full-stack, requester-facing IT service-desk application built for Lab 2. A temporary Development Requester selector simulates the current user context until real authentication is introduced in Lab 3. Requesters can create tickets, upload permitted evidence, find their own tickets, open read-only details, and manage attachments with ownership protection.
+TokTickIT is a full-stack IT service-desk application. Lab 3 replaces Lab 2's temporary Development Requester selector with an authenticated session boundary: Requesters can create and manage only their own tickets and attachments, post public comments, and indicate that a problem appears resolved. Staff and Administrator workflows are implemented incrementally in the later Lab 3 issues.
 
 ## Scope and technology
 
@@ -10,7 +10,7 @@ TokTickIT is a full-stack, requester-facing IT service-desk application built fo
 - **Testing:** Vitest, Supertest, React Testing Library, Playwright
 - **Architecture:** Monorepo with `client/`, `server/`, and repository-root E2E specs
 
-Lab 2 deliberately excludes real authentication, IT Staff workflow, comments/notes, Actions Taken, administration, and status transitions beyond `NEW`.
+The current requester slice deliberately excludes the later IT Staff queue and Administrator user-management screens; those workflows follow the approved Lab 3 contract in `docs/lab-03/`.
 
 ## Repository structure
 
@@ -20,6 +20,7 @@ toktickit/
 ├── server/                     # Express API, Prisma schema/migrations, and API tests
 ├── e2e/                        # Playwright journeys and deterministic setup/teardown
 ├── docs/lab-02/                # Lab 2 contract, test plan, AI log, and review record
+├── docs/lab-03/                # Lab 3 contract, test plan, AI log, and review record
 └── artifacts/lab-02/           # Test output and responsive/visual evidence
 ```
 
@@ -90,22 +91,28 @@ npm run build
 npx playwright test
 ```
 
-The Playwright command starts isolated services, resets deterministic fixtures in `toktickit_test`, checks desktop/tablet/mobile journeys, and writes JSON results to `artifacts/lab-02/e2e-results.json` plus PNG evidence under `artifacts/lab-02/screenshots/`.
+The Playwright command starts isolated services, resets deterministic fixtures in `toktickit_test`, checks authenticated requester journeys at desktop/tablet/mobile sizes, and writes JSON results to `artifacts/lab-02/e2e-results.json` plus PNG evidence under `artifacts/lab-02/screenshots/`.
 
 ## API surface
 
 - `GET /api/health` — service health
-- `GET /api/requesters` — active Development Requesters
+- `POST /api/auth/login` — create an authenticated session
+- `POST /api/auth/logout` — revoke the current session
+- `GET /api/auth/me` — return the current user summary
+- `GET /api/auth/csrf` — issue a CSRF token for state-changing requests
+- `POST /api/auth/change-password` — complete a first-login password change
 - `GET /api/categories` — active ticket categories
 - `GET /api/related-systems` — active related systems
-- `POST /api/tickets` — create a `NEW` requester-owned ticket
-- `GET /api/tickets` — requester-scoped search, filtering, sorting, and pagination
-- `GET /api/tickets/:id` — owned read-only ticket detail
-- `POST /api/tickets/:id/attachments` — add a validated attachment
-- `GET /api/attachments/:id/download` — download an active attachment
+- `POST /api/tickets` — create a `NEW` ticket owned by the signed-in Requester
+- `GET /api/tickets` — session-scoped search, filtering, sorting, and pagination
+- `GET /api/tickets/:id` — owned read-only ticket detail with public conversation
+- `POST /api/tickets/:id/attachments` — add a validated attachment to an owned ticket
+- `GET /api/attachments/:id/download` — download an active owned attachment
 - `DELETE /api/attachments/:id` — soft-remove an owned attachment with a reason
+- `GET/POST /api/tickets/:id/comments` — read or append public comments on an owned ticket
+- `POST /api/tickets/:id/requester-resolution` — record the Requester's resolution indication
 
-Requester identity is supplied only through the `X-Requester-Id` header. Attachment uploads enforce allowed type, extension, magic bytes, size, count, ownership, and compensating cleanup rules.
+Protected identity is derived only from the server-side `toktickit_session` cookie; client-supplied requester, owner, author, and role values are ignored. State-changing requests require the server-issued CSRF token. Attachment uploads enforce allowed type, extension, magic bytes, size, count, ownership, and compensating cleanup rules.
 
 ## Lab 2 documentation
 
@@ -116,5 +123,14 @@ Requester identity is supplied only through the `X-Requester-Id` header. Attachm
 - [AI use and reflection](docs/lab-02/ai-use.md)
 - [Peer-review record](docs/lab-02/reviewer.md)
 - [Lab 2 visual evidence](artifacts/lab-02/screenshots/)
+
+## Lab 3 documentation
+
+- [Sprint specification](docs/lab-03/specification.md)
+- [REST API contract](docs/lab-03/api-spec.md)
+- [UI specification](docs/lab-03/ui-spec.md)
+- [Test plan and results](docs/lab-03/tests.md)
+- [AI use and reflection](docs/lab-03/ai-use.md)
+- [Peer-review record](docs/lab-03/reviewer.md)
 
 The core Lab 2 implementation was integrated into `main` by release PR #27 (`a145b057`). The README/documentation update was promoted by PR #29 (`2d963f7`), and the final evidence/report update was promoted by PR #32 (`10d902b`).

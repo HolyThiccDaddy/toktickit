@@ -19,18 +19,70 @@ enum Priority {
 
 enum TicketStatus {
   NEW
+  OPEN
+  IN_PROGRESS
+  WAITING_FOR_REQUESTER
+  RESOLVED
+  CLOSED
+  REOPENED
+  CANCELLED
+}
+
+enum UserRole {
+  REQUESTER
+  IT_STAFF
+  ADMIN
 }
 
 model RequesterUser {
-  id          Int          @id @default(autoincrement())
-  name        String
-  email       String       @unique
-  department  String
-  isActive    Boolean      @default(true)
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  tickets     Ticket[]
-  attachments Attachment[]
+  id         Int      @id @default(autoincrement())
+  name       String
+  email      String   @unique
+  department String
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+// User is the authenticated Lab 3 identity. RequesterUser remains in the
+// schema during the incremental migration so Lab 2 routes and records can be
+// read while Issue #37 moves requester operations to session-derived identity.
+model User {
+  id                  Int             @id @default(autoincrement())
+  email               String          @unique
+  displayName         String
+  department          String?
+  role                UserRole
+  passwordHash        String
+  mustChangePassword  Boolean         @default(true)
+  active              Boolean         @default(true)
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+  sessions            AuthSession[]
+  requesterTickets    Ticket[]        @relation("TicketRequester")
+  ownedTickets        Ticket[]        @relation("TicketOwner")
+  uploadedAttachments Attachment[]    @relation("AttachmentUploader")
+  publicComments      PublicComment[] @relation("PublicCommentAuthor")
+  internalNotes       InternalNote[]  @relation("InternalNoteAuthor")
+
+  @@index([role])
+  @@index([active, role])
+  @@index([active, mustChangePassword])
+}
+
+model AuthSession {
+  id            String    @id @default(uuid())
+  tokenHash     String    @unique
+  userId        Int
+  expiresAt     DateTime
+  revokedAt     DateTime?
+  csrfTokenHash String?
+  csrfExpiresAt DateTime?
+  createdAt     DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, expiresAt])
 }
 
 model Category {
@@ -52,44 +104,78 @@ model RelatedSystem {
 }
 
 model Ticket {
-  id                Int           @id @default(autoincrement())
-  ticketNumber      String        @unique
-  summary           String
-  description       String
-  requestedPriority Priority
-  currentStatus     TicketStatus  @default(NEW)
-  requesterId       Int
-  categoryId        Int
-  relatedSystemId   Int
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
+  id                             Int          @id @default(autoincrement())
+  ticketNumber                   String       @unique
+  summary                        String
+  description                    String
+  requestedPriority              Priority
+  itPriority                     Priority     @default(LOW)
+  currentStatus                  TicketStatus @default(NEW)
+  requesterId                    Int
+  ownerId                        Int?
+  categoryId                     Int
+  relatedSystemId                Int
+  requesterResolutionIndicatedAt DateTime?
+  createdAt                      DateTime     @default(now())
+  updatedAt                      DateTime     @updatedAt
 
-  requester         RequesterUser @relation(fields: [requesterId], references: [id])
-  category          Category      @relation(fields: [categoryId], references: [id])
-  relatedSystem     RelatedSystem @relation(fields: [relatedSystemId], references: [id])
-  attachments       Attachment[]
+  requester      User            @relation("TicketRequester", fields: [requesterId], references: [id], onDelete: Restrict)
+  owner          User?           @relation("TicketOwner", fields: [ownerId], references: [id], onDelete: Restrict)
+  category       Category        @relation(fields: [categoryId], references: [id])
+  relatedSystem  RelatedSystem   @relation(fields: [relatedSystemId], references: [id])
+  attachments    Attachment[]
+  publicComments PublicComment[]
+  internalNotes  InternalNote[]
 
   @@index([requesterId, createdAt])
   @@index([requesterId, updatedAt])
+  @@index([ownerId, currentStatus])
+  @@index([currentStatus, itPriority, updatedAt])
   @@index([categoryId])
   @@index([relatedSystemId])
 }
 
+model PublicComment {
+  id        Int      @id @default(autoincrement())
+  ticketId  Int
+  authorId  Int
+  body      String
+  createdAt DateTime @default(now())
+
+  ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  author User   @relation("PublicCommentAuthor", fields: [authorId], references: [id], onDelete: Restrict)
+
+  @@index([ticketId, createdAt])
+}
+
+model InternalNote {
+  id        Int      @id @default(autoincrement())
+  ticketId  Int
+  authorId  Int
+  body      String
+  createdAt DateTime @default(now())
+
+  ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  author User   @relation("InternalNoteAuthor", fields: [authorId], references: [id], onDelete: Restrict)
+
+  @@index([ticketId, createdAt])
+}
+
 model Attachment {
-  id               Int            @id @default(autoincrement())
+  id               Int       @id @default(autoincrement())
   ticketId         Int
   originalFilename String
-  storageKey       String         @unique
+  storageKey       String    @unique
   mimeType         String
   fileSize         Int
-  isDeleted        Boolean        @default(false)
+  isDeleted        Boolean   @default(false)
   deletionReason   String?
   deletedAt        DateTime?
   uploaderId       Int?
-  createdAt        DateTime       @default(now())
+  createdAt        DateTime  @default(now())
 
-  ticket           Ticket         @relation(fields: [ticketId], references: [id], onDelete: Cascade)
-  uploader         RequesterUser? @relation(fields: [uploaderId], references: [id], onDelete: SetNull)
+  ticket   Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  uploader User?  @relation("AttachmentUploader", fields: [uploaderId], references: [id], onDelete: SetNull)
 
   @@index([ticketId, isDeleted])
 }

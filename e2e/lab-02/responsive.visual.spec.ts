@@ -2,6 +2,7 @@ import { expect, test } from "../playwright.js";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { e2eAccounts, signInAs } from "../support/auth.js";
 
 const outputDirectory = fileURLToPath(new URL("../../artifacts/lab-02/screenshots/release/", import.meta.url));
 
@@ -27,10 +28,8 @@ async function capture(page: any, testInfo: any, screen: string) {
 }
 
 test("covers the requester journey across Create Ticket, My Tickets, and Ticket Detail", async ({ page }, testInfo) => {
-  await page.goto("/");
-  await page.getByLabel("Development Requester").selectOption({ label: "Jennifer Anderson - Human Resources" });
-  await page.getByRole("button", { name: "Continue" }).click();
-  await expect(page.getByRole("heading", { name: /TokTickIT IT Service Desk/ })).toBeVisible();
+  const account = testInfo.project.name === "tablet" ? e2eAccounts.sarah : testInfo.project.name === "mobile" ? e2eAccounts.michael : e2eAccounts.jennifer;
+  await signInAs(page, account);
   await assertNoHorizontalOverflow(page);
   await capture(page, testInfo, "requester_workspace");
 

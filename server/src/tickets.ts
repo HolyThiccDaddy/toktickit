@@ -1,14 +1,16 @@
 import { randomUUID } from "node:crypto";
 import { mkdir, mkdtemp, readFile, rename, rm, writeFile } from "node:fs/promises";
 import { extname, resolve } from "node:path";
-import { Router, type Request } from "express";
+import { Router, type Request, type RequestHandler } from "express";
 import multer from "multer";
 import type { Prisma } from "@prisma/client";
+import { apiError, requireAuth, requireCsrf } from "./auth.js";
 import { getPrisma } from "./prisma.js";
 
 const maxFileSize = 5_242_880;
 const upload = multer({ storage: multer.memoryStorage(), limits: { files: 5, fileSize: maxFileSize } });
-const priorities = new Set(["LOW", "MEDIUM", "HIGH", "URGENT"]);
+const priorities = new Set(["LOW", "MEDIUM", "HIGH", "URGENT"] as const);
+const terminalStatuses = new Set(["CLOSED", "CANCELLED"] as const);
 const allowedTypes: Record<string, string[]> = {
   ".jpg": ["image/jpeg"], ".jpeg": ["image/jpeg"], ".png": ["image/png"],
   ".webp": ["image/webp"], ".pdf": ["application/pdf"],
@@ -16,38 +18,163 @@ const allowedTypes: Record<string, string[]> = {
 
 class AttachmentLimitError extends Error {}
 
-function requesterIdFrom(req: Request) {
-  const value = Number(req.header("x-requester-id"));
-  return Number.isInteger(value) && value > 0 ? value : null;
+export const userSelect = {
+  id: true,
+  email: true,
+  displayName: true,
+  role: true,
+  active: true,
+  mustChangePassword: true,
+} as const;
+
+const requesterAccess: RequestHandler = (req, res, next) => {
+  if (!req.auth) return apiError(res, 401, "UNAUTHENTICATED", "Authentication is required");
+  if (req.auth.user.role !== "REQUESTER") return apiError(res, 403, "FORBIDDEN", "Only Requesters may access this resource");
+  return next();
+};
+
+function staffRole(req: Request) {
+  return req.auth?.user.role === "IT_STAFF" || req.auth?.user.role === "ADMIN";
 }
 
-function attachmentMetadata(attachment: {
+const requesterMutation: RequestHandler = (req, res, next) => requireCsrf(req, res, next);
+const requesterOnlyMutation: RequestHandler = (req, res, next) => {
+  if (req.auth?.user.role !== "REQUESTER") return apiError(res, 403, "FORBIDDEN", "Only the ticket requester may remove an attachment");
+  return requireCsrf(req, res, next);
+};
+
+function requesterIdFrom(req: Request) {
+  return req.auth?.user.id ?? null;
+}
+
+async function requesterIsActive(req: Request, requesterId: number) {
+  return Boolean(req.auth && req.auth.user.id === requesterId && req.auth.user.role === "REQUESTER" && req.auth.user.active);
+}
+
+export function notFound(res: Parameters<RequestHandler>[1], message = "Ticket not found") {
+  return apiError(res, 404, "NOT_FOUND", message);
+}
+
+export function attachmentMetadata(attachment: {
+  id: number; originalFilename: string; fileSize: number; mimeType: string;
+  isDeleted: boolean; createdAt: Date;
+}) {
+  return {
+    id: attachment.id,
+    originalFilename: attachment.originalFilename,
+    fileSize: attachment.fileSize,
+    mimeType: attachment.mimeType,
+    isDeleted: attachment.isDeleted,
+    createdAt: attachment.createdAt.toISOString(),
+  };
+}
+
+export function attachmentDetailMetadata(attachment: {
   id: number; originalFilename: string; fileSize: number; mimeType: string;
   isDeleted: boolean; deletionReason: string | null; deletedAt: Date | null; createdAt: Date;
 }) {
   return {
-    id: attachment.id,
-    originalFilename: attachment.originalFilename,
-    fileSize: attachment.fileSize,
-    mimeType: attachment.mimeType,
-    isDeleted: attachment.isDeleted,
+    ...attachmentMetadata(attachment),
     deletionReason: attachment.deletionReason,
-    deletedAt: attachment.deletedAt,
-    createdAt: attachment.createdAt,
+    deletedAt: attachment.deletedAt?.toISOString() ?? null,
   };
 }
 
-function createdAttachmentMetadata(attachment: {
-  id: number; originalFilename: string; fileSize: number; mimeType: string; isDeleted: boolean; createdAt: Date;
+export function safeUser(user: {
+  id: number; email: string; displayName: string; role: "REQUESTER" | "IT_STAFF" | "ADMIN";
+  active: boolean; mustChangePassword: boolean;
 }) {
   return {
-    id: attachment.id,
-    originalFilename: attachment.originalFilename,
-    fileSize: attachment.fileSize,
-    mimeType: attachment.mimeType,
-    isDeleted: attachment.isDeleted,
-    createdAt: attachment.createdAt,
+    id: user.id,
+    email: user.email,
+    displayName: user.displayName,
+    role: user.role,
+    active: user.active,
+    mustChangePassword: user.mustChangePassword,
   };
+}
+
+type PublicCommentRecord = {
+  id: number;
+  ticketId: number;
+  body: string;
+  createdAt: Date;
+  author: { id: number; email: string; displayName: string; role: "REQUESTER" | "IT_STAFF" | "ADMIN"; active: boolean; mustChangePassword: boolean };
+};
+
+export function publicCommentMetadata(comment: PublicCommentRecord) {
+  return {
+    id: comment.id,
+    ticketId: comment.ticketId,
+    author: safeUser(comment.author),
+    body: comment.body,
+    createdAt: comment.createdAt.toISOString(),
+  };
+}
+
+type InternalNoteRecord = PublicCommentRecord;
+
+export function internalNoteMetadata(note: InternalNoteRecord) {
+  return publicCommentMetadata(note);
+}
+
+export const ticketInclude = {
+  requester: { select: userSelect },
+  owner: { select: userSelect },
+  category: { select: { id: true, name: true, description: true } },
+  relatedSystem: { select: { id: true, name: true, description: true } },
+  attachments: {
+    select: {
+      id: true, originalFilename: true, fileSize: true, mimeType: true,
+      isDeleted: true, deletionReason: true, deletedAt: true, createdAt: true,
+    },
+    orderBy: { id: "asc" },
+  },
+  publicComments: {
+    include: { author: { select: userSelect } },
+    orderBy: { createdAt: "asc" },
+  },
+  internalNotes: {
+    include: { author: { select: userSelect } },
+    orderBy: { createdAt: "asc" },
+  },
+} as const;
+
+type TicketRecord = Prisma.TicketGetPayload<{ include: typeof ticketInclude }>;
+
+export function ticketMetadata(ticket: TicketRecord, includeInternalNotes = false) {
+  return {
+    id: ticket.id,
+    ticketNumber: ticket.ticketNumber,
+    summary: ticket.summary,
+    description: ticket.description,
+    requestedPriority: ticket.requestedPriority,
+    itPriority: ticket.itPriority,
+    currentStatus: ticket.currentStatus,
+    requester: safeUser(ticket.requester),
+    owner: ticket.owner ? safeUser(ticket.owner) : null,
+    category: ticket.category,
+    relatedSystem: ticket.relatedSystem,
+    requesterResolutionIndicatedAt: ticket.requesterResolutionIndicatedAt?.toISOString() ?? null,
+    attachments: ticket.attachments.map(attachmentDetailMetadata),
+    publicComments: ticket.publicComments.map(publicCommentMetadata),
+    ...(includeInternalNotes ? { internalNotes: ticket.internalNotes.map(internalNoteMetadata) } : {}),
+    createdAt: ticket.createdAt.toISOString(),
+    updatedAt: ticket.updatedAt.toISOString(),
+  };
+}
+
+async function ownedTicket(ticketId: number, requesterId: number) {
+  return getPrisma().ticket.findFirst({ where: { id: ticketId, requesterId }, include: ticketInclude });
+}
+
+export function parseTicketId(value: string) {
+  const id = Number(value);
+  return Number.isInteger(id) && id > 0 ? id : null;
+}
+
+export function validationError(res: Parameters<RequestHandler>[1], fieldErrors: Record<string, string>, message = "Validation failed") {
+  return apiError(res, 400, "VALIDATION_ERROR", message, fieldErrors);
 }
 
 function hasValidMagic(file: Pick<Express.Multer.File, "buffer" | "mimetype">) {
@@ -80,93 +207,11 @@ export function createTicketsRouter(options: TicketsRouterOptions = {}) {
   const writeStagedFile = options.writeStagedFile ?? (async (path, data) => { await writeFile(path, data, { flag: "wx" }); });
   const moveAttachment = options.moveAttachment ?? rename;
 
-  router.get("/:id", async (req, res) => {
-    const requesterId = requesterIdFrom(req);
-    if (requesterId === null) return res.status(401).json({ error: "Requester identity is required" });
-    const ticketId = Number(req.params.id);
-    if (!Number.isInteger(ticketId) || ticketId < 1) return res.status(404).json({ error: "Ticket not found" });
-
-    try {
-      const prisma = getPrisma();
-      const requester = await prisma.requesterUser.findFirst({ where: { id: requesterId, isActive: true }, select: { id: true } });
-      if (!requester) return res.status(403).json({ error: "Requester is invalid or inactive" });
-      const ticket = await prisma.ticket.findUnique({
-        where: { id: ticketId },
-        select: {
-          id: true, ticketNumber: true, summary: true, description: true,
-          requestedPriority: true, currentStatus: true, createdAt: true,
-          requester: { select: { id: true, name: true, email: true } },
-          category: { select: { id: true, name: true } },
-          relatedSystem: { select: { id: true, name: true } },
-          attachments: {
-            select: { id: true, originalFilename: true, fileSize: true, mimeType: true, isDeleted: true, deletionReason: true, deletedAt: true, createdAt: true },
-            orderBy: { id: "asc" },
-          },
-        },
-      });
-      if (!ticket) return res.status(404).json({ error: "Ticket not found" });
-      if (ticket.requester.id !== requesterId) return res.status(403).json({ error: "You do not have access to this ticket" });
-      return res.status(200).json({ ...ticket, attachments: ticket.attachments.map(attachmentMetadata) });
-    } catch {
-      return res.status(500).json({ error: "Failed to fetch ticket" });
-    }
-  });
-
-  router.post("/:id/attachments", upload.single("file"), async (req, res) => {
-    const requesterId = requesterIdFrom(req);
-    if (requesterId === null) return res.status(401).json({ error: "Requester identity is required" });
-    const ticketId = Number(req.params.id);
-    if (!Number.isInteger(ticketId) || ticketId < 1) return res.status(404).json({ error: "Ticket not found" });
-    const file = req.file;
-
-    const finalPaths: string[] = [];
-    let stagingRoot: string | undefined;
-    try {
-      const prisma = getPrisma();
-      const requester = await prisma.requesterUser.findFirst({ where: { id: requesterId, isActive: true }, select: { id: true } });
-      if (!requester) return res.status(403).json({ error: "Requester is invalid or inactive" });
-      const ticket = await prisma.ticket.findUnique({ where: { id: ticketId }, select: { id: true, requesterId: true } });
-      if (!ticket) return res.status(404).json({ error: "Ticket not found" });
-      if (ticket.requesterId !== requesterId) return res.status(403).json({ error: "You do not have access to this ticket" });
-      if (!file) return res.status(400).json({ error: "Validation failed", fieldErrors: { file: "Attachment file is required" } });
-      if (!validateAttachment(file)) return res.status(400).json({ error: "Validation failed", fieldErrors: { file: "Attachment type, extension, or content is invalid" } });
-
-      const uploadRoot = getUploadRoot();
-      await mkdir(uploadRoot, { recursive: true });
-      stagingRoot = await mkdtemp(resolve(uploadRoot, ".staging-"));
-      const storageKey = `${randomUUID()}${extname(file.originalname).toLowerCase()}`;
-      const stagedPath = resolve(stagingRoot, storageKey);
-      const finalPath = resolve(uploadRoot, storageKey);
-      await writeStagedFile(stagedPath, file.buffer);
-
-      const created = await prisma.$transaction(async (tx) => {
-        // Lock the parent ticket so concurrent uploads cannot both pass the active-count check.
-        await tx.$executeRaw`SELECT id FROM "Ticket" WHERE id = ${ticketId} FOR UPDATE`;
-        const activeCount = await tx.attachment.count({ where: { ticketId, isDeleted: false } });
-        if (activeCount >= 5) throw new AttachmentLimitError();
-        await moveAttachment(stagedPath, finalPath);
-        finalPaths.push(finalPath);
-        const attachment = await tx.attachment.create({
-          data: { ticketId, originalFilename: file.originalname, storageKey, mimeType: file.mimetype, fileSize: file.size, uploaderId: requesterId },
-          select: { id: true, originalFilename: true, fileSize: true, mimeType: true, isDeleted: true, deletionReason: true, deletedAt: true, createdAt: true },
-        });
-        await rm(stagingRoot!, { recursive: true, force: true });
-        stagingRoot = undefined;
-        return attachment;
-      });
-      return res.status(201).json(createdAttachmentMetadata(created));
-    } catch (error) {
-      await Promise.allSettled([...finalPaths.map((path) => rm(path, { force: true })), ...(stagingRoot ? [rm(stagingRoot, { recursive: true, force: true })] : [])]);
-      if (error instanceof AttachmentLimitError) return res.status(400).json({ error: "Validation failed", fieldErrors: { file: "A ticket may have at most 5 active attachments" } });
-      return res.status(500).json({ error: "Failed to add attachment" });
-    }
-  });
+  router.use(requireAuth(), requesterAccess);
 
   router.get("/", async (req, res) => {
-    const requesterId = Number(req.header("x-requester-id"));
-    if (!Number.isInteger(requesterId) || requesterId < 1) {
-      return res.status(401).json({ error: "Requester identity is required" });
-    }
+    const requesterId = requesterIdFrom(req);
+    if (requesterId === null || !(await requesterIsActive(req, requesterId))) return apiError(res, 403, "FORBIDDEN", "Requester account is inactive or unavailable");
 
     const value = (name: string) => typeof req.query[name] === "string" ? req.query[name] as string : undefined;
     const search = value("search")?.trim();
@@ -180,28 +225,23 @@ export function createTicketsRouter(options: TicketsRouterOptions = {}) {
     const categoryId = categoryIdValue === undefined ? undefined : Number(categoryIdValue);
     const page = Number(pageValue);
     const limit = Number(limitValue);
-    const allowedSortFields = new Set(["createdAt", "ticketNumber", "summary", "requestedPriority"]);
-
+    const allowedSortFields = new Set(["createdAt", "updatedAt", "ticketNumber", "summary", "requestedPriority", "itPriority"]);
+    const validStatuses = ["NEW", "OPEN", "IN_PROGRESS", "WAITING_FOR_REQUESTER", "RESOLVED", "CLOSED", "REOPENED", "CANCELLED"];
     const invalid =
       (categoryId !== undefined && (!Number.isInteger(categoryId) || categoryId < 1)) ||
-      (requestedPriority !== undefined && !priorities.has(requestedPriority)) ||
-      (currentStatus !== undefined && currentStatus !== "NEW") ||
+      (requestedPriority !== undefined && !priorities.has(requestedPriority as never)) ||
+      (currentStatus !== undefined && !validStatuses.includes(currentStatus)) ||
       !allowedSortFields.has(sortBy) || !["asc", "desc"].includes(sortOrder) ||
       !Number.isInteger(page) || page < 1 || !Number.isInteger(limit) || limit < 1 || limit > 50;
-    if (invalid) return res.status(400).json({ error: "Invalid ticket query parameters" });
+    if (invalid) return validationError(res, { query: "Invalid ticket query parameters" });
 
     try {
       const prisma = getPrisma();
-      const requester = await prisma.requesterUser.findFirst({
-        where: { id: requesterId, isActive: true }, select: { id: true },
-      });
-      if (!requester) return res.status(403).json({ error: "Requester is invalid or inactive" });
-
       const where: Prisma.TicketWhereInput = {
         requesterId,
         ...(categoryId !== undefined ? { categoryId } : {}),
         ...(requestedPriority ? { requestedPriority: requestedPriority as "LOW" | "MEDIUM" | "HIGH" | "URGENT" } : {}),
-        ...(currentStatus ? { currentStatus: "NEW" } : {}),
+        ...(currentStatus ? { currentStatus: currentStatus as never } : {}),
         ...(search ? { OR: [
           { ticketNumber: { contains: search, mode: "insensitive" } },
           { summary: { contains: search, mode: "insensitive" } },
@@ -215,98 +255,217 @@ export function createTicketsRouter(options: TicketsRouterOptions = {}) {
         prisma.ticket.count({ where }),
         prisma.ticket.findMany({
           where, orderBy, skip: (page - 1) * limit, take: limit,
-          select: {
-            id: true, ticketNumber: true, summary: true, requestedPriority: true,
-            currentStatus: true, createdAt: true,
-            category: { select: { id: true, name: true } },
-            relatedSystem: { select: { id: true, name: true } },
+          include: {
+            requester: { select: userSelect },
+            owner: { select: userSelect },
+            category: { select: { id: true, name: true, description: true } },
+            relatedSystem: { select: { id: true, name: true, description: true } },
           },
         }),
       ]);
-      return res.status(200).json({
-        tickets,
-        pagination: { total, page, limit, totalPages: Math.ceil(total / limit) },
-      });
+      const items = tickets.map((ticket) => ({
+        id: ticket.id,
+        ticketNumber: ticket.ticketNumber,
+        summary: ticket.summary,
+        requestedPriority: ticket.requestedPriority,
+        itPriority: ticket.itPriority,
+        currentStatus: ticket.currentStatus,
+        requester: safeUser(ticket.requester),
+        owner: ticket.owner ? safeUser(ticket.owner) : null,
+        category: ticket.category,
+        relatedSystem: ticket.relatedSystem,
+        createdAt: ticket.createdAt.toISOString(),
+        updatedAt: ticket.updatedAt.toISOString(),
+      }));
+      const meta = { page, pageSize: limit, total, totalPages: Math.ceil(total / limit), sortBy, sortDir: sortOrder };
+      return res.status(200).json({ data: { items, meta } });
     } catch {
-      return res.status(500).json({ error: "Failed to fetch tickets" });
+      return apiError(res, 500, "INTERNAL_ERROR", "Unable to load tickets");
     }
   });
 
-  router.post("/", upload.array("files", 5), async (req, res) => {
-  const requesterId = Number(req.header("x-requester-id"));
-  if (!Number.isInteger(requesterId) || requesterId < 1) return res.status(401).json({ error: "Requester identity is required" });
+  router.get("/:id/comments", async (req, res) => {
+    const requesterId = requesterIdFrom(req);
+    const ticketId = parseTicketId(req.params.id);
+    if (requesterId === null || ticketId === null) return notFound(res);
+    try {
+      const ticket = await getPrisma().ticket.findFirst({ where: { id: ticketId, requesterId }, select: { id: true } });
+      if (!ticket) return notFound(res);
+      const comments = await getPrisma().publicComment.findMany({ where: { ticketId }, orderBy: { createdAt: "asc" }, include: { author: { select: userSelect } } });
+      return res.status(200).json({ data: comments.map(publicCommentMetadata) });
+    } catch {
+      return apiError(res, 500, "INTERNAL_ERROR", "Unable to load comments");
+    }
+  });
 
-  const summary = typeof req.body.summary === "string" ? req.body.summary.trim() : "";
-  const description = typeof req.body.description === "string" ? req.body.description.trim() : "";
-  const categoryId = Number(req.body.categoryId);
-  const relatedSystemId = Number(req.body.relatedSystemId);
-  const requestedPriority = String(req.body.requestedPriority ?? "");
-  const errors: Record<string, string> = {};
-  if (summary.length < 5 || summary.length > 150) errors.summary = "Summary must be 5-150 characters";
-  if (description.length < 10 || description.length > 2000) errors.description = "Description must be 10-2000 characters";
-  if (!Number.isInteger(categoryId) || categoryId < 1) errors.categoryId = "Valid category is required";
-  if (!Number.isInteger(relatedSystemId) || relatedSystemId < 1) errors.relatedSystemId = "Valid related system is required";
-  if (!priorities.has(requestedPriority)) errors.requestedPriority = "Valid requested priority is required";
-  const files = (req.files as Express.Multer.File[] | undefined) ?? [];
-  if (files.some((file) => !validateAttachment(file))) errors.files = "Attachment type, extension, or content is invalid";
-  if (Object.keys(errors).length) return res.status(400).json({ error: "Validation failed", fieldErrors: errors });
+  router.post("/:id/comments", requesterMutation, async (req, res) => {
+    const requesterId = requesterIdFrom(req);
+    const ticketId = parseTicketId(req.params.id);
+    if (requesterId === null || ticketId === null) return notFound(res);
+    const body = typeof req.body?.body === "string" ? req.body.body.trim() : "";
+    if (body.length < 1 || body.length > 2_000) return validationError(res, { body: "Comment must be 1-2000 characters" });
+    try {
+      const ticket = await getPrisma().ticket.findFirst({ where: { id: ticketId, requesterId }, select: { id: true } });
+      if (!ticket) return notFound(res);
+      const comment = await getPrisma().publicComment.create({ data: { ticketId, authorId: requesterId, body }, include: { author: { select: userSelect } } });
+      return res.status(201).json({ data: publicCommentMetadata(comment) });
+    } catch {
+      return apiError(res, 500, "INTERNAL_ERROR", "Unable to add comment");
+    }
+  });
 
-  const finalPaths: string[] = [];
-  let stagingRoot: string | undefined;
-  try {
-    const prisma = getPrisma();
-    const requester = await prisma.requesterUser.findFirst({ where: { id: requesterId, isActive: true }, select: { id: true } });
-    if (!requester) return res.status(403).json({ error: "Requester is invalid or inactive" });
-    const [category, relatedSystem] = await Promise.all([
-      prisma.category.findFirst({ where: { id: categoryId, isActive: true }, select: { id: true } }),
-      prisma.relatedSystem.findFirst({ where: { id: relatedSystemId, isActive: true }, select: { id: true } }),
-    ]);
-    if (!category || !relatedSystem) return res.status(400).json({ error: "Validation failed", fieldErrors: { referenceData: "Category or related system is invalid" } });
+  router.get("/:id/notes", (_req, res) => apiError(res, 403, "FORBIDDEN", "Only IT Staff or Administrators may access internal notes"));
+  router.post("/:id/notes", (_req, res) => apiError(res, 403, "FORBIDDEN", "Only IT Staff or Administrators may access internal notes"));
 
-    const uploadRoot = getUploadRoot();
-    await mkdir(uploadRoot, { recursive: true });
-    stagingRoot = await mkdtemp(resolve(uploadRoot, ".staging-"));
-    const preparedAttachments: Array<{
-      file: Express.Multer.File;
-      storageKey: string;
-      stagedPath: string;
-      finalPath: string;
-    }> = [];
-    for (const file of files) {
+  router.post("/:id/requester-resolution", requesterMutation, async (req, res) => {
+    const requesterId = requesterIdFrom(req);
+    const ticketId = parseTicketId(req.params.id);
+    if (requesterId === null || ticketId === null) return notFound(res);
+    try {
+      const ticket = await getPrisma().ticket.findFirst({ where: { id: ticketId, requesterId }, select: { id: true, currentStatus: true, requesterResolutionIndicatedAt: true } });
+      if (!ticket) return notFound(res);
+      if (terminalStatuses.has(ticket.currentStatus as never)) return apiError(res, 409, "CONFLICT", "A terminal ticket cannot be marked as appearing resolved");
+      const indicatedAt = ticket.requesterResolutionIndicatedAt ?? new Date();
+      if (!ticket.requesterResolutionIndicatedAt) await getPrisma().ticket.update({ where: { id: ticketId }, data: { requesterResolutionIndicatedAt: indicatedAt } });
+      return res.status(200).json({ data: { ticketId, indicatedAt: indicatedAt.toISOString() } });
+    } catch {
+      return apiError(res, 500, "INTERNAL_ERROR", "Unable to record resolution indication");
+    }
+  });
+
+  router.get("/:id", async (req, res) => {
+    const requesterId = requesterIdFrom(req);
+    const ticketId = parseTicketId(req.params.id);
+    if (requesterId === null || ticketId === null) return notFound(res);
+    try {
+      const ticket = await ownedTicket(ticketId, requesterId);
+      if (!ticket) return notFound(res);
+      return res.status(200).json({ data: ticketMetadata(ticket) });
+    } catch {
+      return apiError(res, 500, "INTERNAL_ERROR", "Unable to load ticket details");
+    }
+  });
+
+  router.post("/:id/attachments", requesterMutation, upload.single("file"), async (req, res) => {
+    const requesterId = requesterIdFrom(req);
+    const ticketId = parseTicketId(req.params.id);
+    if (requesterId === null || ticketId === null) return notFound(res);
+    const file = req.file;
+    const finalPaths: string[] = [];
+    let stagingRoot: string | undefined;
+    try {
+      const prisma = getPrisma();
+      if (!(await requesterIsActive(req, requesterId))) return apiError(res, 403, "FORBIDDEN", "Requester account is inactive or unavailable");
+      const ticket = await prisma.ticket.findFirst({ where: { id: ticketId, requesterId }, select: { id: true } });
+      if (!ticket) return notFound(res);
+      if (!file) return validationError(res, { file: "Attachment file is required" });
+      if (!validateAttachment(file)) return validationError(res, { file: "Attachment type, extension, or content is invalid" });
+
+      const uploadRoot = getUploadRoot();
+      await mkdir(uploadRoot, { recursive: true });
+      stagingRoot = await mkdtemp(resolve(uploadRoot, ".staging-"));
       const storageKey = `${randomUUID()}${extname(file.originalname).toLowerCase()}`;
       const stagedPath = resolve(stagingRoot, storageKey);
       const finalPath = resolve(uploadRoot, storageKey);
       await writeStagedFile(stagedPath, file.buffer);
-      preparedAttachments.push({ file, storageKey, stagedPath, finalPath });
-    }
 
-    const ticket = await prisma.$transaction(async (tx) => {
-      const year = new Date().getFullYear();
-      await tx.ticketCounter.upsert({ where: { year }, update: {}, create: { year, lastSequence: 0 } });
-      const counter = await tx.ticketCounter.update({ where: { year }, data: { lastSequence: { increment: 1 } } });
-      const ticketNumber = formatTicketNumber(year, counter.lastSequence);
-      const attachmentData = [];
-      for (const { file, storageKey, stagedPath, finalPath } of preparedAttachments) {
+      const created = await prisma.$transaction(async (tx) => {
+        await tx.$executeRaw`SELECT id FROM "Ticket" WHERE id = ${ticketId} FOR UPDATE`;
+        const activeCount = await tx.attachment.count({ where: { ticketId, isDeleted: false } });
+        if (activeCount >= 5) throw new AttachmentLimitError();
         await moveAttachment(stagedPath, finalPath);
         finalPaths.push(finalPath);
-        attachmentData.push({ originalFilename: file.originalname, storageKey, mimeType: file.mimetype, fileSize: file.size, uploaderId: requesterId });
-      }
-      const createdTicket = await tx.ticket.create({
-        data: { ticketNumber, summary, description, requestedPriority: requestedPriority as "LOW" | "MEDIUM" | "HIGH" | "URGENT", requesterId, categoryId, relatedSystemId, attachments: { create: attachmentData } },
-        include: { attachments: { select: { id: true, originalFilename: true, mimeType: true, fileSize: true, isDeleted: true, createdAt: true } } },
+        const attachment = await tx.attachment.create({
+          data: { ticketId, originalFilename: file.originalname, storageKey, mimeType: file.mimetype, fileSize: file.size, uploaderId: requesterId },
+          select: { id: true, originalFilename: true, fileSize: true, mimeType: true, isDeleted: true, createdAt: true },
+        });
+        await rm(stagingRoot!, { recursive: true, force: true });
+        stagingRoot = undefined;
+        return attachment;
       });
-      await rm(stagingRoot!, { recursive: true, force: true });
-      stagingRoot = undefined;
-      return createdTicket;
-    });
-    return res.status(201).json(ticket);
-  } catch {
-    await Promise.allSettled([
-      ...finalPaths.map((path) => rm(path, { force: true })),
-      ...(stagingRoot ? [rm(stagingRoot, { recursive: true, force: true })] : []),
-    ]);
-    return res.status(500).json({ error: "Failed to create ticket" });
-  }
+      return res.status(201).json({ data: attachmentMetadata(created) });
+    } catch (error) {
+      await Promise.allSettled([...finalPaths.map((path) => rm(path, { force: true })), ...(stagingRoot ? [rm(stagingRoot, { recursive: true, force: true })] : [])]);
+      if (error instanceof AttachmentLimitError) return validationError(res, { file: "A ticket may have at most 5 active attachments" });
+      return apiError(res, 500, "INTERNAL_ERROR", "Unable to add attachment");
+    }
+  });
+
+  router.post("/", requesterMutation, upload.array("files", 5), async (req, res) => {
+    const requesterId = requesterIdFrom(req);
+    if (requesterId === null || !(await requesterIsActive(req, requesterId))) return apiError(res, 403, "FORBIDDEN", "Requester account is inactive or unavailable");
+
+    const summary = typeof req.body.summary === "string" ? req.body.summary.trim() : "";
+    const description = typeof req.body.description === "string" ? req.body.description.trim() : "";
+    const categoryId = Number(req.body.categoryId);
+    const relatedSystemId = Number(req.body.relatedSystemId);
+    const requestedPriority = String(req.body.requestedPriority ?? "");
+    const errors: Record<string, string> = {};
+    if (summary.length < 5 || summary.length > 150) errors.summary = "Summary must be 5-150 characters";
+    if (description.length < 10 || description.length > 2_000) errors.description = "Description must be 10-2000 characters";
+    if (!Number.isInteger(categoryId) || categoryId < 1) errors.categoryId = "Valid category is required";
+    if (!Number.isInteger(relatedSystemId) || relatedSystemId < 1) errors.relatedSystemId = "Valid related system is required";
+    if (!priorities.has(requestedPriority as never)) errors.requestedPriority = "Valid requested priority is required";
+    const files = (req.files as Express.Multer.File[] | undefined) ?? [];
+    if (files.some((file) => !validateAttachment(file))) errors.files = "Attachment type, extension, or content is invalid";
+    if (Object.keys(errors).length) return validationError(res, errors);
+
+    const finalPaths: string[] = [];
+    let stagingRoot: string | undefined;
+    try {
+      const prisma = getPrisma();
+      const [category, relatedSystem] = await Promise.all([
+        prisma.category.findFirst({ where: { id: categoryId, isActive: true }, select: { id: true } }),
+        prisma.relatedSystem.findFirst({ where: { id: relatedSystemId, isActive: true }, select: { id: true } }),
+      ]);
+      if (!category || !relatedSystem) return validationError(res, { referenceData: "Category or related system is invalid" });
+
+      const uploadRoot = getUploadRoot();
+      await mkdir(uploadRoot, { recursive: true });
+      stagingRoot = await mkdtemp(resolve(uploadRoot, ".staging-"));
+      const preparedAttachments: Array<{ file: Express.Multer.File; storageKey: string; stagedPath: string; finalPath: string }> = [];
+      for (const file of files) {
+        const storageKey = `${randomUUID()}${extname(file.originalname).toLowerCase()}`;
+        const stagedPath = resolve(stagingRoot, storageKey);
+        const finalPath = resolve(uploadRoot, storageKey);
+        await writeStagedFile(stagedPath, file.buffer);
+        preparedAttachments.push({ file, storageKey, stagedPath, finalPath });
+      }
+
+      const createdId = await prisma.$transaction(async (tx) => {
+        const year = new Date().getFullYear();
+        // INSERT ... ON CONFLICT is race-safe when the first ticket of a year
+        // is created concurrently by multiple authenticated requesters.
+        await tx.$executeRaw`INSERT INTO "TicketCounter" (year, "lastSequence") VALUES (${year}, 0) ON CONFLICT (year) DO NOTHING`;
+        const counter = await tx.ticketCounter.update({ where: { year }, data: { lastSequence: { increment: 1 } } });
+        const ticketNumber = formatTicketNumber(year, counter.lastSequence);
+        const attachmentData = [];
+        for (const { file, storageKey, stagedPath, finalPath } of preparedAttachments) {
+          await moveAttachment(stagedPath, finalPath);
+          finalPaths.push(finalPath);
+          attachmentData.push({ originalFilename: file.originalname, storageKey, mimeType: file.mimetype, fileSize: file.size, uploaderId: requesterId });
+        }
+        const createdTicket = await tx.ticket.create({
+          data: {
+            ticketNumber, summary, description,
+            requestedPriority: requestedPriority as "LOW" | "MEDIUM" | "HIGH" | "URGENT",
+            itPriority: requestedPriority as "LOW" | "MEDIUM" | "HIGH" | "URGENT",
+            requesterId, categoryId, relatedSystemId,
+            attachments: { create: attachmentData },
+          },
+          select: { id: true },
+        });
+        await rm(stagingRoot!, { recursive: true, force: true });
+        stagingRoot = undefined;
+        return createdTicket.id;
+      });
+      const ticket = await ownedTicket(createdId, requesterId);
+      if (!ticket) return apiError(res, 500, "INTERNAL_ERROR", "Unable to load created ticket");
+      return res.status(201).json({ data: ticketMetadata(ticket) });
+    } catch {
+      await Promise.allSettled([...finalPaths.map((path) => rm(path, { force: true })), ...(stagingRoot ? [rm(stagingRoot, { recursive: true, force: true })] : [])]);
+      return apiError(res, 500, "INTERNAL_ERROR", "Unable to create ticket");
+    }
   });
 
   return router;
@@ -315,60 +474,46 @@ export function createTicketsRouter(options: TicketsRouterOptions = {}) {
 export function createAttachmentsRouter(options: Pick<TicketsRouterOptions, "getUploadRoot"> = {}) {
   const router = Router();
   const getUploadRoot = options.getUploadRoot ?? (() => resolve(process.env.TOKTICKIT_UPLOAD_ROOT ?? resolve(process.cwd(), "uploads")));
+  router.use(requireAuth());
 
   router.get("/:id/download", async (req, res) => {
     const requesterId = requesterIdFrom(req);
-    if (requesterId === null) return res.status(401).json({ error: "Requester identity is required" });
-    const attachmentId = Number(req.params.id);
-    if (!Number.isInteger(attachmentId) || attachmentId < 1) return res.status(404).json({ error: "Attachment not found" });
+    const attachmentId = parseTicketId(req.params.id);
+    if (requesterId === null || attachmentId === null) return notFound(res, "Attachment not found");
     try {
-      const prisma = getPrisma();
-      const requester = await prisma.requesterUser.findFirst({ where: { id: requesterId, isActive: true }, select: { id: true } });
-      if (!requester) return res.status(403).json({ error: "Requester is invalid or inactive" });
-      const attachment = await prisma.attachment.findUnique({
+      const attachment = await getPrisma().attachment.findUnique({
         where: { id: attachmentId },
         select: { id: true, originalFilename: true, storageKey: true, mimeType: true, isDeleted: true, ticket: { select: { requesterId: true } } },
       });
-      if (!attachment) return res.status(404).json({ error: "Attachment not found" });
-      if (attachment.ticket.requesterId !== requesterId) return res.status(403).json({ error: "You do not have access to this attachment" });
-      if (attachment.isDeleted) return res.status(410).json({ error: "Attachment has been removed" });
+      if (!attachment || (!staffRole(req) && attachment.ticket.requesterId !== requesterId)) return notFound(res, "Attachment not found");
+      if (attachment.isDeleted) return apiError(res, 410, "GONE", "Attachment has been removed");
       const uploadRoot = resolve(getUploadRoot());
       const filePath = resolve(uploadRoot, attachment.storageKey);
-      if (!filePath.startsWith(`${uploadRoot}${process.platform === "win32" ? "\\" : "/"}`)) return res.status(404).json({ error: "Attachment not found" });
+      if (!filePath.startsWith(`${uploadRoot}${process.platform === "win32" ? "\\" : "/"}`)) return notFound(res, "Attachment not found");
       const contents = await readFile(filePath);
       const safeFilename = attachment.originalFilename.replace(/[\r\n"]/g, "_");
       res.setHeader("Content-Type", attachment.mimeType);
       res.setHeader("Content-Disposition", `attachment; filename="${safeFilename}"`);
       return res.status(200).send(contents);
     } catch (error) {
-      if ((error as NodeJS.ErrnoException).code === "ENOENT") return res.status(404).json({ error: "Attachment not found" });
-      return res.status(500).json({ error: "Failed to download attachment" });
+      if ((error as NodeJS.ErrnoException).code === "ENOENT") return notFound(res, "Attachment not found");
+      return apiError(res, 500, "INTERNAL_ERROR", "Unable to download attachment");
     }
   });
 
-  router.delete("/:id", async (req, res) => {
+  router.delete("/:id", requesterOnlyMutation, async (req, res) => {
     const requesterId = requesterIdFrom(req);
-    if (requesterId === null) return res.status(401).json({ error: "Requester identity is required" });
-    const attachmentId = Number(req.params.id);
-    if (!Number.isInteger(attachmentId) || attachmentId < 1) return res.status(404).json({ error: "Attachment not found" });
+    const attachmentId = parseTicketId(req.params.id);
+    if (requesterId === null || attachmentId === null) return notFound(res, "Attachment not found");
     try {
-      const prisma = getPrisma();
-      const requester = await prisma.requesterUser.findFirst({ where: { id: requesterId, isActive: true }, select: { id: true } });
-      if (!requester) return res.status(403).json({ error: "Requester is invalid or inactive" });
-      const attachment = await prisma.attachment.findUnique({ where: { id: attachmentId }, select: { id: true, isDeleted: true, ticket: { select: { requesterId: true } } } });
-      if (!attachment) return res.status(404).json({ error: "Attachment not found" });
-      if (attachment.ticket.requesterId !== requesterId) return res.status(403).json({ error: "You do not have access to this attachment" });
-      if (attachment.isDeleted) return res.status(404).json({ error: "Attachment not found" });
+      const attachment = await getPrisma().attachment.findUnique({ where: { id: attachmentId }, select: { id: true, isDeleted: true, ticket: { select: { requesterId: true } } } });
+      if (!attachment || attachment.ticket.requesterId !== requesterId || attachment.isDeleted) return notFound(res, "Attachment not found");
       const reason = typeof req.body?.deletionReason === "string" ? req.body.deletionReason.trim() : "";
-      if (reason.length < 3 || reason.length > 255) return res.status(400).json({ error: "Validation failed", fieldErrors: { deletionReason: "Deletion reason must be 3-255 characters" } });
-      const deleted = await prisma.attachment.update({
-        where: { id: attachmentId },
-        data: { isDeleted: true, deletionReason: reason, deletedAt: new Date() },
-        select: { id: true, originalFilename: true, fileSize: true, mimeType: true, isDeleted: true, deletionReason: true, deletedAt: true, createdAt: true },
-      });
-      return res.status(200).json({ message: "Attachment removed successfully", attachment: { id: deleted.id, isDeleted: deleted.isDeleted, deletionReason: deleted.deletionReason, deletedAt: deleted.deletedAt } });
+      if (reason.length < 3 || reason.length > 255) return validationError(res, { deletionReason: "Deletion reason must be 3-255 characters" });
+      await getPrisma().attachment.update({ where: { id: attachmentId }, data: { isDeleted: true, deletionReason: reason, deletedAt: new Date() } });
+      return res.status(204).send();
     } catch {
-      return res.status(500).json({ error: "Failed to remove attachment" });
+      return apiError(res, 500, "INTERNAL_ERROR", "Unable to remove attachment");
     }
   });
 
