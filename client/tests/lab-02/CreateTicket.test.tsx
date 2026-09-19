@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import CreateTicket from "../../src/CreateTicket.js";
 import * as api from "../../src/api.js";
@@ -10,6 +10,7 @@ async function openForm() {
   vi.spyOn(api, "getReferenceData").mockResolvedValue(references);
   render(<CreateTicket user={user} onCancel={vi.fn()} />);
   await screen.findByRole("heading", { name: "Create Ticket" });
+  await waitFor(() => expect(screen.getByRole("button", { name: /Submit Ticket/i })).toBeEnabled());
 }
 
 describe("Authenticated Create Ticket", () => {
