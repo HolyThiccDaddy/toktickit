@@ -1,6 +1,6 @@
 # Lab 3 Test Plan and Results
 
-Status: Issue #39 implementation and responsive release evidence complete on the feature branch; release integration is ready for review.
+Status: Final Issue #39 implementation and responsive release evidence were verified from `main` after Final Release PR #46 merged as commit `92fac36`.
 
 ## 1. Testing strategy
 
@@ -76,5 +76,6 @@ T-06 must exercise a Requester-owned Ticket Detail, successful Public Comment su
 - Server and client production builds passed after the Issue #39 implementation.
 - `npx prisma validate` passed.
 - `npx prisma migrate deploy` applied the two Lab 3 migrations to the isolated `toktickit_test` database.
+- Final integration: PR #46 merged the reviewed Lab 3 branch into `main` as commit `92fac36`; the release-candidate verification above was run against the same merged source.
 
 Issue #39 evidence is stored under `artifacts/lab-03/screenshots/{authentication,user-management,staff-queue,staff-ticket-detail}` with desktop, tablet, and mobile captures from the real Playwright runs above.

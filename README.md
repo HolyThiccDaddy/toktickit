@@ -1,6 +1,6 @@
-# TokTickIT — Lab 3 Authenticated Requester Ticketing
+# TokTickIT — Lab 3 Authenticated IT Ticketing
 
-TokTickIT is a full-stack IT service-desk application. Lab 3 replaces Lab 2's temporary Development Requester selector with an authenticated session boundary: Requesters can create and manage only their own tickets and attachments, post public comments, and indicate that a problem appears resolved. Staff and Administrator workflows are implemented incrementally in the later Lab 3 issues.
+TokTickIT is a full-stack IT service-desk application. Lab 3 replaces Lab 2's temporary Development Requester selector with authenticated sessions and adds the complete requester, IT Staff, and Administrator workflows. Requesters manage only their own tickets and attachments, IT Staff and Administrators operate the shared queue, and Administrators manage users safely.
 
 ## Scope and technology
 
@@ -10,7 +10,7 @@ TokTickIT is a full-stack IT service-desk application. Lab 3 replaces Lab 2's te
 - **Testing:** Vitest, Supertest, React Testing Library, Playwright
 - **Architecture:** Monorepo with `client/`, `server/`, and repository-root E2E specs
 
-The current requester slice deliberately excludes the later IT Staff queue and Administrator user-management screens; those workflows follow the approved Lab 3 contract in `docs/lab-03/`.
+The released application includes the approved Lab 3 queue, ticket-detail, communication, and user-management workflows described in `docs/lab-03/`.
 
 ## Repository structure
 
@@ -21,7 +21,9 @@ toktickit/
 ├── e2e/                        # Playwright journeys and deterministic setup/teardown
 ├── docs/lab-02/                # Lab 2 contract, test plan, AI log, and review record
 ├── docs/lab-03/                # Lab 3 contract, test plan, AI log, and review record
-└── artifacts/lab-02/           # Test output and responsive/visual evidence
+├── artifacts/lab-02/           # Lab 2 test output and responsive/visual evidence
+├── artifacts/lab-03/           # Lab 3 responsive/visual evidence
+└── output/pdf/                 # Final submission reports
 ```
 
 ## Prerequisites
@@ -91,7 +93,7 @@ npm run build
 npx playwright test
 ```
 
-The Playwright command starts isolated services, resets deterministic fixtures in `toktickit_test`, checks authenticated requester journeys at desktop/tablet/mobile sizes, and writes JSON results to `artifacts/lab-02/e2e-results.json` plus PNG evidence under `artifacts/lab-02/screenshots/`.
+The Playwright command starts isolated services, resets deterministic fixtures in `toktickit_test`, checks requester, staff, and administrator journeys at desktop/tablet/mobile sizes, and writes JSON results plus PNG evidence under the `artifacts/` directories.
 
 ## API surface
 
@@ -111,6 +113,9 @@ The Playwright command starts isolated services, resets deterministic fixtures i
 - `DELETE /api/attachments/:id` — soft-remove an owned attachment with a reason
 - `GET/POST /api/tickets/:id/comments` — read or append public comments on an owned ticket
 - `POST /api/tickets/:id/requester-resolution` — record the Requester's resolution indication
+- `GET/PATCH /api/staff/tickets/:id/...` — staff/admin assignment, IT priority, and status operations
+- `GET/POST /api/tickets/:id/notes` — internal notes for IT Staff and Administrators
+- `GET/POST/PATCH /api/admin/users...` — Administrator user listing and safe account management
 
 Protected identity is derived only from the server-side `toktickit_session` cookie; client-supplied requester, owner, author, and role values are ignored. State-changing requests require the server-issued CSRF token. Attachment uploads enforce allowed type, extension, magic bytes, size, count, ownership, and compensating cleanup rules.
 
@@ -132,5 +137,9 @@ Protected identity is derived only from the server-side `toktickit_session` cook
 - [Test plan and results](docs/lab-03/tests.md)
 - [AI use and reflection](docs/lab-03/ai-use.md)
 - [Peer-review record](docs/lab-03/reviewer.md)
+- [Final submission report source](docs/lab-03/LAB_03_FINAL_SUBMISSION_REPORT.md)
+- [Final submission report PDF](output/pdf/LAB_03_FINAL_SUBMISSION_REPORT.pdf)
 
 The core Lab 2 implementation was integrated into `main` by release PR #27 (`a145b057`). The README/documentation update was promoted by PR #29 (`2d963f7`), and the final evidence/report update was promoted by PR #32 (`10d902b`).
+
+Lab 3 was integrated into `main` by Final Release PR #46 (`92fac36`) after peer-reviewed implementation PRs #40–#45 were merged into `lab3-staging`.
