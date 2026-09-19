@@ -1,20 +1,20 @@
 # Lab 3 AI Use and Reflection
 
-Status: Planned record; update with actual prompts and verification links during implementation.
+Status: Recorded for the implementation branch; final-main and PDF evidence remain release gates.
 
-AI assistance is documented for transparency. Each entry must state what was accepted, changed, or rejected and how the result was checked against the Lab 3 contract and real tests.
+**LLM used:** OpenAI Codex (GPT-5). Prompts below are concise summaries of the key specification, coding, review, and audit prompts used during Lab 3. The agent output was treated as a draft and accepted only after comparison with `Lab_3_sheet.pdf`, the approved contract, executable tests, and peer-review feedback.
 
-| # | Prompt purpose | Intended use | Acceptance / verification record |
+| # | Prompt summary | What was accepted or changed | Acceptance / verification record |
 |---:|---|---|---|
-| 1 | Extract Lab 3 scope and exclusions | Turn the handout into a concise contract checklist | To be recorded after review against Lab_3_sheet.pdf |
-| 2 | Design session authentication and password-change flow | Identify secure cookie, CSRF, expiry, and first-login rules | To be recorded after API/security tests |
-| 3 | Review authorization matrix | Check requester ownership, staff operations, and admin boundaries | To be recorded after authorization tests |
-| 4 | Plan User migration from Lab 2 | Preserve IDs and relationships while adding roles and sessions | To be recorded after migration and seed tests |
-| 5 | Design staff queue and ticket detail states | Cover loading, empty, error, retry, mutation, and responsive behavior | To be recorded after UI tests and screenshots |
-| 6 | Map acceptance criteria to tests | Ensure every AC has an executable unit/API/UI/E2E check | To be recorded in tests.md with real results |
-| 7 | Review peer feedback | Identify missing requirements or unsafe assumptions before coding | To be recorded in reviewer.md with change links |
-| 8 | Audit release evidence | Check source, logs, screenshots, and final report consistency | To be recorded before release PR |
+| 1 | Extract the Lab 3 scope, exclusions, roles, and required submission evidence from the handout. | Accepted the scope checklist and converted it into numbered FR/BR/AC requirements; excluded work was kept out of the implementation. | `docs/lab-03/specification.md` sections 1–4; Lab 3 sheet sections 1–4 and 9. |
+| 2 | Design cookie-session authentication, CSRF, expiry, logout, inactive-account handling, and the mandatory first-login password gate. | Accepted opaque HttpOnly sessions, server-side identity, stable safe errors, and the global `PASSWORD_CHANGE_REQUIRED` gate; rejected client-only authorization. | `docs/lab-03/api-spec.md` conventions and auth endpoints; `server/tests/lab-03/auth.api.test.ts` and `authorization.api.test.ts`. |
+| 3 | Review the authorization matrix and ownership rules for Requester, IT Staff, and Administrator operations. | Accepted explicit backend role/ownership checks, including the approved Administrator Ticket-operation grant; rejected forged requester/header identity. | `docs/lab-03/specification.md` section 6; `server/tests/lab-03/authorization.api.test.ts` and `comments-notes.api.test.ts`. |
+| 4 | Plan the Lab 2-to-Lab 3 migration, credential backfill, seed idempotency, and preservation of foreign keys. | Accepted preserved IDs/relationships, non-login migration markers, pending-only deterministic credential backfill, and collision-safe staff IDs. | `docs/lab-03/specification.md` section 7.1; `server/tests/lab-03/migration-regression.api.test.ts`. |
+| 5 | Design Staff Queue, Ticket Detail, User Management states, responsive layouts, and safe failure feedback. | Accepted reusable Zen Green controls, loading/empty/no-results/error/retry states, mobile card sorting, and accessible responsive evidence; deferred excluded admin features. | `docs/lab-03/ui-spec.md`; `client/tests/lab-03/StaffTicketQueue.test.tsx`, `StaffTicketDetail.test.tsx`, and `UserManagement.test.tsx`; `artifacts/lab-03/screenshots/`. |
+| 6 | Map every acceptance criterion to unit, API, UI, security, migration, responsive, and E2E checks. | Accepted only criteria with named executable paths and real results; stale counts were corrected after later regression tests were added. | `docs/lab-03/tests.md` traceability matrix and executed-results section. |
+| 7 | Recheck peer-review comments for contract, migration, authorization, concurrency, filtering, and E2E evidence gaps. | Implemented requested corrections when they matched the handout; rejected scope expansion and documented the review history instead. | `docs/lab-03/reviewer.md`; merged fixes in PRs #40–#43 and the Issue #39 branch history. |
+| 8 | Audit the release evidence for source/test-count consistency and final-main readiness. | Accepted the release checklist only for evidence actually run, identified remaining final-main/PDF gates, and kept secrets and local credentials out of the repository. | `docs/lab-03/tests.md`; current documentation update in [PR #45](https://github.com/HolyThiccDaddy/toktickit/pull/45). |
 
 ## Reflection
 
-AI output is treated as a draft. Contract decisions remain subject to the Lab 3 handout and peer review. Security-sensitive behavior is accepted only when executable tests and real terminal evidence confirm it; suggestions that weaken server-side authorization, expose credentials, or invent unsupported requirements are rejected.
+Codex was most useful for turning the handout into a traceable contract, finding mismatches between requirements and tests, and generating focused regression cases. I kept the human and peer-review decisions authoritative: backend authorization, migration safety, password handling, and status transitions were accepted only after executable tests and real terminal evidence passed. I changed or rejected suggestions that weakened server-side checks, exposed credentials, relied on hidden UI controls, or added features explicitly excluded by the Lab 3 scope. The final release still requires the merged `main` evidence and one concise PDF, so branch-level completion is not claimed as final submission completion.
