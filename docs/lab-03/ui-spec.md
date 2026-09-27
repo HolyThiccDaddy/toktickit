@@ -1,6 +1,6 @@
 # Lab 3 UI Specification
 
-Status: Draft contract for peer review before implementation
+Status: Approved contract (PR #40 merged into `lab3-staging`); finalized for the main release evidence.
 
 ## Design foundation
 
