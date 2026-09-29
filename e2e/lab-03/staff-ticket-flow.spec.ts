@@ -166,6 +166,9 @@ test.describe("Issue #38 IT Staff queue and ticket operations", () => {
     const forbidden = await page.request.get("http://127.0.0.1:3002/api/staff/tickets");
     expect(forbidden.status()).toBe(403);
     await page.screenshot({ path: `${evidenceDir}/17_requester_staff_access_denied.png` });
+    const forbiddenPage = await page.goto("http://127.0.0.1:3002/api/staff/tickets");
+    expect(forbiddenPage?.status()).toBe(403);
+    await page.screenshot({ path: `${evidenceDir}/19_requester_staff_403_response.png` });
   });
 
   test("keeps queue sorting controls usable with mobile ticket cards", async ({ page }) => {
@@ -182,5 +185,8 @@ test.describe("Issue #38 IT Staff queue and ticket operations", () => {
     const forbidden = await page.request.get("http://127.0.0.1:3002/api/admin/users");
     expect(forbidden.status()).toBe(403);
     await page.screenshot({ path: `${evidenceDir}/18_staff_admin_access_denied.png` });
+    const forbiddenPage = await page.goto("http://127.0.0.1:3002/api/admin/users");
+    expect(forbiddenPage?.status()).toBe(403);
+    await page.screenshot({ path: `${evidenceDir}/20_staff_admin_403_response.png` });
   });
 });

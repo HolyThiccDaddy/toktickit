@@ -127,7 +127,7 @@ The desktop/tablet/mobile captures are embedded in Part 9 from `artifacts/lab-03
 
 Staff Ticket Detail supports claim/reassign, IT Priority, permitted status transitions and confirmations, attachment continuity, Public Comments, Internal Notes, Requester resolution indication, role restrictions, validation, and safe failure behavior.
 
-Part 7 links the rubric to seven figures from one real local workflow. The Requester created the ticket with an attachment, then IT Staff opened it, claimed it, reassigned it to another active Staff user, raised IT Priority, moved through valid statuses, saw confirmation enforcement before RESOLVED, and added separate public and internal communication. Figure 7.3 shows the rejected unconfirmed transition; Figure 7.4 shows the subsequently confirmed RESOLVED state. These are sequential states, not independent mock-ups.
+Part 7 links the rubric to eight figures from real local workflows. The Requester created the ticket with an attachment, then IT Staff opened it, claimed it, reassigned it to another active Staff user, raised IT Priority, moved through valid statuses, saw confirmation enforcement before RESOLVED, and added separate public and internal communication. Figure 7.3 shows the rejected unconfirmed transition; Figure 7.4 shows the subsequently confirmed RESOLVED state. These are sequential states, not independent mock-ups. Figure 7.8 shows the separate Requester role-denial check.
 
 | Figure | Local screenshot | What is directly visible |
 |---|---|---|
@@ -138,6 +138,7 @@ Part 7 links the rubric to seven figures from one real local workflow. The Reque
 | 7.5 | `artifacts/lab-03/screenshots/staff-flow/states/14_public_comment.png` | Persisted public comment with author and timestamp. |
 | 7.6 | `artifacts/lab-03/screenshots/staff-flow/states/15_internal_note.png` | Separate Staff-only internal note with author and timestamp. |
 | 7.7 | `artifacts/lab-03/screenshots/staff-flow/states/16_reassigned_operation.png` | Assignee ID changed to Casey Staff; the named owner is confirmed by Figure 6.7 and an API assertion in the same E2E run. |
+| 7.8 | `artifacts/lab-03/screenshots/staff-flow/states/19_requester_staff_403_response.png` | Browser displays the real 403 JSON after a signed-in Requester directly opens the Staff queue API; Playwright checks the HTTP status. |
 
 Full-screen desktop/tablet/mobile views are embedded in Part 9 from `artifacts/lab-03/screenshots/staff-ticket-detail/`. The complete transition matrix, Requester-visible resolution, and role/ownership protections are supported by tests below, not inferred from still images alone.
 
@@ -154,7 +155,7 @@ Supporting tests include `staff-queue.api.test.ts` (queue queries, claim, and re
 
 The Administrator-only screen lists users, supports name/email search and role filtering, creates and edits one-role accounts, changes activation state, sets an initial password, and enforces duplicate-email and last-Administrator protections.
 
-Part 8 contains a rubric-to-figure index and twelve local UI figures: loaded list, search/filter, create, name/email/role edit, deactivation, password reset, safe self/duplicate rejection, the mandatory change-password gate on the next login, and native invalid-input blocking. Each comes from the same passing E2E flow against the dedicated test database. The responsive desktop/tablet/mobile views are embedded in Part 9.
+Part 8 contains a rubric-to-figure index and thirteen local browser figures: loaded list, search/filter, create, name/email/role edit, deactivation, password reset, safe self/duplicate rejection, the mandatory change-password gate on the next login, native invalid-input blocking, and direct Administrator API denial for IT Staff. The Administrator UI states come from one passing E2E flow against the dedicated test database; the denial is checked in the Staff E2E flow. The responsive desktop/tablet/mobile views are embedded in Part 9.
 
 | Figure | Local screenshot | What is directly visible |
 |---|---|---|
@@ -164,8 +165,9 @@ Part 8 contains a rubric-to-figure index and twelve local UI figures: loaded lis
 | 8.9–8.10 | `12_self_deactivation_rejected.png`, `13_duplicate_email_rejected.png` | Backend safeguards surfaced as safe UI errors. |
 | 8.11 | `14_reset_requires_change_on_next_login.png` | Reset credentials reach the password-change gate instead of the protected workspace. |
 | 8.12 | `04_invalid_input_blocked.png` | Browser validation prevents malformed email and a short password from submitting. |
+| 8.13 | `artifacts/lab-03/screenshots/staff-flow/states/20_staff_admin_403_response.png` | Browser displays the real 403 JSON after signed-in IT Staff directly opens the Administrator API; Playwright checks the HTTP status. |
 
-Other captured intermediate states (`04_create_form.png`, `08_updated_success.png`, `10_reset_form.png`) remain available alongside the embedded figures. The last-active-Administrator race and non-admin authorization denial are established by API tests rather than inferred from the screenshots.
+Other captured intermediate states (`04_create_form.png`, `08_updated_success.png`, `10_reset_form.png`) remain available alongside the embedded figures. The last-active-Administrator race is established by API tests; Figure 8.13 also shows a real browser response for non-admin denial.
 
 Supporting tests include `users-admin.api.test.ts`, `UserManagement.test.tsx`, `authorization.api.test.ts`, and `user-administration.spec.ts`. The evidence covers list/search/filter, create/edit, activation/deactivation, initial-password reset, duplicate email, invalid role, inactive login, self-safety, and concurrent last-active-Administrator protection.
 
