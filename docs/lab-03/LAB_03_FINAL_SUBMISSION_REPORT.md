@@ -1,6 +1,6 @@
 # LAB 3 : TokTickIT Authenticated IT Ticketing System
 
-Final submission report for the merged Lab 3 release at main commit `92fac36`; documentation/evidence follow-up at `e7998d3`.
+Core Lab 3 implementation was merged to `main` at `92fac36`, with documentation follow-up at `e7998d3`. This expanded evidence report and latest verification are on `feature/lab3-final-evidence`; they are not claimed as merged to `main` until integration is checked.
 
 Student: Thira Rungruangkaset (67070503419)
 GitHub: @HolyThiccDaddy
@@ -194,7 +194,7 @@ The completed visual checklist covers:
 | Responsive rule | Reflow without clipping/overlap; tables stack or scroll inside the component only when necessary; no page-level horizontal overflow |
 | Accessibility rule | Labels and keyboard operation for every control, associated/live-region errors, visible focus after mutations/dialogs, readable contrast and safe feedback |
 
-The approved token/rule table above, the linked `ui-spec.md`, and Figures 9.1–9.12 provide the design and responsive record. Client regression and all 13 Playwright tests passed in the local evidence run; the screenshots are not treated as substitutes for test assertions.
+The PDF includes the complete, typeset `ui-spec.md` and an explicit eight-row visual/accessibility checklist before Figures 9.1–9.12. The approved token/rule table above and those figures provide the design and responsive record. Client regression and all 13 Playwright tests passed in the local feature-branch evidence run; screenshots are not treated as substitutes for test assertions.
 
 Lab 3 exclusions remain external identity providers, password-recovery email, multi-role accounts, staff assignment history, and administrative deletion. Deactivation is used instead of deletion so historical ownership and authored communication remain queryable.
 
@@ -239,7 +239,7 @@ The source capture inventory is retained below. The PDF embeds selected workflow
 
 ## Evidence Appendix: Local terminal verification
 
-These original PowerShell captures are retained under `artifacts/`. The PDF embeds the selected test/build/migration frames 24-27 and 29-30; source token and checklist values are shown as selectable text in Part 9. Captures retain their original checkout paths and are not relabeled as the current feature checkout. The local verification logs in `artifacts/lab-03/verification/` separately document the current run, including any failure or rerun.
+These original PowerShell captures are retained under `artifacts/`. The PDF presents current test/build/migration results as selectable text with paths to the complete verification logs, instead of shrinking the older terminal frames 24-27 and 29-30 to unreadable size. Source token and checklist values are also selectable text in Part 9. Historical captures retain their original checkout paths and are not relabeled as the current feature checkout. The local verification logs in `artifacts/lab-03/verification/` document the current run, including any failure or rerun.
 
 19. Release-candidate checkout and branch/commit context used for the terminal capture: `artifacts/lab-03/screenshots/report/19_terminal_branch_status.png`.
 20. Zen Green color tokens from the Lab 2 UI specification: `artifacts/lab-03/screenshots/report/20_terminal_zen_green_tokens.png`.
