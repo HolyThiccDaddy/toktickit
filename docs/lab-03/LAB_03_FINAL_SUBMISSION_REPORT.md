@@ -1,6 +1,6 @@
 # LAB 3 : TokTickIT Authenticated IT Ticketing System
 
-Core Lab 3 implementation was merged to `main` at `92fac36`. The documentation and evidence follow-ups were merged through PR #47 and PR #48; the current canonical report and PDF are included in `main` at merge commit `69ed72e`.
+Core Lab 3 implementation was merged to `main` at `92fac36`. The documentation and evidence follow-ups were merged through PR #47 and PR #48. The final report/PDF refresh was approved and merged through PR #49 at `b45a853`.
 
 Student: Thira Rungruangkaset (67070503419)
 GitHub: @HolyThiccDaddy
@@ -20,7 +20,7 @@ Key evidence:
 - [Issue #39 - Administrator and release evidence](https://github.com/HolyThiccDaddy/toktickit/issues/39)
 - [PR #40](https://github.com/HolyThiccDaddy/toktickit/pull/40) through [PR #46](https://github.com/HolyThiccDaddy/toktickit/pull/46), including peer review and merge history.
 
-The documentation follow-ups are [PR #47](https://github.com/HolyThiccDaddy/toktickit/pull/47) and [PR #48](https://github.com/HolyThiccDaddy/toktickit/pull/48). PR #48 merged the seed-safety clarification and canonical report/PDF into `main` without changing the released application behavior.
+The documentation follow-ups are [PR #47](https://github.com/HolyThiccDaddy/toktickit/pull/47) and [PR #48](https://github.com/HolyThiccDaddy/toktickit/pull/48). The final report/PDF refresh was merged by [PR #49](https://github.com/HolyThiccDaddy/toktickit/pull/49) as `b45a853`, without changing the released application behavior.
 
 ## Answer Part 2: Spec DD (5 Points)
 
@@ -49,7 +49,7 @@ This explicit crosswalk closes the common DD gap where a project links separate 
 
 ## Answer Part 3: Test DD and Traceability (10 Points)
 
-Verification provenance is separated below: the canonical report and evidence are now on merged `main @ 69ed72e`. The final-main gates were rerun from that commit on 29 September 2026; the earlier implementation release remains identified as `92fac36` for historical release context.
+Verification provenance is separated below: the executable gates were rerun from merged `main @ 69ed72e` on 29 September 2026 before the documentation-only report/PDF merge. The final report/PDF refresh is now merged by PR #49 as `b45a853`; the earlier implementation release remains identified as `92fac36` for historical release context.
 
 | Check | Result |
 |---|---|
