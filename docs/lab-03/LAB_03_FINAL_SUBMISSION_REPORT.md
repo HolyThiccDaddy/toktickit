@@ -171,7 +171,7 @@ Supporting tests include `users-admin.api.test.ts`, `UserManagement.test.tsx`, `
 
 ## Answer Part 9: Zen Green UI and Responsive Evidence (5 Points)
 
-The released screens reuse the Zen Green tokens and shared controls established in Lab 2. Part 9 embeds all twelve original desktop/tablet/mobile Playwright screenshots for Authentication, User Management, Staff Queue, and Staff Ticket Detail. Long mobile captures also have magnified, clearly labeled views of the same unaltered screenshot. The E2E run asserts that the document width never exceeds the viewport on each of these screens.
+The released screens reuse the Zen Green tokens and shared controls established in Lab 2. Part 9 embeds all twelve original desktop/tablet/mobile Playwright screenshots for Authentication, User Management, Staff Queue, and Staff Ticket Detail. Long mobile captures also have magnified, clearly labeled views of the same unaltered screenshot. Visual inspection of these twelve captured states found no clipped text or overlapping buttons; the E2E run separately asserts that the document width never exceeds the viewport on each screen.
 
 The completed visual checklist covers:
 
