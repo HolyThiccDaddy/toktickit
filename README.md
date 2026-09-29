@@ -138,8 +138,10 @@ Protected identity is derived only from the server-side `toktickit_session` cook
 - [AI use and reflection](docs/lab-03/ai-use.md)
 - [Peer-review record](docs/lab-03/reviewer.md)
 - [Final submission report source](docs/lab-03/LAB_03_FINAL_SUBMISSION_REPORT.md)
-- [Final submission report PDF](output/pdf/LAB_03_FINAL_SUBMISSION_REPORT.pdf)
+- [Final submission report PDF](output/pdf/LAB_03_FINAL_SUBMISSION_REPORT.pdf) (53-page Lab 2-template 10/10 report with vector text/tables; the `_10-10` filename is retained as an identical alias)
 
 The core Lab 2 implementation was integrated into `main` by release PR #27 (`a145b057`). The README/documentation update was promoted by PR #29 (`2d963f7`), and the final evidence/report update was promoted by PR #32 (`10d902b`).
+
+Lab 3 was integrated into `main` by Final Release PR #46 (`92fac36`) after the reviewed implementation PRs were merged into `lab3-staging`; the final evidence/documentation follow-up is PR #47 (`e7998d3`).
 
 Lab 3 was integrated into `main` by Final Release PR #46 (`92fac36`) after peer-reviewed implementation PRs #40–#45 were merged into `lab3-staging`.

@@ -13,6 +13,7 @@ export const e2eAccounts = {
   sarah: { email: "sarah.johnson@example.com", initialPassword: "RequesterThree!2026", changedPassword: "RequesterThreeChanged!2026" } satisfies E2EAccount,
   david: { email: "david.lee@example.com", initialPassword: "RequesterFour!2026", changedPassword: "RequesterFourChanged!2026" } satisfies E2EAccount,
   alexStaff: { email: "alex.staff@example.com", initialPassword: "StaffOne!2026", changedPassword: "StaffOneChanged!2026" } satisfies E2EAccount,
+  caseyStaff: { email: "casey.staff@example.com", initialPassword: "StaffTwo!2026", changedPassword: "StaffTwoChanged!2026" } satisfies E2EAccount,
   administrator: { email: "admin@example.com", initialPassword: "AdminOne!2026", changedPassword: "AdminOneChanged!2026" } satisfies E2EAccount,
 };
 
@@ -21,6 +22,7 @@ export async function signInAs(page: any, account: E2EAccount) {
   const loginHeading = page.getByRole("heading", { name: "Sign in to IT Service Desk" });
   const changePasswordHeading = page.getByRole("heading", { name: "Change your password" });
   const workspaceHeading = page.getByRole("heading", { name: /TokTickIT IT Service Desk/ });
+  await expect(loginHeading.or(changePasswordHeading).or(workspaceHeading)).toBeVisible();
 
   async function waitForAuthenticatedShell() {
     try {

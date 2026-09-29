@@ -80,7 +80,20 @@ Closed and Cancelled are terminal. Any transition not listed above, or any trans
 - BR-13 All validation, authentication, authorization, conflict, and server errors use stable codes and safe messages without secrets, SQL, paths, or storage keys.
 - BR-14 Seeds are deterministic and idempotent: at least four active and one inactive Requester, at least three active and one inactive IT Staff user, and at least one active Administrator. They include realistic assigned and unassigned Tickets across the required statuses and priorities plus example Public Comments and Internal Notes. Seed credentials are local-development-only and are not real secrets.
 
-## 6. Authorization matrix
+## 6. UI specification summary
+
+The complete screen contract is maintained in [ui-spec.md](ui-spec.md) and was reviewed with this specification before implementation. The release UI summary is:
+
+- **Design foundation:** continue the Lab 2 Zen Green visual language: dark neutral surfaces, green success/accent states, readable contrast, visible focus rings, shared controls, and no page-level horizontal overflow.
+- **Responsive rules:** desktop is `>= 992px`, tablet is `768-991px`, and mobile is `< 768px`. Content must reflow without clipping or overlap; tables become stacked cards or scroll inside their component only when required.
+- **Application shell:** unauthenticated users see Login; authenticated users see role-specific navigation and the current display name/role. Logout is always available, and the must-change-password gate takes priority over normal navigation.
+- **Authentication screens:** Login exposes email, password, show/hide control, submit, inline errors, loading, inactive-account, retry, and redirect states. Change Password exposes current/new/confirm fields, password-policy feedback, validation, server failure, success, and a non-bypassable route while `mustChangePassword=true`.
+- **Requester screens:** Create Ticket and My Tickets preserve Lab 2 behavior under authenticated identity. Requester Ticket Detail is read-only for ticket fields and adds public comments plus the Problem Appears Resolved indication while preserving attachment ownership rules.
+- **Staff screens:** Staff Ticket Queue provides search, status/IT-priority/assignee/category filters, sortable results, page size/pagination, counts, loading, empty/no-results, retryable failure, and mobile card sorting. Staff Ticket Detail provides metadata, assignment, priority/status actions, confirmation prompts, public comments, and internal notes.
+- **Administrator screen:** User Management provides search, optional role filter, list/card states, create/edit, role and activation validation, self/last-admin safeguards, and initial-password reset.
+- **Accessibility and feedback:** all controls have labels and keyboard operation; errors are associated with fields and announced where appropriate; focus remains visible after dialogs/mutations; loading, empty, validation, submitting, success, failure/retry, and inactive/deauthenticated states are specified.
+
+## 7. Authorization matrix
 
 | Capability | Requester | IT Staff | Administrator |
 |---|---:|---:|---:|
@@ -92,11 +105,11 @@ Closed and Cancelled are terminal. Any transition not listed above, or any trans
 | Claim/reassign/IT priority/status | No | Yes | Yes, by explicit matrix grant |
 | User management | No | No | Yes |
 
-## 7. Migration and implementation choices
+## 8. Migration and implementation choices
 
 Extend the existing requester identity into a single canonical User model (or an equivalent transactional rename/map) while preserving primary keys and all foreign-key relationships. Existing Development Requesters become REQUESTER users with active=true and mustChangePassword=true; their Ticket requester foreign keys remain unchanged. Assign deterministic local-only initial passwords and document the change-password path without committing secrets. Add role, passwordHash, mustChangePassword, active, and timestamps. Add AuthSession, ticket assignee, IT priority, requesterResolutionIndicatedAt, status values, PublicComment, and InternalNote. Apply and verify the migration before application code is released and preserve all Lab 2 records. The Issue #36 foundation keeps the legacy RequesterUser mirror and header compatibility only for unauthenticated Lab 2 regression calls; a validated session always wins and stale cookies never fall back to that header. Issue #37 removes the Development Requester selector and the remaining `X-Requester-Id` trust boundary.
 
-### 7.1 Data-model decisions
+### 8.1 Data-model decisions
 
 The migration keeps the existing integer identifiers so Lab 2 foreign keys and ticket numbers remain stable. One User has exactly one role; user deactivation is used instead of deletion so historical ownership and authored communication remain queryable.
 
@@ -121,7 +134,18 @@ The migration keeps the existing integer identifiers so Lab 2 foreign keys and t
 
 Migration sets `User.role=REQUESTER`, maps every existing requester name/email/active row, and writes a non-login `__MIGRATION_PENDING__` marker. The immediately following idempotent seed walks the actual `RequesterUser` table, replaces every pending marker with a deterministic local-only scrypt hash (including requesters added during Lab 2), preserves hashes already changed by a user, sets `mustChangePassword=true` only for newly provisioned credentials, copies `requestedPriority` into the new `itPriority`, and preserves all requester/category/system/attachment/counter keys. Staff and Administrator fixture IDs are allocated by PostgreSQL after the migrated rows rather than hard-coded. The Issue #36 foundation records the canonical session boundary while Issue #37 removes the Development Requester selector after the authenticated requester regression is in place.
 
-## 8. Acceptance criteria
+## 9. API Contract
+
+The complete endpoint contract is maintained in [api-spec.md](api-spec.md) and was reviewed with this specification before implementation. The shared API rules are:
+
+- **Envelope and errors:** the base path is `/api`; successful Lab 3 responses use `{ data: ... }`; failures use `{ error: { code, message, fieldErrors? } }`. Codes are stable and messages never expose secrets, SQL, filesystem paths, storage keys, or unnecessary account details.
+- **Identity and mutation safety:** the server resolves identity only from the opaque `toktickit_session` cookie. Authenticated `POST`, `PATCH`, and `DELETE` requests require the CSRF token from `GET /api/auth/csrf` in `X-CSRF-Token`; public login is the exception. Client-supplied requester, owner, author, or role values are ignored.
+- **Authentication endpoints:** `POST /auth/login`, `POST /auth/logout`, `GET /auth/me`, `GET /auth/csrf`, and `POST /auth/change-password` implement session creation, revocation, current-user lookup, CSRF issuance, and the first-login password gate. A restricted session may call only `/auth/me`, `/auth/csrf`, `/auth/change-password`, and `/auth/logout` until the password changes.
+- **Resource endpoints:** requester ticket, attachment, comment, and resolution routes preserve owner isolation; staff/admin queue and ticket routes provide search/filter/sort/pagination, detail, assignment, IT Priority, status transitions, public comments, and internal notes; Administrator routes provide user list/search/filter/create/edit/activation/reset operations.
+- **Status contract:** `200`/`201`/`204` represent successful operations, `400 VALIDATION_ERROR` invalid input, `401 UNAUTHENTICATED` missing/expired session, `403 FORBIDDEN` role/ownership denial, `403 PASSWORD_CHANGE_REQUIRED` restricted first-login session, `404 NOT_FOUND` safe missing/unauthorized ticket resources, `409 CONFLICT` duplicate/invalid state, and `500 INTERNAL_ERROR` unexpected failures.
+- **Traceability:** named response schemas, request fields, success codes, authorization rules, query parameters, safe errors, and the Lab 2 compatibility boundary are defined in `api-spec.md` and mapped to the executed tests in [tests.md](tests.md).
+
+## 10. Acceptance criteria
 
 - AC-01 A valid active user can log in and receives the correct role-aware shell.
 - AC-02 Invalid credentials receive a generic safe failure; a correct password for an inactive user receives `ACCOUNT_INACTIVE`; neither path creates an authenticated session.
@@ -139,7 +163,7 @@ Migration sets `User.role=REQUESTER`, maps every existing requester name/email/a
 - AC-14 Desktop, tablet, and mobile screens have no clipping, overlap, or horizontal overflow.
 - AC-15 Required unit, API, UI, style, responsive, security, migration, and E2E checks pass before release.
 
-## 9. Definition of done
+## 11. Definition of done
 
 - [x] Contract documents reviewed and linked to GitHub issues.
 - [x] Migration and implementation tests pass twice where determinism matters.
@@ -148,7 +172,7 @@ Migration sets `User.role=REQUESTER`, maps every existing requester name/email/a
 - [x] Required screenshots and terminal logs are captured from real runs.
 - [x] Reviewer record, AI-use record, release PR, and final PDF evidence are updated from main.
 
-## 10. Assumptions to confirm in review
+## 12. Assumptions to confirm in review
 
 - Use opaque cookie sessions rather than JWT in browser storage.
 - Use crypto.scrypt from Node's standard library; no external identity provider.
