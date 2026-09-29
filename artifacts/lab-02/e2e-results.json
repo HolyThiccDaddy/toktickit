@@ -2,16 +2,16 @@
   "config": {
     "argv": [
       "C:\\Program Files\\nodejs\\node.exe",
-      "D:\\Downloads\\toktickit\\client\\node_modules\\@playwright\\test\\cli.js",
+      "D:\\Downloads\\toktickit\\.worktree-main-audit\\client\\node_modules\\@playwright\\test\\cli.js",
       "test"
     ],
-    "configFile": "D:\\Downloads\\toktickit\\client\\playwright.config.ts",
-    "rootDir": "D:/Downloads/toktickit/e2e",
+    "configFile": "D:\\Downloads\\toktickit\\.worktree-main-audit\\client\\playwright.config.ts",
+    "rootDir": "D:/Downloads/toktickit/.worktree-main-audit/e2e",
     "failOnFlakyTests": false,
     "forbidOnly": false,
     "fullyParallel": false,
-    "globalSetup": "D:\\Downloads\\toktickit\\e2e\\global-setup.mjs",
-    "globalTeardown": "D:\\Downloads\\toktickit\\e2e\\global-teardown.mjs",
+    "globalSetup": "D:\\Downloads\\toktickit\\.worktree-main-audit\\e2e\\global-setup.mjs",
+    "globalTeardown": "D:\\Downloads\\toktickit\\.worktree-main-audit\\e2e\\global-teardown.mjs",
     "globalTimeout": 0,
     "grep": {},
     "grepInvert": null,
@@ -23,7 +23,7 @@
     "preserveOutput": "always",
     "projects": [
       {
-        "outputDir": "D:/Downloads/toktickit/client/test-results",
+        "outputDir": "D:/Downloads/toktickit/.worktree-main-audit/client/test-results",
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
@@ -32,7 +32,7 @@
         },
         "id": "desktop",
         "name": "desktop",
-        "testDir": "D:/Downloads/toktickit/e2e",
+        "testDir": "D:/Downloads/toktickit/.worktree-main-audit/e2e",
         "testIgnore": [],
         "testMatch": [
           "**/*.@(spec|test).?(c|m)[jt]s?(x)"
@@ -40,7 +40,7 @@
         "timeout": 60000
       },
       {
-        "outputDir": "D:/Downloads/toktickit/client/test-results",
+        "outputDir": "D:/Downloads/toktickit/.worktree-main-audit/client/test-results",
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
@@ -49,7 +49,7 @@
         },
         "id": "tablet",
         "name": "tablet",
-        "testDir": "D:/Downloads/toktickit/e2e",
+        "testDir": "D:/Downloads/toktickit/.worktree-main-audit/e2e",
         "testIgnore": [],
         "testMatch": [
           "/responsive\\.visual\\.spec\\.ts/"
@@ -57,7 +57,7 @@
         "timeout": 60000
       },
       {
-        "outputDir": "D:/Downloads/toktickit/client/test-results",
+        "outputDir": "D:/Downloads/toktickit/.worktree-main-audit/client/test-results",
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
@@ -66,7 +66,7 @@
         },
         "id": "mobile",
         "name": "mobile",
-        "testDir": "D:/Downloads/toktickit/e2e",
+        "testDir": "D:/Downloads/toktickit/.worktree-main-audit/e2e",
         "testIgnore": [],
         "testMatch": [
           "/responsive\\.visual\\.spec\\.ts/"
@@ -83,7 +83,7 @@
       [
         "json",
         {
-          "outputFile": "D:\\Downloads\\toktickit\\artifacts\\lab-02\\e2e-results.json"
+          "outputFile": "D:\\Downloads\\toktickit\\.worktree-main-audit\\artifacts\\lab-02\\e2e-results.json"
         }
       ]
     ],
@@ -108,13 +108,13 @@
       "specs": [],
       "suites": [
         {
-          "title": "Issue #11 multi-requester isolation",
+          "title": "Issue #37 multi-requester isolation",
           "file": "lab-02/multi-requester-isolation.spec.ts",
-          "line": 5,
+          "line": 4,
           "column": 6,
           "specs": [
             {
-              "title": "keeps requester A tickets invisible and inaccessible to requester B",
+              "title": "keeps requester A tickets invisible to requester B",
               "ok": true,
               "tags": [],
               "tests": [
@@ -129,12 +129,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 832,
+                      "duration": 2266,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-09-03T17:12:34.724Z",
+                      "startTime": "2026-09-29T06:25:15.096Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -142,9 +142,9 @@
                   "status": "expected"
                 }
               ],
-              "id": "65ef9d99aebe7b27d584-814fffef1f5eb72c880a",
+              "id": "65ef9d99aebe7b27d584-9a12d3d3023040e43d4f",
               "file": "lab-02/multi-requester-isolation.spec.ts",
-              "line": 6,
+              "line": 5,
               "column": 3
             }
           ]
@@ -159,13 +159,13 @@
       "specs": [],
       "suites": [
         {
-          "title": "Issue #11 requester ticket flow",
+          "title": "Issue #37 authenticated requester ticket flow",
           "file": "lab-02/requester-ticket-flow.spec.ts",
-          "line": 6,
+          "line": 7,
           "column": 6,
           "specs": [
             {
-              "title": "selects a requester, creates a ticket, opens detail, and removes an attachment",
+              "title": "signs in, creates a ticket, opens detail, and removes an attachment",
               "ok": true,
               "tags": [],
               "tests": [
@@ -180,12 +180,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1577,
+                      "duration": 1385,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-09-03T17:12:36.071Z",
+                      "startTime": "2026-09-29T06:25:17.973Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -193,9 +193,9 @@
                   "status": "expected"
                 }
               ],
-              "id": "92c331ccfa9af6aaefb2-a19de001de8bf002a92e",
+              "id": "92c331ccfa9af6aaefb2-cf6e8ac6f499f7423685",
               "file": "lab-02/requester-ticket-flow.spec.ts",
-              "line": 7,
+              "line": 8,
               "column": 3
             }
           ]
@@ -224,12 +224,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1352,
+                  "duration": 1107,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-03T17:12:37.681Z",
+                  "startTime": "2026-09-29T06:25:19.388Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -239,7 +239,7 @@
           ],
           "id": "32a0b5ea95a5bdca6d38-93534187740a67d939a5",
           "file": "lab-02/responsive.visual.spec.ts",
-          "line": 29,
+          "line": 30,
           "column": 1
         },
         {
@@ -258,12 +258,12 @@
                   "workerIndex": 1,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1396,
+                  "duration": 6360,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-03T17:12:39.766Z",
+                  "startTime": "2026-09-29T06:25:48.169Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -273,7 +273,7 @@
           ],
           "id": "32a0b5ea95a5bdca6d38-86c41f1d315131f7a069",
           "file": "lab-02/responsive.visual.spec.ts",
-          "line": 29,
+          "line": 30,
           "column": 1
         },
         {
@@ -292,12 +292,12 @@
                   "workerIndex": 2,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2753,
+                  "duration": 7659,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-03T17:12:42.849Z",
+                  "startTime": "2026-09-29T06:26:13.118Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -307,17 +307,374 @@
           ],
           "id": "32a0b5ea95a5bdca6d38-25d6942ec9352e042e66",
           "file": "lab-02/responsive.visual.spec.ts",
-          "line": 29,
+          "line": 30,
           "column": 1
+        }
+      ]
+    },
+    {
+      "title": "lab-03\\authentication.spec.ts",
+      "file": "lab-03/authentication.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Issue #39 authenticated release journey",
+          "file": "lab-03/authentication.spec.ts",
+          "line": 8,
+          "column": 6,
+          "specs": [
+            {
+              "title": "completes first-login password setup and shows the Administrator shell",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop",
+                  "projectName": "desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2002,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-29T06:25:20.519Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2f8f92484edc49dc7cac-76a8dd9b3dcfb1e204fd",
+              "file": "lab-03/authentication.spec.ts",
+              "line": 9,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "lab-03\\requester-regression.spec.ts",
+      "file": "lab-03/requester-regression.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Issue #37 requester communication regression",
+          "file": "lab-03/requester-regression.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "adds a public comment and records Problem appears resolved without closing the ticket",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop",
+                  "projectName": "desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2091,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-29T06:25:22.550Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "6ee36bc8209e78287b8d-359c4148bef6b32eec02",
+              "file": "lab-03/requester-regression.spec.ts",
+              "line": 5,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "lab-03\\responsive.visual.spec.ts",
+      "file": "lab-03/responsive.visual.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Issue #39 responsive release evidence",
+          "file": "lab-03/responsive.visual.spec.ts",
+          "line": 9,
+          "column": 6,
+          "specs": [
+            {
+              "title": "captures authentication, user management, staff queue, and staff detail",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop",
+                  "projectName": "desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 7447,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-29T06:25:24.666Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3606aaf34e7a0db09375-724d154e08a1b9984220",
+              "file": "lab-03/responsive.visual.spec.ts",
+              "line": 10,
+              "column": 3
+            },
+            {
+              "title": "captures authentication, user management, staff queue, and staff detail",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "tablet",
+                  "projectName": "tablet",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 17505,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-29T06:25:54.906Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3606aaf34e7a0db09375-77a97a9cae235da31164",
+              "file": "lab-03/responsive.visual.spec.ts",
+              "line": 10,
+              "column": 3
+            },
+            {
+              "title": "captures authentication, user management, staff queue, and staff detail",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile",
+                  "projectName": "mobile",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 20034,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-29T06:26:21.163Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3606aaf34e7a0db09375-d75b05d15a1391fe91fc",
+              "file": "lab-03/responsive.visual.spec.ts",
+              "line": 10,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "lab-03\\staff-ticket-flow.spec.ts",
+      "file": "lab-03/staff-ticket-flow.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Issue #38 IT Staff queue and ticket operations",
+          "file": "lab-03/staff-ticket-flow.spec.ts",
+          "line": 17,
+          "column": 6,
+          "specs": [
+            {
+              "title": "opens the shared queue and staff ticket detail with safe communication controls",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop",
+                  "projectName": "desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 6210,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-29T06:25:32.131Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "ff8eb5f30526dc3dd210-f0442654458fd14d9d81",
+              "file": "lab-03/staff-ticket-flow.spec.ts",
+              "line": 18,
+              "column": 3
+            },
+            {
+              "title": "keeps queue sorting controls usable with mobile ticket cards",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop",
+                  "projectName": "desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 665,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-29T06:25:38.351Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "ff8eb5f30526dc3dd210-ddcabd1b79af1c5a88fc",
+              "file": "lab-03/staff-ticket-flow.spec.ts",
+              "line": 171,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "lab-03\\user-administration.spec.ts",
+      "file": "lab-03/user-administration.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Issue #39 Administrator user management",
+          "file": "lab-03/user-administration.spec.ts",
+          "line": 12,
+          "column": 6,
+          "specs": [
+            {
+              "title": "lists users and supports create, edit, activation, and initial-password reset",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop",
+                  "projectName": "desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 8413,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-29T06:25:39.042Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "a11dbb5c18e1b3541c6b-02d2223c4240eb954a1d",
+              "file": "lab-03/user-administration.spec.ts",
+              "line": 13,
+              "column": 3
+            }
+          ]
         }
       ]
     }
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-09-03T17:12:28.780Z",
-    "duration": 17698.811999999998,
-    "expected": 5,
+    "startTime": "2026-09-29T06:25:09.995Z",
+    "duration": 91370.271,
+    "expected": 13,
     "skipped": 0,
     "unexpected": 0,
     "flaky": 0

@@ -1,15 +1,22 @@
 import { expect, test } from "../playwright.js";
 import { e2eAccounts, signInAs, signInAsAdmin, signInAsStaff, signOut } from "../support/auth.js";
 
+async function expectNoPageOverflow(page: any) {
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+  expect(overflow).toBeLessThanOrEqual(1);
+}
+
 test.describe("Issue #39 responsive release evidence", () => {
   test("captures authentication, user management, staff queue, and staff detail", async ({ page }) => {
     const viewport = test.info().project.name;
     await page.goto("/");
     await expect(page.getByRole("heading", { name: "Sign in to IT Service Desk" })).toBeVisible();
+    await expectNoPageOverflow(page);
     await page.screenshot({ path: `artifacts/lab-03/screenshots/authentication/${viewport}.png`, fullPage: true });
 
     await signInAsAdmin(page, e2eAccounts.administrator);
     await expect(page.getByRole("heading", { name: "User Management" })).toBeVisible();
+    await expectNoPageOverflow(page);
     await page.screenshot({ path: `artifacts/lab-03/screenshots/user-management/${viewport}.png`, fullPage: true });
 
     await signOut(page);
@@ -27,6 +34,7 @@ test.describe("Issue #39 responsive release evidence", () => {
 
     await signInAsStaff(page, e2eAccounts.alexStaff);
     await expect(page.getByRole("heading", { name: "Ticket Queue" })).toBeVisible();
+    await expectNoPageOverflow(page);
     await page.screenshot({ path: `artifacts/lab-03/screenshots/staff-queue/${viewport}.png`, fullPage: true });
     await page.getByLabel("Search queue").fill(`Issue 39 visual ${viewport}`);
     if (viewport === "mobile") {
@@ -39,6 +47,7 @@ test.describe("Issue #39 responsive release evidence", () => {
       await row.getByRole("button", { name: "Open", exact: true }).click();
     }
     await expect(page.getByRole("heading", { name: /TKT-\d{4}-\d{6}/ })).toBeVisible();
+    await expectNoPageOverflow(page);
     await page.screenshot({ path: `artifacts/lab-03/screenshots/staff-ticket-detail/${viewport}.png`, fullPage: true });
   });
 });

@@ -1,0 +1,27 @@
+Dedicated test database verified: toktickit_test; URL hidden.
+Environment variables loaded from .env
+Prisma schema loaded from prisma\schema.prisma
+Datasource "db": PostgreSQL database "toktickit_test", schema "public" at "localhost:5432"
+
+5 migrations found in prisma/migrations
+
+
+No pending migrations to apply.
+Seed run 1
+
+> toktickit-server@1.0.0 prisma:seed
+> tsx prisma/seed.ts
+
+Seeded 4 categories.
+Seeded 7 related systems.
+Seeded 5 development requesters (4 active, 1 inactive).
+Initialized ticket counter.
+Seed run 2
+
+> toktickit-server@1.0.0 prisma:seed
+> tsx prisma/seed.ts
+
+Seeded 4 categories.
+Seeded 7 related systems.
+Seeded 5 development requesters (4 active, 1 inactive).
+Initialized ticket counter.
