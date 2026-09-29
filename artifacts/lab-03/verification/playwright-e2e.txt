@@ -1,0 +1,24 @@
+
+Running 13 tests using 1 worker
+
+(node:15832) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [desktop] › ..\e2e\lab-02\multi-requester-isolation.spec.ts:5:3 › Issue #37 multi-requester isolation › keeps requester A tickets invisible to requester B (2.2s)
+  ok  2 [desktop] › ..\e2e\lab-02\requester-ticket-flow.spec.ts:8:3 › Issue #37 authenticated requester ticket flow › signs in, creates a ticket, opens detail, and removes an attachment (1.6s)
+  ok  3 [desktop] › ..\e2e\lab-02\responsive.visual.spec.ts:30:1 › covers the requester journey across Create Ticket, My Tickets, and Ticket Detail (1.2s)
+  ok  4 [desktop] › ..\e2e\lab-03\authentication.spec.ts:9:3 › Issue #39 authenticated release journey › completes first-login password setup and shows the Administrator shell (2.0s)
+  ok  5 [desktop] › ..\e2e\lab-03\requester-regression.spec.ts:5:3 › Issue #37 requester communication regression › adds a public comment and records Problem appears resolved without closing the ticket (2.2s)
+  ok  6 [desktop] › ..\e2e\lab-03\responsive.visual.spec.ts:10:3 › Issue #39 responsive release evidence › captures authentication, user management, staff queue, and staff detail (7.3s)
+  ok  7 [desktop] › ..\e2e\lab-03\staff-ticket-flow.spec.ts:18:3 › Issue #38 IT Staff queue and ticket operations › opens the shared queue and staff ticket detail with safe communication controls (6.2s)
+  ok  8 [desktop] › ..\e2e\lab-03\staff-ticket-flow.spec.ts:174:3 › Issue #38 IT Staff queue and ticket operations › keeps queue sorting controls usable with mobile ticket cards (866ms)
+  ok  9 [desktop] › ..\e2e\lab-03\user-administration.spec.ts:13:3 › Issue #39 Administrator user management › lists users and supports create, edit, activation, and initial-password reset (8.7s)
+(node:5376) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 10 [tablet] › ..\e2e\lab-02\responsive.visual.spec.ts:30:1 › covers the requester journey across Create Ticket, My Tickets, and Ticket Detail (6.5s)
+  ok 11 [tablet] › ..\e2e\lab-03\responsive.visual.spec.ts:10:3 › Issue #39 responsive release evidence › captures authentication, user management, staff queue, and staff detail (17.5s)
+(node:13892) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 12 [mobile] › ..\e2e\lab-02\responsive.visual.spec.ts:30:1 › covers the requester journey across Create Ticket, My Tickets, and Ticket Detail (7.6s)
+  ok 13 [mobile] › ..\e2e\lab-03\responsive.visual.spec.ts:10:3 › Issue #39 responsive release evidence › captures authentication, user management, staff queue, and staff detail (19.1s)
+
+  13 passed (1.5m)

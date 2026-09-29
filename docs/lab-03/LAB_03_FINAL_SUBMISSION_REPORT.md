@@ -1,6 +1,6 @@
 # LAB 3 : TokTickIT Authenticated IT Ticketing System
 
-Core Lab 3 implementation was merged to `main` at `92fac36`, with documentation follow-up at `e7998d3`. This expanded evidence report and latest verification are on `feature/lab3-final-evidence`; they are not claimed as merged to `main` until integration is checked.
+Core Lab 3 implementation was merged to `main` at `92fac36`. The documentation and evidence follow-ups were merged through PR #47 and PR #48; the current canonical report and PDF are included in `main` at merge commit `69ed72e`.
 
 Student: Thira Rungruangkaset (67070503419)
 GitHub: @HolyThiccDaddy
@@ -20,7 +20,7 @@ Key evidence:
 - [Issue #39 - Administrator and release evidence](https://github.com/HolyThiccDaddy/toktickit/issues/39)
 - [PR #40](https://github.com/HolyThiccDaddy/toktickit/pull/40) through [PR #46](https://github.com/HolyThiccDaddy/toktickit/pull/46), including peer review and merge history.
 
-The documentation follow-up is [PR #47](https://github.com/HolyThiccDaddy/toktickit/pull/47). It updates the final source records and this report without changing the released implementation.
+The documentation follow-ups are [PR #47](https://github.com/HolyThiccDaddy/toktickit/pull/47) and [PR #48](https://github.com/HolyThiccDaddy/toktickit/pull/48). PR #48 merged the seed-safety clarification and canonical report/PDF into `main` without changing the released application behavior.
 
 ## Answer Part 2: Spec DD (5 Points)
 
@@ -49,15 +49,14 @@ This explicit crosswalk closes the common DD gap where a project links separate 
 
 ## Answer Part 3: Test DD and Traceability (10 Points)
 
-Verification provenance is separated below: the merged release is `main @ 92fac36`. The additional UI evidence, E2E assertions, and Staff Ticket Detail test-file split were checked locally on `feature/lab3-final-evidence` on 29 September 2026; they are not represented as already merged into that earlier main commit.
+Verification provenance is separated below: the canonical report and evidence are now on merged `main @ 69ed72e`. The final-main gates were rerun from that commit on 29 September 2026; the earlier implementation release remains identified as `92fac36` for historical release context.
 
 | Check | Result |
 |---|---|
-| Server regression on merged main | 15 test files / 92 tests passed at `92fac36` |
-| Server regression on final local feature checkout | 16 test files / 92 tests passed; `artifacts/lab-03/verification/server-test.txt` |
-| Client regression on final local feature checkout | 15 test files / 50 tests passed; `artifacts/lab-03/verification/client-test.txt` |
+| Server regression on final merged main | 16 test files / 92 tests passed at `69ed72e`; `artifacts/lab-03/verification/server-test.txt` |
+| Client regression on final merged main | 15 test files / 50 tests passed at `69ed72e`; `artifacts/lab-03/verification/client-test.txt` |
 | Server and client builds | Both passed on the same checkout; `artifacts/lab-03/verification/server-build.txt` and `client-build.txt` |
-| Playwright E2E | 13 passed, 0 failed/skipped/flaky across desktop, tablet, and mobile; `artifacts/lab-02/e2e-results.json` |
+| Playwright E2E | 13 passed, 0 failed/skipped/flaky across desktop, tablet, and mobile; `artifacts/lab-03/verification/playwright-e2e.txt` and `artifacts/lab-02/e2e-results.json` |
 | Migration and seed | 5 migrations found, none pending; after a documented manual `.env.test` preflight, `npm run prisma:seed` completed twice against `toktickit_test`; `artifacts/lab-03/verification/migration-seed-final.txt` |
 | Repository hygiene | `git diff --check` passed for the local changes; local credentials remain ignored |
 
@@ -73,7 +72,7 @@ The LLM used was OpenAI Codex (GPT-5). The selected prompts covered contract ext
 
 ### My Reflection
 
-Codex was most useful for turning the handout into a traceable contract, finding mismatches between requirements and tests, and generating focused regression cases. Human decisions and peer review remained authoritative: authorization, migration safety, password handling, and status transitions were accepted only after executable tests and real evidence passed. Suggestions that weakened server-side checks, exposed credentials, relied on hidden UI controls, or added excluded features were changed or rejected. The original release was checked from merged main; the additional evidence in this revision was checked locally on `feature/lab3-final-evidence` and must be merged before it is called final-main evidence.
+Codex was most useful for turning the handout into a traceable contract, finding mismatches between requirements and tests, and generating focused regression cases. Human decisions and peer review remained authoritative: authorization, migration safety, password handling, and status transitions were accepted only after executable tests and real evidence passed. Suggestions that weakened server-side checks, exposed credentials, relied on hidden UI controls, or added excluded features were changed or rejected. The final release evidence was rerun from merged `main @ 69ed72e` before this report was finalized.
 
 ## Answer Part 5: Working Login and Password Change UI (5 Points)
 
@@ -196,7 +195,7 @@ The completed visual checklist covers:
 | Responsive rule | Reflow without clipping/overlap; tables stack or scroll inside the component only when necessary; no page-level horizontal overflow |
 | Accessibility rule | Labels and keyboard operation for every control, associated/live-region errors, visible focus after mutations/dialogs, readable contrast and safe feedback |
 
-The PDF includes the complete, typeset `ui-spec.md` and an explicit eight-row visual/accessibility checklist before Figures 9.1–9.12. The approved token/rule table above and those figures provide the design and responsive record. Client regression and all 13 Playwright tests passed in the local feature-branch evidence run; screenshots are not treated as substitutes for test assertions.
+The PDF includes the complete, typeset `ui-spec.md` and an explicit eight-row visual/accessibility checklist before Figures 9.1–9.12. The approved token/rule table above and those figures provide the design and responsive record. Client regression and all 13 Playwright tests passed in the final merged-main verification run; screenshots are not treated as substitutes for test assertions.
 
 Lab 3 exclusions remain external identity providers, password-recovery email, multi-role accounts, staff assignment history, and administrative deletion. Deactivation is used instead of deletion so historical ownership and authored communication remain queryable.
 
@@ -241,7 +240,7 @@ The source capture inventory is retained below. The PDF embeds selected workflow
 
 ## Evidence Appendix: Local terminal verification
 
-These original PowerShell captures are retained under `artifacts/`. The PDF presents current test/build/migration results as selectable text with paths to the complete verification logs, instead of shrinking the older terminal frames 24-27 and 29-30 to unreadable size. Source token and checklist values are also selectable text in Part 9. Historical captures retain their original checkout paths and are not relabeled as the current feature checkout. The local verification logs in `artifacts/lab-03/verification/` document the current run, including any failure or rerun.
+These original PowerShell captures are retained under `artifacts/`. The PDF presents the final-main test/build/migration results as selectable text with paths to the complete verification logs, instead of shrinking older terminal frames 24-27 and 29-30 to unreadable size. Source token and checklist values are also selectable text in Part 9. The UI state and responsive captures used in Parts 5-9 were regenerated from the clean merged `main @ 69ed72e` checkout; the terminal captures retain their displayed local paths, while the verification logs and E2E result below are the final-main rerun.
 
 19. Release-candidate checkout and branch/commit context used for the terminal capture: `artifacts/lab-03/screenshots/report/19_terminal_branch_status.png`.
 20. Zen Green color tokens from the Lab 2 UI specification: `artifacts/lab-03/screenshots/report/20_terminal_zen_green_tokens.png`.
