@@ -3,28 +3,28 @@
 > vitest run
 
 
- RUN  v2.1.9 D:/Downloads/toktickit/.worktree-main-audit/client
+ RUN  v2.1.9 C:/Users/KEN/.codex/worktrees/main-final-verify/toktickit/client
 
- ✓ tests/lab-02/api.test.tsx (7 tests) 23ms
- ✓ tests/lab-03/StaffTicketQueue.test.tsx (3 tests) 572ms
-   ✓ IT Staff Ticket Queue > renders searchable/filterable queue results and opens a ticket 335ms
- ✓ tests/lab-03/StaffTicketDetail.test.tsx (1 test) 607ms
-   ✓ IT Staff Ticket Detail operations > supports claim, priority/status updates, public comments, and internal notes 606ms
- ✓ tests/lab-02/TicketDetail.test.tsx (6 tests) 646ms
- ✓ tests/lab-03/UserManagement.test.tsx (6 tests) 1101ms
-   ✓ Administrator User Management > lists, filters, creates, edits, toggles, and resets users 582ms
- ✓ tests/lab-02/MyTickets.test.tsx (4 tests) 625ms
- ✓ tests/lab-03/App.test.tsx (2 tests) 310ms
- ✓ tests/lab-03/RequesterTicketDetail.test.tsx (4 tests) 407ms
- ✓ tests/lab-02/CreateTicket.test.tsx (4 tests) 579ms
- ✓ tests/lab-03/Login.test.tsx (3 tests) 338ms
- ✓ tests/lab-03/ChangePassword.test.tsx (1 test) 182ms
- ✓ tests/lab-01/App.test.tsx (3 tests) 265ms
+ ✓ tests/lab-02/api.test.tsx (7 tests) 22ms
+ ✓ tests/lab-03/StaffTicketDetail.test.tsx (1 test) 409ms
+   ✓ IT Staff Ticket Detail operations > supports claim, priority/status updates, public comments, and internal notes 408ms
+ ✓ tests/lab-03/StaffTicketQueue.test.tsx (3 tests) 460ms
+   ✓ IT Staff Ticket Queue > renders searchable/filterable queue results and opens a ticket 306ms
+ ✓ tests/lab-02/TicketDetail.test.tsx (6 tests) 564ms
+ ✓ tests/lab-03/UserManagement.test.tsx (6 tests) 876ms
+   ✓ Administrator User Management > lists, filters, creates, edits, toggles, and resets users 415ms
+ ✓ tests/lab-02/MyTickets.test.tsx (4 tests) 468ms
+ ✓ tests/lab-03/RequesterTicketDetail.test.tsx (4 tests) 311ms
+ ✓ tests/lab-03/App.test.tsx (2 tests) 250ms
+ ✓ tests/lab-02/CreateTicket.test.tsx (4 tests) 472ms
+ ✓ tests/lab-03/Login.test.tsx (3 tests) 455ms
+ ✓ tests/lab-01/App.test.tsx (3 tests) 311ms
+ ✓ tests/lab-02/ResponsiveLayout.test.tsx (2 tests) 266ms
  ✓ tests/lab-02/ThemeStyles.test.tsx (2 tests) 4ms
- ✓ tests/lab-02/ResponsiveLayout.test.tsx (2 tests) 233ms
- ✓ tests/lab-02/RequesterSelector.test.tsx (2 tests) 163ms
+ ✓ tests/lab-03/ChangePassword.test.tsx (1 test) 144ms
+ ✓ tests/lab-02/RequesterSelector.test.tsx (2 tests) 128ms
 
  Test Files  15 passed (15)
       Tests  50 passed (50)
-   Start at  13:56:18
-   Duration  9.45s (transform 916ms, setup 3.54s, collect 4.38s, tests 6.05s, environment 23.66s, prepare 3.26s)
+   Start at  20:47:08
+   Duration  7.30s (transform 717ms, setup 2.84s, collect 2.94s, tests 5.14s, environment 17.20s, prepare 2.37s)
