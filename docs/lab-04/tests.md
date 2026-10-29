@@ -17,12 +17,12 @@ Write a failing focused test before each implementation slice. Keep the Lab 1–
 | API-04 | API | AC-06 | Idempotent seed and zero/one/many Action fixtures | `server/tests/lab-04/seed.test.ts` | Planned |
 | API-05 | API/workflow | AC-07, AC-09 | Complete status transition matrix and terminal protection | `server/tests/lab-04/ticket-workflow.api.test.ts` | Planned |
 | API-06 | API/workflow | AC-08 | Resolution evidence gate: qualifying completed Action allows the transition, while an outstanding follow-up blocks it without mutation | `server/tests/lab-04/ticket-workflow.api.test.ts` | Planned |
-| API-07 | API/dashboard | AC-10 | Requester metrics, UTC boundaries, zero/one/many, and equality between dashboard counts and `GET /tickets?currentStatuses=...&updatedFrom=...&updatedTo=...` results | `server/tests/lab-04/requester-dashboard.api.test.ts` | Planned |
-| API-08 | API/dashboard | AC-11 | Staff/Admin metrics, ownerId-backed queue filters, current-user Actions drill-down, role scope, and empty results | `server/tests/lab-04/staff-dashboard.api.test.ts` | Planned |
+| API-07 | API/dashboard | AC-10 | Requester metrics, UTC boundaries, zero/one/many, and equality between each dashboard count and the matching `GET /tickets` filter, including `currentStatus`, `currentStatuses`, and date windows | `server/tests/lab-04/requester-dashboard.api.test.ts` | Planned |
+| API-08 | API/dashboard | AC-11 | Staff/Admin metrics, exact queue drill-down equality using `assigneeId=me/unassigned`, multi-status and UTC date filters, current-user Actions filtering, role scope, and empty results | `server/tests/lab-04/staff-dashboard.api.test.ts` | Planned |
 | API-09 | migration/regression | AC-15 | Existing records and Lab 1–3 behavior survive migration | `server/tests/lab-04/migration-regression.api.test.ts` | Planned |
 | UI-01 | component | AC-12, AC-14 | Actions Taken list, create/edit validation, focus, live feedback | `client/tests/lab-04/ActionsTaken.test.tsx` | Planned |
-| UI-02 | component | AC-10, AC-12 | Requester dashboard metrics, ownership states, and exact Open/Recently Updated/Recently Resolved status and time-window drill-down links | `client/tests/lab-04/RequesterDashboard.test.tsx` | Planned |
-| UI-03 | component | AC-11, AC-12 | Staff/Admin dashboard filters, owner/unassigned drill-down, My Actions view, retry, empty, and forbidden states | `client/tests/lab-04/StaffDashboard.test.tsx` | Planned |
+| UI-02 | component | AC-10, AC-12 | Requester dashboard metrics, ownership states, and exact Waiting/Open/Recently Updated/Recently Resolved list filters and links | `client/tests/lab-04/RequesterDashboard.test.tsx` | Planned |
+| UI-03 | component | AC-11, AC-12 | Staff/Admin dashboard metric-to-queue predicate equality, supported owner/unassigned/status/date filters, My Actions view, retry, empty, and forbidden states | `client/tests/lab-04/StaffDashboard.test.tsx` | Planned |
 | UI-04 | component/workflow | AC-08, AC-09, AC-12 | Status controls and resolution gate feedback | `client/tests/lab-04/TicketWorkflow.test.tsx` | Planned |
 | UI-05 | visual/responsive | AC-13, AC-14 | Desktop/tablet/mobile layout and keyboard accessibility | `client/tests/lab-04/ResponsiveLayout.test.tsx` | Planned |
 | UI-STYLE-01 | UI style/unit | AC-12, AC-13, AC-14 | Shared Zen Green tokens, accessible names, focus ring, and no-overflow style contract | `client/tests/lab-04/ui-style.test.tsx` | Planned |
@@ -51,4 +51,3 @@ From the final integration checkout, run the smallest focused tests first, then 
 - [ ] Migration and seed output proves the database is a `_test` database and the seed is idempotent.
 - [ ] Screenshots cover dashboards, Actions Taken, workflow, loading/empty/error/forbidden, and desktop/tablet/mobile.
 - [ ] Final PDF uses exactly `Answer Part 1` through `Answer Part 9` and links to the committed documents.
-

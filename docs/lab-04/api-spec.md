@@ -80,7 +80,14 @@ Dashboard response shape:
 
 Metrics are calculated by the backend from authoritative Ticket rows. Zero matches return value `0` and an empty items list. No dashboard endpoint returns an unbounded Ticket collection.
 
-Staff dashboard queue drill-downs reuse the Lab 3 queue query contract. The existing `assigneeId` query key maps to the database's `Ticket.ownerId`: `assigneeId=me` resolves to the authenticated user's `ownerId`, `assigneeId=unassigned` resolves to `ownerId IS NULL`, and numeric IDs retain the existing queue behavior. No client-supplied `ownerId` or arbitrary performer identity is trusted.
+### Staff queue query extensions for dashboard drill-downs
+
+Lab 4 extends the authenticated `GET /staff/tickets` Lab 3 queue filters without changing existing single-filter behavior:
+
+- `assigneeId` continues to accept a positive numeric User ID and additionally accepts `me` (resolved by the server to `Ticket.ownerId=session.userId`) and `unassigned` (resolved to `Ticket.ownerId IS NULL`). No client-supplied `ownerId` is accepted.
+- `statuses` accepts a comma-separated list of distinct uppercase `TicketStatus` values. It is mutually exclusive with `status`, validates every value against the eight-status enum, and applies `Ticket.currentStatus IN (...)`.
+- `updatedFrom` and `updatedTo` must be provided together as valid UTC instants with `updatedFrom < updatedTo`; they apply `Ticket.updatedAt >= updatedFrom` and `Ticket.updatedAt < updatedTo`.
+- Invalid, duplicate, or empty filter values, unknown query keys, malformed timestamps, and non-increasing time windows return `400 VALIDATION_ERROR`. All supplied filters are combined with the authenticated role scope and existing pagination/sorting. The Staff dashboard cards and links use the same predicates from the UI table; zero results return an empty `items` page with `total=0`.
 
 ## 4. Ticket status workflow
 
@@ -107,4 +114,3 @@ Unlisted or terminal transitions return `409 CONFLICT` and leave the row unchang
 ## 6. Migration and compatibility
 
 The migration preserves existing Ticket, User, Attachment, PublicComment, InternalNote, category, system, and counter identifiers. Legacy Tickets with no Actions return an empty action list and remain valid dashboard inputs. Existing Lab 2/3 authentication, ownership, CSRF, and safe error contracts remain authoritative; no requester selector or client-supplied identity is reintroduced.
-
