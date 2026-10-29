@@ -56,12 +56,22 @@ Action creation returns `400 VALIDATION_ERROR` for missing/invalid fields, `403 
 | GET | `/dashboard/admin` | ADMIN | Returns the staff dashboard contract and optional concise account counts; never returns passwords/session data. |
 | GET | `/staff/actions?performedBy=me&from=<utc>&to=<utc>` | IT_STAFF or ADMIN | Returns a bounded Action list for the authenticated user only. `performedBy=me` is the only accepted performer selector; the server applies `performedById=session.userId` and an inclusive-start/exclusive-end UTC window, then returns `{ data: { items, meta } }`. |
 
+### Requester ticket-list status filters
+
+The existing authenticated `GET /tickets` requester list retains its Lab 2/3 filters and adds optional `currentStatuses`, `updatedFrom`, and `updatedTo` query parameters. `currentStatuses` is a comma-separated list of distinct, uppercase `TicketStatus` values; `currentStatus` and `currentStatuses` are mutually exclusive. The server validates every status against the eight-status enum and applies `currentStatus IN (...)` together with `requesterId=session.userId`. `updatedFrom` and `updatedTo` must be supplied together as valid UTC instants with `updatedFrom < updatedTo`; they apply `updatedAt >= updatedFrom` and `updatedAt < updatedTo`. The endpoint returns the existing paginated response. Empty, duplicate, or invalid status values, malformed timestamps, or a non-increasing time window return `400 VALIDATION_ERROR`; omitted filters behave as before. These additive filters let dashboard links reproduce the exact status and time predicates used by their metrics.
+
+| Requester dashboard card | My Tickets drill-down | Matching API query |
+|---|---|---|
+| Open Tickets (`NEW`, `OPEN`, `IN_PROGRESS`, `WAITING_FOR_REQUESTER`, `REOPENED`) | `/my-tickets?currentStatuses=NEW,OPEN,IN_PROGRESS,WAITING_FOR_REQUESTER,REOPENED` | `/api/tickets?currentStatuses=NEW,OPEN,IN_PROGRESS,WAITING_FOR_REQUESTER,REOPENED` |
+| Recently Updated (`updatedAt >= now-7d`, `< now`) | `/my-tickets?updatedFrom=<now-7d>&updatedTo=<now>` | `/api/tickets?updatedFrom=<now-7d>&updatedTo=<now>` |
+| Recently Resolved (`RESOLVED`, `CLOSED`) | `/my-tickets?currentStatuses=RESOLVED,CLOSED&updatedFrom=<now-7d>&updatedTo=<now>` | `/api/tickets?currentStatuses=RESOLVED,CLOSED&updatedFrom=<now-7d>&updatedTo=<now>` |
+
 Dashboard response shape:
 
 ```json
 {
   "data": {
-    "metrics": [{ "key": "openTickets", "label": "Open Tickets", "value": 2, "href": "/my-tickets?status=OPEN" }],
+    "metrics": [{ "key": "openTickets", "label": "Open Tickets", "value": 2, "href": "/my-tickets?currentStatuses=NEW,OPEN,IN_PROGRESS,WAITING_FOR_REQUESTER,REOPENED" }],
     "items": [{ "ticketId": 42, "ticketNumber": "380005", "summary": "Adapter failure", "status": "OPEN", "itPriority": "HIGH", "updatedAt": "2026-10-29T10:31:00.000Z", "href": "/tickets/42" }],
     "meta": { "timezone": "UTC", "from": null, "to": null }
   }
@@ -97,3 +107,4 @@ Unlisted or terminal transitions return `409 CONFLICT` and leave the row unchang
 ## 6. Migration and compatibility
 
 The migration preserves existing Ticket, User, Attachment, PublicComment, InternalNote, category, system, and counter identifiers. Legacy Tickets with no Actions return an empty action list and remain valid dashboard inputs. Existing Lab 2/3 authentication, ownership, CSRF, and safe error contracts remain authoritative; no requester selector or client-supplied identity is reintroduced.
+

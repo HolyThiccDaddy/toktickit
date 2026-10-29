@@ -1,6 +1,6 @@
 # Lab 4 Peer Review Record
 
-Status: Contract draft; peer review has not started. This record must be updated only with real GitHub review links, comments, responses, approvals, and merge SHAs.
+Status: PR #57 is still awaiting formal approval and merge. No approval or merge is claimed.
 
 **Author:** Thira Rungruangkaset — GitHub: @HolyThiccDaddy
 **Peer reviewer:** Ashira Sansoda — GitHub: @osizk
@@ -18,4 +18,9 @@ The reviewer should verify that the contract covers the required Action Taken fi
 
 ## Review history
 
-No review comments or approval are recorded yet. When review occurs, record each actionable comment with its exact PR/line link, the response, the fix commit, and the re-review result. Do not mark this contract approved until the teammate’s formal GitHub approval and merge into `lab4-staging` are verified.
+- [First review](https://github.com/HolyThiccDaddy/toktickit/pull/57#pullrequestreview-5699066375) requested Action state/assignment/audit fields, a gate requiring a completed Action and resolved follow-up, current-user Actions on the staff dashboard, exact dashboard predicates, and complete named test traceability. The response was recorded in the follow-up contract update (`d544497`).
+- [Second review](https://github.com/HolyThiccDaddy/toktickit/pull/57#pullrequestreview-5699609866) identified three remaining gaps: the data model needed types/nullability/foreign keys/constraints/indexes for the Action audit fields; staff ticket counts and queue links needed to use the existing `Ticket.ownerId` plus the Lab 3 `assigneeId` query alias; and the My Actions drill-down needed a defined `/staff/actions` API and server-side filter. The current contract addresses these in commit [`4c62aa1`](https://github.com/HolyThiccDaddy/toktickit/commit/4c62aa1344cde00d0fdb82571d8c90b0a9bd2d9d) across `specification.md`, `api-spec.md`, `ui-spec.md`, and `tests.md`.
+- [Third review](https://github.com/HolyThiccDaddy/toktickit/pull/57#pullrequestreview-5700087839) confirmed the schema and route comments were addressed, then identified that the Open Tickets card and Recently Resolved card linked to single-status filters that did not match their respective status sets. The response adds a validated `currentStatuses` list filter and paired UTC `updatedFrom`/`updatedTo` filters to the requester API contract, aligns the dashboard links, and maps the status/time predicate equality to named API and UI tests. The implementation is submitted for another peer review before Issue 2 can begin.
+- Re-review requests were posted at [14:34 UTC](https://github.com/HolyThiccDaddy/toktickit/pull/57#issuecomment-6499558829) and [14:47 UTC](https://github.com/HolyThiccDaddy/toktickit/pull/57#issuecomment-6499894513). The second request preceded commit `4c62aa1`; the current response must receive its own re-review before Issue 2 begins.
+- Current review evidence: the latest submitted review is `COMMENTED`; there is no formal `APPROVED` review and PR #57 is open, not merged. Update this section only from subsequent real GitHub events, and record the merge SHA after the teammate merges into `lab4-staging`.
+

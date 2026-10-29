@@ -43,10 +43,10 @@ All windows use UTC and are inclusive at `from` and exclusive at `to`; `now` is 
 
 | Dashboard | Metric | Exact predicate | Drill-down |
 |---|---|---|---|
-| Requester | Open Tickets | `ticket.requesterId = session.userId` and `status IN (NEW, OPEN, IN_PROGRESS, WAITING_FOR_REQUESTER, REOPENED)` | `/my-tickets?status=open` |
+| Requester | Open Tickets | `ticket.requesterId = session.userId` and `status IN (NEW, OPEN, IN_PROGRESS, WAITING_FOR_REQUESTER, REOPENED)` | `/my-tickets?currentStatuses=NEW,OPEN,IN_PROGRESS,WAITING_FOR_REQUESTER,REOPENED` |
 | Requester | Waiting for Requester | `ticket.requesterId = session.userId` and `status = WAITING_FOR_REQUESTER` | `/my-tickets?status=WAITING_FOR_REQUESTER` |
 | Requester | Recently Updated | `ticket.requesterId = session.userId` and `updatedAt >= now-7d` and `updatedAt < now` | `/my-tickets?updatedFrom=<now-7d>&updatedTo=<now>` |
-| Requester | Recently Resolved | `ticket.requesterId = session.userId` and `status IN (RESOLVED, CLOSED)` and `updatedAt >= now-7d` and `updatedAt < now` | `/my-tickets?status=RESOLVED&updatedFrom=<now-7d>&updatedTo=<now>` |
+| Requester | Recently Resolved | `ticket.requesterId = session.userId` and `status IN (RESOLVED, CLOSED)` and `updatedAt >= now-7d` and `updatedAt < now` | `/my-tickets?currentStatuses=RESOLVED,CLOSED&updatedFrom=<now-7d>&updatedTo=<now>` |
 | Staff/Admin | Unassigned Tickets | `ticket.ownerId IS NULL` and `status NOT IN (CLOSED, CANCELLED)` | `/staff/queue?assigneeId=unassigned` |
 | Staff/Admin | My Owned Tickets | `ticket.ownerId = session.userId` and `status NOT IN (CLOSED, CANCELLED)` | `/staff/queue?assigneeId=me` |
 | Staff/Admin | In-Progress/Waiting | `status IN (IN_PROGRESS, WAITING_FOR_REQUESTER)` and ticket is accessible to the role | `/staff/queue?status=active` |
@@ -92,3 +92,4 @@ Status controls show only transitions allowed by the current status and role. RE
 ## 8. Evidence checklist
 
 The final release must include real screenshots for requester dashboard, staff dashboard, Actions Taken list/create/edit/read-only, workflow/resolution feedback, loading/empty/error/forbidden states, and representative desktop/tablet/mobile widths. Each screenshot is linked to the final commit and described in the nine-part PDF.
+
