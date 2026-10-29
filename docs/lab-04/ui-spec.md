@@ -1,0 +1,76 @@
+# Lab 4 UI Specification
+
+Status: Draft companion contract for Issue #51. This document defines the visible behavior before implementation and extends the Lab 2/3 Zen Green system.
+
+## 1. Shared visual and responsive rules
+
+- Reuse existing Zen Green tokens and shared controls. Do not introduce a second visual language.
+- Desktop: `>= 992px`; tablet: `768–991px`; mobile: `< 768px`.
+- The page itself never scrolls horizontally. Tables become stacked cards or scroll only inside an intentionally bounded component.
+- Use readable contrast, a visible two-pixel focus ring, semantic headings, labels above controls, and non-color status cues.
+- Shared states are loading, empty/no-results, validation, submitting, success, forbidden, not-found, conflict, and retryable failure. Preserve entered form values after recoverable API failures.
+
+## 2. Authenticated shell and navigation
+
+The shell shows the authenticated display name and role, a clear active-page indicator, role-permitted links, and logout. Requesters see Dashboard, My Tickets, and allowed Ticket Detail. IT Staff see Dashboard, Staff Queue, and Ticket Detail. Administrators additionally see User Management while retaining staff capabilities. A first-login password-change gate takes precedence over normal navigation, and direct protected URLs after logout return to Login without exposing protected data.
+
+## 3. Requester Dashboard
+
+### Structure
+
+Use four concise metric cards: Open Tickets, Waiting for Requester, Recently Updated, and Recently Resolved. Below the cards, show a short attention/recent list with ticket number, summary, status, last update, and an accessible link to Ticket Detail.
+
+### Behavior
+
+- All data is for the authenticated requester only; the UI never accepts a requester selector.
+- A card with zero matches shows `0` and a clear empty message; links preserve the selected filter.
+- Loading uses skeletons or an equivalent labeled busy state. API failures show a retry action without clearing known form data.
+- Desktop uses a four-card row and two-column list where space permits; tablet wraps cards; mobile stacks cards and list rows.
+
+## 4. IT Staff Dashboard
+
+### Structure
+
+Show Unassigned Tickets, My Owned Tickets, In-Progress/Waiting work, and Recently Updated. Include a recent/urgent list with status, IT Priority, owner, update time, and links to Staff Queue or Ticket Detail. Administrator may reuse this view.
+
+### Behavior
+
+Metric labels include the time boundary where relevant. Drill-down links carry safe status, owner, or priority filters to the queue. Empty, forbidden, not-found, conflict, and retry states are explicit. Counts must match the backend query rather than client-side filtering.
+
+## 5. Actions Taken on Ticket Detail
+
+### Read-only requester mode
+
+Requesters see all Actions Taken for their own Ticket in stable chronological order. Each row shows action date/time, description, result, performer display name/role, follow-up status/note, and attachment notes. Create and edit controls are absent and the backend still enforces read-only access.
+
+### Staff/admin mode
+
+Authorized staff and administrators see the same history plus a clearly labeled Create Action button and Edit controls. The form contains:
+
+- Action Date/Time (required, timezone-aware)
+- Action Description (required)
+- Result (required)
+- Follow-Up Required? (required boolean)
+- Follow-up Note (required when follow-up is true)
+- Attachment Notes (optional descriptive text)
+
+The performer field is displayed as read-only authenticated identity. Submitting disables duplicate clicks, preserves the form on recoverable failure, and refreshes the list after success. Editing shows the current version and reports a conflict if the server rejects a stale update.
+
+Public/shared content and internal-only content use text labels and badges, not color alone. Long descriptions wrap; no control overlaps at any breakpoint.
+
+## 6. Ticket workflow and resolution gate
+
+Status controls show only transitions allowed by the current status and role. RESOLVED, CLOSED, REOPENED, and CANCELLED display a confirmation message; RESOLVED/CLOSED additionally state the required resolution evidence. On success, the Ticket summary and dashboard counts refresh. On conflict or forbidden response, the selected status remains unchanged and the error is associated with the control.
+
+## 7. Accessibility checklist
+
+- Every input, button, link, status selector, and metric card has an accessible name.
+- Keyboard users can reach, operate, and escape dialogs/forms in logical order; focus returns to the initiating control after a close.
+- Validation messages are tied to their fields; mutation success/failure is announced in a live region.
+- Busy states expose `aria-busy` or equivalent text and do not trap focus.
+- Status, priority, follow-up, and visibility use text/icon labels in addition to color.
+- At desktop, tablet, and mobile widths there is no clipped text, overlapping control, or page-level horizontal scrollbar.
+
+## 8. Evidence checklist
+
+The final release must include real screenshots for requester dashboard, staff dashboard, Actions Taken list/create/edit/read-only, workflow/resolution feedback, loading/empty/error/forbidden states, and representative desktop/tablet/mobile widths. Each screenshot is linked to the final commit and described in the nine-part PDF.
