@@ -31,11 +31,29 @@ Use four concise metric cards: Open Tickets, Waiting for Requester, Recently Upd
 
 ### Structure
 
-Show Unassigned Tickets, My Owned Tickets, In-Progress/Waiting work, and Recently Updated. Include a recent/urgent list with status, IT Priority, owner, update time, and links to Staff Queue or Ticket Detail. Administrator may reuse this view.
+Show Unassigned Tickets, My Owned Tickets, In-Progress/Waiting work, Recently Updated, and My Actions Taken. The My Actions Taken card is the count of Actions whose `performedById` is the authenticated staff user and whose `actionDateTime` is in the documented recent window; it links to the Action-filtered staff view. Include a recent/urgent list with status, IT Priority, owner, update time, and links to Staff Queue or Ticket Detail. Administrator may reuse this view.
 
 ### Behavior
 
 Metric labels include the time boundary where relevant. Drill-down links carry safe status, owner, or priority filters to the queue. Empty, forbidden, not-found, conflict, and retry states are explicit. Counts must match the backend query rather than client-side filtering.
+
+### Metric query contract
+
+All windows use UTC and are inclusive at `from` and exclusive at `to`; `now` is the server evaluation time. The drill-down link in the last column must apply the same predicate as the metric.
+
+| Dashboard | Metric | Exact predicate | Drill-down |
+|---|---|---|---|
+| Requester | Open Tickets | `ticket.requesterId = session.userId` and `status IN (NEW, OPEN, IN_PROGRESS, WAITING_FOR_REQUESTER, REOPENED)` | `/my-tickets?status=open` |
+| Requester | Waiting for Requester | `ticket.requesterId = session.userId` and `status = WAITING_FOR_REQUESTER` | `/my-tickets?status=WAITING_FOR_REQUESTER` |
+| Requester | Recently Updated | `ticket.requesterId = session.userId` and `updatedAt >= now-7d` and `updatedAt < now` | `/my-tickets?updatedFrom=<now-7d>&updatedTo=<now>` |
+| Requester | Recently Resolved | `ticket.requesterId = session.userId` and `status IN (RESOLVED, CLOSED)` and `updatedAt >= now-7d` and `updatedAt < now` | `/my-tickets?status=RESOLVED&updatedFrom=<now-7d>&updatedTo=<now>` |
+| Staff/Admin | Unassigned Tickets | `ticket.assigneeId IS NULL` and `status NOT IN (CLOSED, CANCELLED)` | `/staff/queue?assignee=unassigned` |
+| Staff/Admin | My Owned Tickets | `ticket.assigneeId = session.userId` and `status NOT IN (CLOSED, CANCELLED)` | `/staff/queue?assignee=me` |
+| Staff/Admin | In-Progress/Waiting | `status IN (IN_PROGRESS, WAITING_FOR_REQUESTER)` and ticket is accessible to the role | `/staff/queue?status=active` |
+| Staff/Admin | Recently Updated | `updatedAt >= now-7d` and `updatedAt < now` and ticket is accessible to the role | `/staff/queue?updatedFrom=<now-7d>&updatedTo=<now>` |
+| Staff/Admin | My Actions Taken | `action.performedById = session.userId` and `action.actionDateTime >= now-30d` and `action.actionDateTime < now` | `/staff/actions?performedBy=me&from=<now-30d>&to=<now>` |
+
+Each drill-down preserves the predicate server-side. A zero count renders `0` and an explicit empty state; it never falls back to a client-side approximation.
 
 ## 5. Actions Taken on Ticket Detail
 
@@ -54,7 +72,7 @@ Authorized staff and administrators see the same history plus a clearly labeled 
 - Follow-up Note (required when follow-up is true)
 - Attachment Notes (optional descriptive text)
 
-The performer field is displayed as read-only authenticated identity. Submitting disables duplicate clicks, preserves the form on recoverable failure, and refreshes the list after success. Editing shows the current version and reports a conflict if the server rejects a stale update.
+The performer field is displayed as read-only authenticated identity. Staff/admin mode also shows state (`OPEN`, `IN_PROGRESS`, `COMPLETED`, `CANCELLED`), assignee, and the allowed transition controls. Completing or cancelling records the authenticated performer and server timestamp and then disables terminal controls. Submitting disables duplicate clicks, preserves the form on recoverable failure, and refreshes the list after success. Editing shows the current version and reports a conflict if the server rejects a stale update. If a follow-up remains outstanding, the status control explains which Action blocks resolution instead of silently allowing `RESOLVED`/`CLOSED`.
 
 Public/shared content and internal-only content use text labels and badges, not color alone. Long descriptions wrap; no control overlaps at any breakpoint.
 

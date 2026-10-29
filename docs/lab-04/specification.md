@@ -15,7 +15,7 @@ The service desk needs a reliable work log under every Ticket. Each action recor
 ### Included
 
 - A one-Ticket-to-many-Actions Taken model with append-only history and authorized edits.
-- Action fields: action date/time, description, result, authenticated performer, follow-up required, conditional follow-up note, and attachment notes.
+- Action fields: action date/time, description, result, state, optional assignee, authenticated performer, completion/cancellation audit fields, follow-up required, conditional follow-up note/resolution timestamp, and attachment notes.
 - IT Staff and Administrator Action Taken create/update/read operations; Requester read-only access for owned Tickets.
 - The complete status set: `NEW`, `OPEN`, `IN_PROGRESS`, `WAITING_FOR_REQUESTER`, `RESOLVED`, `CLOSED`, `REOPENED`, and `CANCELLED`.
 - Backend-enforced transition permissions, terminal-state protection, stale-update handling, and the resolution evidence gate.
@@ -32,6 +32,8 @@ The service desk needs a reliable work log under every Ticket. Each action recor
 
 - FR-01 Every Action Taken belongs to exactly one Ticket and is displayed in chronological order.
 - FR-02 An authorized IT Staff member or Administrator can create an Action Taken with all required fields; the performer is derived from the authenticated session.
+- FR-02a Each Action Taken has a state (`OPEN`, `IN_PROGRESS`, `COMPLETED`, or `CANCELLED`), an optional assignee, and immutable completion/cancellation audit fields (`completedAt`, `completedBy`, `cancelledAt`, `cancelledBy`).
+- FR-02b Authorized IT Staff and Administrators can assign an Action, move it through the allowed state transitions, complete it, or cancel it; Requesters cannot mutate Action state or assignment.
 - FR-03 An authorized IT Staff member or Administrator can update an Action Taken with optimistic/stale-write protection; the original creation time and performer remain auditable.
 - FR-04 Requesters can read Actions Taken for Tickets they own and cannot create or edit them.
 - FR-05 Action history distinguishes shared/public work from internal communication where the approved UI exposes both; requester responses never reveal internal notes.
@@ -63,6 +65,7 @@ The service desk needs a reliable work log under every Ticket. Each action recor
 - BR-08 An inactive or deactivated account cannot create, update, claim, or reassign work.
 - BR-09 Requesters read only Actions attached to their own Tickets; a missing or unauthorized Ticket uses the existing safe not-found behavior.
 - BR-10 IT Staff and Administrators may create/update Actions on accessible Tickets; user-interface hiding is not authorization.
+- BR-10a An Action starts in `OPEN`. The only permitted state transitions are `OPEN -> IN_PROGRESS`, `OPEN -> COMPLETED`, `OPEN -> CANCELLED`, and `IN_PROGRESS -> COMPLETED` or `IN_PROGRESS -> CANCELLED`. `COMPLETED` and `CANCELLED` are terminal. Assigning or reassigning an Action is allowed only for active IT Staff/Administrators and never changes its performer or audit history.
 - BR-11 Status transitions are:
 
 | From | To | Authorized role | Confirmation/evidence |
@@ -79,7 +82,8 @@ The service desk needs a reliable work log under every Ticket. Each action recor
 
 Any unlisted transition, Requester transition, or terminal-state transition is rejected without mutation.
 
-- BR-12 The resolution gate requires at least one qualifying Action Taken with non-empty description and result; the exact qualifying predicate is shared by the API and tests.
+- BR-12 The resolution gate requires at least one qualifying Action Taken where `state=COMPLETED`, `description` and `result` are non-empty after trimming, `completedAt` and `completedBy` are present, and the Action belongs to the Ticket. An Action in `OPEN`, `IN_PROGRESS`, or `CANCELLED` never qualifies.
+- BR-12a A Ticket cannot move to `RESOLVED` or `CLOSED` while any Action on it has `followUpRequired=true` and no `followUpResolvedAt`. The follow-up is cleared only by recording the resolution timestamp/performer; the API and UI must report the outstanding Action instead of silently allowing the transition. Tests cover both a qualifying completed Action with no outstanding follow-up (allowed) and a qualifying Action with an outstanding follow-up (rejected without mutation).
 - BR-13 A Requester “problem appears resolved” indication never changes formal status and never satisfies the staff resolution gate by itself.
 - BR-14 Dashboard counts use the same status and ownership predicates as the detailed endpoints and are calculated server-side.
 - BR-15 Dashboard date windows use UTC storage and an explicitly documented inclusive start/exclusive end boundary.
