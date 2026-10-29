@@ -120,7 +120,28 @@ All write permissions are enforced by the backend. The UI is only a usability la
 
 ## 8. Data and migration decisions
 
-Add `ActionTaken` with a generated integer primary key, `ticketId`, `actionDateTime`, `description`, `result`, `performedById`, `followUpRequired`, nullable `followUpNote`, nullable `attachmentNotes`, `createdAt`, `updatedAt`, and a monotonic `version` or equivalent stale-write token. Add foreign keys to `Ticket` and `User`, indexes on `(ticketId, actionDateTime, id)` and `(performedById, actionDateTime)`, and a uniqueness strategy for idempotency keys when the implementation uses them.
+Add `ActionTaken` with the following additive columns and relations:
+
+| Column | Type/nullability | Constraint or relation |
+|---|---|---|
+| `id` | generated `Int`, not null | primary key |
+| `ticketId` | `Int`, not null | FK to `Ticket.id`; cascade behavior follows the established Ticket retention policy |
+| `actionDateTime` | timezone-aware `DateTime`, not null | part of stable chronological ordering |
+| `description`, `result` | bounded `String`, not null | trimmed/non-empty validation |
+| `state` | `ActionState`, not null, default `OPEN` | enum values `OPEN`, `IN_PROGRESS`, `COMPLETED`, `CANCELLED`; terminal audit checks apply |
+| `assigneeId` | `Int?` | nullable FK to `User.id` with `ON DELETE SET NULL`; target must be active IT Staff/Admin |
+| `performedById` | `Int`, not null | FK to `User.id`; immutable authenticated creator/performer |
+| `completedAt`, `cancelledAt` | timezone-aware `DateTime?` | nullable; only the matching terminal state may set its field |
+| `completedById`, `cancelledById` | `Int?` | nullable FKs to `User.id`; immutable authenticated audit performers |
+| `followUpRequired` | `Boolean`, not null, default `false` | when true, `followUpNote` is required |
+| `followUpNote`, `attachmentNotes` | `String?` | nullable; irrelevant follow-up text is rejected |
+| `followUpResolvedAt` | timezone-aware `DateTime?` | nullable; set only when the outstanding follow-up is resolved |
+| `followUpResolvedById` | `Int?` | nullable FK to `User.id`; records the authenticated resolver |
+| `idempotencyKey` | `String?` | unique per Ticket when supplied; retries cannot create a duplicate |
+| `createdAt`, `updatedAt` | timezone-aware `DateTime`, not null | `updatedAt` changes on an accepted edit |
+| `version` | positive `Int`, not null, default `1` | incremented atomically for optimistic concurrency |
+
+The database uses enum/check constraints for the Action state and terminal audit invariants (a completed Action has `completedAt`/`completedById`, a cancelled Action has `cancelledAt`/`cancelledById`, and terminal audit fields are immutable). Add foreign keys to `Ticket` and `User`, indexes on `(ticketId, actionDateTime, id)`, `(performedById, actionDateTime)`, `(assigneeId, state)`, and `(state, completedAt)`, plus a scoped unique constraint on `(ticketId, idempotencyKey)` when the implementation supports idempotency keys. `Ticket.ownerId` remains the existing nullable primary-owner FK; Lab 4 does not rename it to `assigneeId`.
 
 The migration does not rewrite existing Ticket or User identifiers. Legacy Tickets have zero Actions until new work is recorded; dashboards count them correctly. The migration is applied and verified before application code, and recovery is documented as snapshot restore plus migration retry. Seed upserts deterministic categories, systems, users, Tickets, and Actions and is safe to run twice.
 

@@ -31,7 +31,7 @@ Use four concise metric cards: Open Tickets, Waiting for Requester, Recently Upd
 
 ### Structure
 
-Show Unassigned Tickets, My Owned Tickets, In-Progress/Waiting work, Recently Updated, and My Actions Taken. The My Actions Taken card is the count of Actions whose `performedById` is the authenticated staff user and whose `actionDateTime` is in the documented recent window; it links to the Action-filtered staff view. Include a recent/urgent list with status, IT Priority, owner, update time, and links to Staff Queue or Ticket Detail. Administrator may reuse this view.
+Show Unassigned Tickets, My Owned Tickets, In-Progress/Waiting work, Recently Updated, and My Actions Taken. The My Actions Taken card is the count of Actions whose `performedById` is the authenticated staff user and whose `actionDateTime` is in the documented recent window; it links to the Action-filtered `/staff/actions` view defined in the API contract. Include a recent/urgent list with status, IT Priority, owner, update time, and links to Staff Queue or Ticket Detail. Administrator may reuse this view.
 
 ### Behavior
 
@@ -47,13 +47,13 @@ All windows use UTC and are inclusive at `from` and exclusive at `to`; `now` is 
 | Requester | Waiting for Requester | `ticket.requesterId = session.userId` and `status = WAITING_FOR_REQUESTER` | `/my-tickets?status=WAITING_FOR_REQUESTER` |
 | Requester | Recently Updated | `ticket.requesterId = session.userId` and `updatedAt >= now-7d` and `updatedAt < now` | `/my-tickets?updatedFrom=<now-7d>&updatedTo=<now>` |
 | Requester | Recently Resolved | `ticket.requesterId = session.userId` and `status IN (RESOLVED, CLOSED)` and `updatedAt >= now-7d` and `updatedAt < now` | `/my-tickets?status=RESOLVED&updatedFrom=<now-7d>&updatedTo=<now>` |
-| Staff/Admin | Unassigned Tickets | `ticket.assigneeId IS NULL` and `status NOT IN (CLOSED, CANCELLED)` | `/staff/queue?assignee=unassigned` |
-| Staff/Admin | My Owned Tickets | `ticket.assigneeId = session.userId` and `status NOT IN (CLOSED, CANCELLED)` | `/staff/queue?assignee=me` |
+| Staff/Admin | Unassigned Tickets | `ticket.ownerId IS NULL` and `status NOT IN (CLOSED, CANCELLED)` | `/staff/queue?assigneeId=unassigned` |
+| Staff/Admin | My Owned Tickets | `ticket.ownerId = session.userId` and `status NOT IN (CLOSED, CANCELLED)` | `/staff/queue?assigneeId=me` |
 | Staff/Admin | In-Progress/Waiting | `status IN (IN_PROGRESS, WAITING_FOR_REQUESTER)` and ticket is accessible to the role | `/staff/queue?status=active` |
 | Staff/Admin | Recently Updated | `updatedAt >= now-7d` and `updatedAt < now` and ticket is accessible to the role | `/staff/queue?updatedFrom=<now-7d>&updatedTo=<now>` |
 | Staff/Admin | My Actions Taken | `action.performedById = session.userId` and `action.actionDateTime >= now-30d` and `action.actionDateTime < now` | `/staff/actions?performedBy=me&from=<now-30d>&to=<now>` |
 
-Each drill-down preserves the predicate server-side. A zero count renders `0` and an explicit empty state; it never falls back to a client-side approximation.
+Each drill-down preserves the predicate server-side. The Staff Queue uses the existing `assigneeId` query key: `me` resolves to the authenticated user and `unassigned` resolves to `Ticket.ownerId IS NULL`; arbitrary client-supplied identity values are rejected. The `/staff/actions` view accepts only `performedBy=me` and applies the authenticated session plus the UTC date window on the server. A zero count renders `0` and an explicit empty state; it never falls back to a client-side approximation.
 
 ## 5. Actions Taken on Ticket Detail
 

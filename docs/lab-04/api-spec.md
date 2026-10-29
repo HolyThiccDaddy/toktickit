@@ -29,6 +29,7 @@ Authenticated identity comes only from the validated `toktickit_session` cookie.
   "followUpRequired": true,
   "followUpNote": "Recheck after the next maintenance window",
   "followUpResolvedAt": null,
+  "followUpResolvedBy": null,
   "attachmentNotes": "Look for the replacement photo in the ticket attachments",
   "createdAt": "2026-10-29T10:31:00.000Z",
   "updatedAt": "2026-10-29T10:31:00.000Z",
@@ -42,7 +43,7 @@ Authenticated identity comes only from the validated `toktickit_session` cookie.
 |---|---|---|---|
 | GET | `/tickets/:ticketId/actions` | Ticket owner Requester, IT Staff, or Administrator | Returns `{ data: { items, meta } }` in stable `(actionDateTime,id)` order; requester sees only the owned Ticket. |
 | POST | `/tickets/:ticketId/actions` | IT Staff or Administrator + CSRF | Body contains action date/time, description, result, follow-up boolean/note, attachment notes, and optional idempotency key. Performer comes from session. Returns `201`. |
-| PATCH | `/tickets/:ticketId/actions/:actionId` | IT Staff or Administrator + CSRF | Body may edit the documented fields, `assigneeId`, or `state` plus a `version` (or `updatedAt`) precondition. State changes are limited to `OPEN -> IN_PROGRESS/COMPLETED/CANCELLED` and `IN_PROGRESS -> COMPLETED/CANCELLED`; completion/cancellation audit fields come from the session and server clock. Returns `200` with the new version or `409 CONFLICT` without mutation. |
+| PATCH | `/tickets/:ticketId/actions/:actionId` | IT Staff or Administrator + CSRF | Body may edit the documented fields, `assigneeId`, or `state` plus a `version` (or `updatedAt`) precondition. State changes are limited to `OPEN -> IN_PROGRESS/COMPLETED/CANCELLED` and `IN_PROGRESS -> COMPLETED/CANCELLED`; completion/cancellation and follow-up-resolution audit fields come from the session and server clock. Returns `200` with the new version or `409 CONFLICT` without mutation. |
 
 Action creation returns `400 VALIDATION_ERROR` for missing/invalid fields, `403 FORBIDDEN` for a disallowed role, `404 NOT_FOUND` for a missing/unauthorized Ticket, `409 CONFLICT` for duplicate idempotency or stale state, and `500 INTERNAL_ERROR` only for an unexpected safe failure. A completed Action has non-null `completedAt`/`completedBy`; a cancelled Action has non-null `cancelledAt`/`cancelledBy`; those fields are immutable.
 
@@ -53,6 +54,7 @@ Action creation returns `400 VALIDATION_ERROR` for missing/invalid fields, `403 
 | GET | `/dashboard/requester` | Authenticated REQUESTER | Returns owned-ticket metrics and a bounded recent/attention list with safe detail links. Supports documented UTC date boundaries. |
 | GET | `/dashboard/staff` | IT_STAFF or ADMIN | Returns unassigned, current-owner, status/priority, and recent/urgent metrics plus bounded drill-down items. |
 | GET | `/dashboard/admin` | ADMIN | Returns the staff dashboard contract and optional concise account counts; never returns passwords/session data. |
+| GET | `/staff/actions?performedBy=me&from=<utc>&to=<utc>` | IT_STAFF or ADMIN | Returns a bounded Action list for the authenticated user only. `performedBy=me` is the only accepted performer selector; the server applies `performedById=session.userId` and an inclusive-start/exclusive-end UTC window, then returns `{ data: { items, meta } }`. |
 
 Dashboard response shape:
 
@@ -67,6 +69,8 @@ Dashboard response shape:
 ```
 
 Metrics are calculated by the backend from authoritative Ticket rows. Zero matches return value `0` and an empty items list. No dashboard endpoint returns an unbounded Ticket collection.
+
+Staff dashboard queue drill-downs reuse the Lab 3 queue query contract. The existing `assigneeId` query key maps to the database's `Ticket.ownerId`: `assigneeId=me` resolves to the authenticated user's `ownerId`, `assigneeId=unassigned` resolves to `ownerId IS NULL`, and numeric IDs retain the existing queue behavior. No client-supplied `ownerId` or arbitrary performer identity is trusted.
 
 ## 4. Ticket status workflow
 
