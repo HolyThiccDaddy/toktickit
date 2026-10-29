@@ -66,13 +66,14 @@ Requesters see all Actions Taken for their own Ticket in stable chronological or
 Authorized staff and administrators see the same history plus a clearly labeled Create Action button and Edit controls. The form contains:
 
 - Action Date/Time (required, timezone-aware)
-- Action Description (required)
-- Result (required)
+- Action Description (required, trimmed 10–2,000 characters)
+- Result (required, trimmed 1–2,000 characters)
+- Assignee (optional; active IT Staff/Admin users only)
 - Follow-Up Required? (required boolean)
-- Follow-up Note (required when follow-up is true)
-- Attachment Notes (optional descriptive text)
+- Follow-up Note (required, trimmed 1–2,000 characters when follow-up is true)
+- Attachment Notes (optional, trimmed 1–2,000 characters when supplied)
 
-The performer field is displayed as read-only authenticated identity. Staff/admin mode also shows state (`OPEN`, `IN_PROGRESS`, `COMPLETED`, `CANCELLED`), assignee, and the allowed transition controls. Completing or cancelling records the authenticated performer and server timestamp and then disables terminal controls. Submitting disables duplicate clicks, preserves the form on recoverable failure, and refreshes the list after success. Editing shows the current version and reports a conflict if the server rejects a stale update. If a follow-up remains outstanding, the status control explains which Action blocks resolution instead of silently allowing `RESOLVED`/`CLOSED`.
+The performer field is displayed as read-only authenticated identity. Staff/admin mode also shows state (`OPEN`, `IN_PROGRESS`, `COMPLETED`, `CANCELLED`), assignee, and the allowed transition controls. Assignee choices include only active IT Staff/Admin users; an inactive selection receives a field error and never changes the Action. Completing or cancelling records the authenticated performer and server timestamp and then disables terminal controls. Each new logical create uses a client-generated UUID idempotency key; retries reuse that key until success, then a new create gets a new key. Submitting disables duplicate clicks, preserves the form and key on recoverable failure, and refreshes the list after success. Editing shows the current version and reports a conflict if the server rejects a stale update. A labeled View Edit History control opens a read-only chronological timeline of prior field values, version, editor, and time; all roles permitted to read the Action may inspect it. If a follow-up remains outstanding, the status control explains which Action blocks resolution instead of silently allowing `RESOLVED`/`CLOSED`.
 
 Public/shared content and internal-only content use text labels and badges, not color alone. Long descriptions wrap; no control overlaps at any breakpoint.
 

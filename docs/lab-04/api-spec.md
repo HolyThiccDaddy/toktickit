@@ -33,7 +33,8 @@ Authenticated identity comes only from the validated `toktickit_session` cookie.
   "attachmentNotes": "Look for the replacement photo in the ticket attachments",
   "createdAt": "2026-10-29T10:31:00.000Z",
   "updatedAt": "2026-10-29T10:31:00.000Z",
-  "version": 1
+  "version": 1,
+  "revisionCount": 0
 }
 ```
 
@@ -41,11 +42,18 @@ Authenticated identity comes only from the validated `toktickit_session` cookie.
 
 | Method | Path | Authorization | Contract |
 |---|---|---|---|
-| GET | `/tickets/:ticketId/actions` | Ticket owner Requester, IT Staff, or Administrator | Returns `{ data: { items, meta } }` in stable `(actionDateTime,id)` order; requester sees only the owned Ticket. |
-| POST | `/tickets/:ticketId/actions` | IT Staff or Administrator + CSRF | Body contains action date/time, description, result, follow-up boolean/note, attachment notes, and optional idempotency key. Performer comes from session. Returns `201`. |
-| PATCH | `/tickets/:ticketId/actions/:actionId` | IT Staff or Administrator + CSRF | Body may edit the documented fields, `assigneeId`, or `state` plus a `version` (or `updatedAt`) precondition. State changes are limited to `OPEN -> IN_PROGRESS/COMPLETED/CANCELLED` and `IN_PROGRESS -> COMPLETED/CANCELLED`; completion/cancellation and follow-up-resolution audit fields come from the session and server clock. Returns `200` with the new version or `409 CONFLICT` without mutation. |
+| GET | `/tickets/:ticketId/actions` | Ticket owner Requester, IT Staff, or Administrator | Returns `{ data: { items, meta } }` in stable `(actionDateTime,id)` order; requester sees only the owned Ticket. Each item includes `revisionCount`. |
+| POST | `/tickets/:ticketId/actions` | IT Staff or Administrator + CSRF | Body contains action date/time, description, result, follow-up boolean/note, attachment notes, and optional active `assigneeId`; required `Idempotency-Key` header is a client-generated UUID retained across retries. Performer comes from session. First submission returns `201`; an identical retry returns the original `201` response body and `Idempotency-Replayed: true`, with no second Action. The same key with a different normalized payload returns `409 CONFLICT`. |
+| PATCH | `/tickets/:ticketId/actions/:actionId` | IT Staff or Administrator + CSRF | Body may edit the documented fields, `assigneeId`, or `state` plus a `version` (or `updatedAt`) precondition. State changes are limited to `OPEN -> IN_PROGRESS/COMPLETED/CANCELLED` and `IN_PROGRESS -> COMPLETED/CANCELLED`; completion/cancellation and follow-up-resolution audit fields come from the session and server clock. Every accepted edit atomically appends the prior editable-field snapshot to ActionRevision before updating the Action. Returns `200` with the new version or `409 CONFLICT` without mutation or revision. |
+| GET | `/tickets/:ticketId/actions/:actionId/revisions` | Ticket owner Requester, IT Staff, or Administrator | Returns immutable revisions ordered by ascending `(version,id)`, each containing `{ id, actionId, version, before, changedBy, changedAt }`; the same Ticket authorization as the parent Action applies. |
 
-Action creation returns `400 VALIDATION_ERROR` for missing/invalid fields, `403 FORBIDDEN` for a disallowed role, `404 NOT_FOUND` for a missing/unauthorized Ticket, `409 CONFLICT` for duplicate idempotency or stale state, and `500 INTERNAL_ERROR` only for an unexpected safe failure. A completed Action has non-null `completedAt`/`completedBy`; a cancelled Action has non-null `cancelledAt`/`cancelledBy`; those fields are immutable.
+### Action validation and revision rules
+
+All text is trimmed before validation and persistence. `description` is required at 10–2,000 characters; `result` is required at 1–2,000; `followUpNote` is required at 1–2,000 only when `followUpRequired=true`; `attachmentNotes` is optional/null and, when supplied, must contain 1–2,000 characters after trimming. Whitespace-only values fail with `400 VALIDATION_ERROR` and field-specific errors. The 10-character description minimum reuses the Lab 2 Ticket-description rule; the 1–2,000 note limits reuse Lab 3 comment/internal-note rules.
+
+The required `Idempotency-Key` is a canonical UUID. The server stores its per-Ticket uniqueness and SHA-256 fingerprint of the normalized create payload (trimmed strings and UTC-normalized timestamp). A replay with the same key and fingerprint returns the original Action; a different fingerprint for an existing key returns `409 CONFLICT`. The key and fingerprint are not editable or returned. `ActionRevision.before` contains the prior values of all editable fields plus prior `version`; each row records the authenticated editor and server time. The application exposes no revision update/delete operation.
+
+Action creation returns `400 VALIDATION_ERROR` for missing/invalid fields or a missing/malformed key, `403 FORBIDDEN` for a disallowed role, `404 NOT_FOUND` for a missing/unauthorized Ticket, `409 CONFLICT` when a key is reused with a different payload or for stale state, and `500 INTERNAL_ERROR` only for an unexpected safe failure. An identical retry is not an error. A completed Action has non-null `completedAt`/`completedBy`; a cancelled Action has non-null `cancelledAt`/`cancelledBy`; those fields are immutable.
 
 ## 3. Dashboard endpoints
 

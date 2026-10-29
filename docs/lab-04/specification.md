@@ -34,7 +34,7 @@ The service desk needs a reliable work log under every Ticket. Each action recor
 - FR-02 An authorized IT Staff member or Administrator can create an Action Taken with all required fields; the performer is derived from the authenticated session.
 - FR-02a Each Action Taken has a state (`OPEN`, `IN_PROGRESS`, `COMPLETED`, or `CANCELLED`), an optional assignee, and immutable completion/cancellation audit fields (`completedAt`, `completedBy`, `cancelledAt`, `cancelledBy`).
 - FR-02b Authorized IT Staff and Administrators can assign an Action, move it through the allowed state transitions, complete it, or cancel it; Requesters cannot mutate Action state or assignment.
-- FR-03 An authorized IT Staff member or Administrator can update an Action Taken with optimistic/stale-write protection; the original creation time and performer remain auditable.
+- FR-03 An authorized IT Staff member or Administrator can update an Action Taken with optimistic/stale-write protection; the original creation time and performer remain auditable, and every accepted edit appends a queryable immutable before-image revision.
 - FR-04 Requesters can read Actions Taken for Tickets they own and cannot create or edit them.
 - FR-05 Action history distinguishes shared/public work from internal communication where the approved UI exposes both; requester responses never reveal internal notes.
 - FR-06 Follow-up note is required when `followUpRequired=true` and rejected otherwise when the contract disallows irrelevant text.
@@ -58,10 +58,10 @@ The service desk needs a reliable work log under every Ticket. Each action recor
 - BR-01 An Action Taken references one existing Ticket; deleting a Ticket removes its dependent Actions according to the established retention policy.
 - BR-02 The Ticket Owner coordinates the Ticket, but any active IT Staff or Administrator authorized for that Ticket may record an Action Taken.
 - BR-03 `actionDateTime` is required, stored with timezone-aware semantics, and rendered in the documented application timezone.
-- BR-04 `description` and `result` are required, trimmed, length-bounded text; HTML is rendered as text.
+- BR-04 Text limits follow existing Lab 2/3 field conventions: trimmed Action `description` is required and 10–2,000 characters; trimmed `result` is required and 1–2,000 characters; trimmed `followUpNote` is required only when follow-up is true and is 1–2,000 characters; optional `attachmentNotes` is null when omitted and, when supplied, is trimmed to 1–2,000 characters. Whitespace-only values fail. HTML is rendered as text.
 - BR-05 `performedBy` is always the authenticated backend user and ignores client-supplied actor IDs or roles.
 - BR-06 `followUpRequired=true` requires a non-empty `followUpNote`; validation errors do not create a partial Action.
-- BR-07 Action history is append-only for creation metadata; updates require a version/updated-at precondition.
+- BR-07 Action creation metadata is immutable. Every accepted update requires a version/updated-at precondition and, in the same transaction, appends an immutable revision containing the full prior editable-field snapshot, prior version, authenticated editor, and server timestamp before updating the current Action. Stale or rejected updates append no revision. Revisions cannot be updated or deleted through application APIs.
 - BR-08 An inactive or deactivated account cannot create, update, claim, or reassign work.
 - BR-09 Requesters read only Actions attached to their own Tickets; a missing or unauthorized Ticket uses the existing safe not-found behavior.
 - BR-10 IT Staff and Administrators may create/update Actions on accessible Tickets; user-interface hiding is not authorization.
@@ -88,7 +88,7 @@ Any unlisted transition, Requester transition, or terminal-state transition is r
 - BR-14 Dashboard counts use the same status and ownership predicates as the detailed endpoints and are calculated server-side.
 - BR-15 Dashboard date windows use UTC storage and an explicitly documented inclusive start/exclusive end boundary.
 - BR-16 A dashboard card with no matching rows returns zero and an empty drill-down state, not an error or fabricated placeholder.
-- BR-17 Repeated create submission or retry must not create duplicate Actions when the same idempotency key is supplied.
+- BR-17 Every Action create request requires a client-generated UUID idempotency key that is retained across retries of that logical submission. A same-key/same-normalized-payload retry returns the original Action without creating another row; reuse of a key with a different normalized payload returns `409 CONFLICT` without mutation.
 - BR-18 Errors use stable safe codes and never expose secrets, SQL, filesystem paths, or storage keys.
 - BR-19 Migration is forward-only in normal deployment, with a tested recovery procedure that restores a database snapshot before retrying.
 - BR-20 Seed upserts stable fixture identities and never deletes user-created rows or overwrites changed credentials.
@@ -137,11 +137,23 @@ Add `ActionTaken` with the following additive columns and relations:
 | `followUpNote`, `attachmentNotes` | `String?` | nullable; irrelevant follow-up text is rejected |
 | `followUpResolvedAt` | timezone-aware `DateTime?` | nullable; set only when the outstanding follow-up is resolved |
 | `followUpResolvedById` | `Int?` | nullable FK to `User.id`; records the authenticated resolver |
-| `idempotencyKey` | `String?` | unique per Ticket when supplied; retries cannot create a duplicate |
+| `idempotencyKey` | UUID `String`, not null | required on creation; unique per Ticket |
+| `idempotencyFingerprint` | 64-character SHA-256 hex `String`, not null | server-computed fingerprint of the normalized create payload; same-key/different-payload retry is rejected |
 | `createdAt`, `updatedAt` | timezone-aware `DateTime`, not null | `updatedAt` changes on an accepted edit |
 | `version` | positive `Int`, not null, default `1` | incremented atomically for optimistic concurrency |
 
-The database uses enum/check constraints for the Action state and terminal audit invariants (a completed Action has `completedAt`/`completedById`, a cancelled Action has `cancelledAt`/`cancelledById`, and terminal audit fields are immutable). Add foreign keys to `Ticket` and `User`, indexes on `(ticketId, actionDateTime, id)`, `(performedById, actionDateTime)`, `(assigneeId, state)`, and `(state, completedAt)`, plus a scoped unique constraint on `(ticketId, idempotencyKey)` when the implementation supports idempotency keys. `Ticket.ownerId` remains the existing nullable primary-owner FK; Lab 4 does not rename it to `assigneeId`.
+Add a separate `ActionRevision` table:
+
+| Column | Type/nullability | Constraint or relation |
+|---|---|---|
+| `id` | generated `Int`, not null | primary key |
+| `actionId` | `Int`, not null | FK to `ActionTaken.id` with cascade on parent deletion |
+| `version` | positive `Int`, not null | prior Action version; unique with `actionId` |
+| `before` | `Json`, not null | immutable snapshot of all editable fields: actionDateTime, description, result, state, assigneeId, followUpRequired, followUpNote, followUpResolvedAt, followUpResolvedById, attachmentNotes |
+| `changedById` | `Int`, not null | FK to `User.id`; authenticated editor |
+| `changedAt` | timezone-aware `DateTime`, not null | server-generated revision time |
+
+The database uses enum/check constraints for the Action state and terminal audit invariants (a completed Action has `completedAt`/`completedById`, a cancelled Action has `cancelledAt`/`cancelledById`, and terminal audit fields are immutable). Add foreign keys to `Ticket` and `User`, indexes on `(ticketId, actionDateTime, id)`, `(performedById, actionDateTime)`, `(assigneeId, state)`, and `(state, completedAt)`, unique constraints on `(ticketId, idempotencyKey)` and `(actionId, version)`, and append-only ActionRevision records. `Ticket.ownerId` remains the existing nullable primary-owner FK; Lab 4 does not rename it to `assigneeId`.
 
 The migration does not rewrite existing Ticket or User identifiers. Legacy Tickets have zero Actions until new work is recorded; dashboards count them correctly. The migration is applied and verified before application code, and recovery is documented as snapshot restore plus migration retry. Seed upserts deterministic categories, systems, users, Tickets, and Actions and is safe to run twice.
 
@@ -169,6 +181,10 @@ The complete endpoint shapes are in [api-spec.md](api-spec.md). The API uses the
 - AC-14 Keyboard focus, labels, non-color status cues, and live-region feedback are present for all new controls.
 - AC-15 Lab 1–3 server, client, and E2E regression suites remain green from the reviewed final main commit.
 - AC-16 Final evidence records exact commit SHAs, real command output, screenshots, document links, and the final nine-part PDF.
+- AC-17 Action creation requires a UUID idempotency key; replay with the same normalized payload returns the original Action without duplication, while a different payload under that key returns safe `409 CONFLICT`.
+- AC-18 Every accepted Action edit appends an immutable, queryable before-image revision with prior version, editor, and timestamp; rejected/stale edits add no revision and creation/audit metadata remains unchanged.
+- AC-19 Staff/Admin can assign or reassign only to active IT Staff/Admin users and perform every permitted Action state transition; inactive targets and terminal transitions are rejected without mutation.
+- AC-20 Action text validation uses the exact trimmed limits in BR-04 and returns field-specific `400 VALIDATION_ERROR` without partial writes.
 
 ## 11. Product Definition of Done
 

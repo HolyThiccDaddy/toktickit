@@ -16,6 +16,7 @@ Status: Draft for Issue #51. This record names the specification and coding assi
 | 6 | Map every acceptance criterion to unit/API/UI/E2E/regression tests. | Require executable paths before implementation is complete. | `tests.md` section 2 |
 | 7 | Review UI states at desktop, tablet, and mobile widths. | Reuse Zen Green components with accessible focus and no overflow. | `ui-spec.md` sections 1, 5, and 7 |
 | 8 | Audit final evidence against the handout and current commit. | Publish only real SHA-bound results and screenshots. | `tests.md` section 5 and final PDF |
+| 9 | Resolve peer-review gaps in Action revisions, retry idempotency, exact field limits, and lifecycle test traceability. | Preserve before-images, require stable create keys, reuse documented Lab 2/3 validation limits, and map assign/complete/cancel/inactive-target behavior to named tests. | Fifth PR review comments; Lab 2 `specification.md` BR-05 and Lab 3 `api-spec.md` comment/note rules; Lab 4 contract and Test DD |
 
 ## My Reflection
 
