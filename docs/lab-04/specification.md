@@ -83,7 +83,7 @@ The service desk needs a reliable work log under every Ticket. Each action recor
 Any unlisted transition, Requester transition, or terminal-state transition is rejected without mutation.
 
 - BR-12 The resolution gate requires at least one qualifying Action Taken where `state=COMPLETED`, `description` and `result` are non-empty after trimming, `completedAt` and `completedBy` are present, and the Action belongs to the Ticket. An Action in `OPEN`, `IN_PROGRESS`, or `CANCELLED` never qualifies.
-- BR-12a A Ticket cannot move to `RESOLVED` or `CLOSED` while any Action on it has `followUpRequired=true` and no `followUpResolvedAt`. The follow-up is cleared only by recording the resolution timestamp/performer; the API and UI must report the outstanding Action instead of silently allowing the transition. Tests cover both a qualifying completed Action with no outstanding follow-up (allowed) and a qualifying Action with an outstanding follow-up (rejected without mutation).
+- BR-12a A Ticket cannot move to `RESOLVED` or `CLOSED` while any Action on it has `followUpRequired=true` and no `followUpResolvedAt`. An active IT Staff member or Administrator authorized for the Ticket resolves a completed Action's follow-up through the dedicated follow-up-resolution operation using the current Action version. In one transaction, the server appends the prior Action snapshot, sets `followUpResolvedAt` and `followUpResolvedById` from server time/session, increments `version`, and updates `updatedAt`; the Action remains `COMPLETED` and its completion audit is unchanged. A stale or already-resolved request returns `409 CONFLICT` with no mutation. The API/UI identify the outstanding Action, and tests cover the full path from blocked Ticket resolution through follow-up resolution to successful Ticket resolution.
 - BR-13 A Requester “problem appears resolved” indication never changes formal status and never satisfies the staff resolution gate by itself.
 - BR-14 Dashboard counts use the same status and ownership predicates as the detailed endpoints and are calculated server-side.
 - BR-15 Dashboard date windows use UTC storage and an explicitly documented inclusive start/exclusive end boundary.
@@ -185,6 +185,7 @@ The complete endpoint shapes are in [api-spec.md](api-spec.md). The API uses the
 - AC-18 Every accepted Action edit appends an immutable, queryable before-image revision with prior version, editor, and timestamp; rejected/stale edits add no revision and creation/audit metadata remains unchanged.
 - AC-19 Staff/Admin can assign or reassign only to active IT Staff/Admin users and perform every permitted Action state transition; inactive targets and terminal transitions are rejected without mutation.
 - AC-20 Action text validation uses the exact trimmed limits in BR-04 and returns field-specific `400 VALIDATION_ERROR` without partial writes.
+- AC-21 An authorized active Staff/Admin can resolve an outstanding follow-up on a completed Action using its current version; the operation records resolver/time, appends a revision, increments version without reopening the Action, and allows Ticket resolution only after every outstanding follow-up is cleared.
 
 ## 11. Product Definition of Done
 

@@ -16,11 +16,11 @@ Write a failing focused test before each implementation slice. Keep the Lab 1–
 | API-03 | API/security/audit | AC-05, AC-18 | Current-version edit appends an immutable before-image; stale/rejected edit adds no revision and cannot change creation/audit metadata | `server/tests/lab-04/actions-taken.api.test.ts` | Planned |
 | API-04 | API | AC-06 | Idempotent seed and zero/one/many Action fixtures | `server/tests/lab-04/seed.test.ts` | Planned |
 | API-05 | API/workflow | AC-07, AC-09 | Complete status transition matrix and terminal protection | `server/tests/lab-04/ticket-workflow.api.test.ts` | Planned |
-| API-06 | API/workflow | AC-08 | Resolution evidence gate: qualifying completed Action allows the transition, while an outstanding follow-up blocks it without mutation | `server/tests/lab-04/ticket-workflow.api.test.ts` | Planned |
+| API-06 | API/workflow | AC-08, AC-21 | Resolution gate blocks on outstanding follow-up, then permits Ticket resolution after authorized follow-up resolution records audit/revision/version | `server/tests/lab-04/ticket-workflow.api.test.ts` | Planned |
 | API-07 | API/dashboard | AC-10 | Requester metrics, UTC boundaries, zero/one/many, and equality between each dashboard count and the matching `GET /tickets` filter, including `currentStatus`, `currentStatuses`, and date windows | `server/tests/lab-04/requester-dashboard.api.test.ts` | Planned |
 | API-08 | API/dashboard | AC-11 | Staff/Admin metrics, exact queue drill-down equality using `assigneeId=me/unassigned`, multi-status and UTC date filters, current-user Actions filtering, role scope, and empty results | `server/tests/lab-04/staff-dashboard.api.test.ts` | Planned |
 | API-09 | migration/regression | AC-15 | Existing records and Lab 1–3 behavior survive migration | `server/tests/lab-04/migration-regression.api.test.ts` | Planned |
-| UI-01 | component | AC-12, AC-14, AC-18, AC-19, AC-20 | Actions list/form exact validation, assignment and state controls, immutable edit-history timeline, focus, and live feedback | `client/tests/lab-04/ActionsTaken.test.tsx` | Planned |
+| UI-01 | component | AC-12, AC-14, AC-18–AC-21 | Actions list/form exact validation, assignment/state controls, follow-up resolution, immutable edit-history timeline, focus, and live feedback | `client/tests/lab-04/ActionsTaken.test.tsx` | Planned |
 | UI-02 | component | AC-10, AC-12 | Requester dashboard metrics, ownership states, and exact Waiting/Open/Recently Updated/Recently Resolved list filters and links | `client/tests/lab-04/RequesterDashboard.test.tsx` | Planned |
 | UI-03 | component | AC-11, AC-12 | Staff/Admin dashboard metric-to-queue predicate equality, supported owner/unassigned/status/date filters, My Actions view, retry, empty, and forbidden states | `client/tests/lab-04/StaffDashboard.test.tsx` | Planned |
 | UI-04 | component/workflow | AC-08, AC-09, AC-12 | Status controls and resolution gate feedback | `client/tests/lab-04/TicketWorkflow.test.tsx` | Planned |
@@ -36,6 +36,7 @@ Write a failing focused test before each implementation slice. Keep the Lab 1–
 | API-10 | API/idempotency | AC-17 | Missing/malformed key rejection, same-key/same-payload replay without duplicate row, and same-key/different-payload conflict | `server/tests/lab-04/actions-taken.api.test.ts` | Planned |
 | API-11 | API/authorization | AC-19 | Assign/reassign, full Action transition matrix, inactive target rejection, terminal protection, and no-mutation assertions | `server/tests/lab-04/actions-taken.api.test.ts` | Planned |
 | E2E-04 | E2E/authorization | AC-19 | Staff assigns/reassigns an Action, completes or cancels through permitted transitions, and receives safe rejection for an inactive assignee | `e2e/lab-04/actions-taken-flow.spec.ts` | Planned |
+| E2E-05 | E2E/workflow | AC-08, AC-21 | Ticket resolve is blocked by a completed Action's outstanding follow-up; authorized Staff resolves it; the Ticket then resolves and audit/version/history are verified | `e2e/lab-04/follow-up-resolution.spec.ts` | Planned |
 
 ## 3. Required regression coverage
 

@@ -17,6 +17,7 @@ Status: Draft for Issue #51. This record names the specification and coding assi
 | 7 | Review UI states at desktop, tablet, and mobile widths. | Reuse Zen Green components with accessible focus and no overflow. | `ui-spec.md` sections 1, 5, and 7 |
 | 8 | Audit final evidence against the handout and current commit. | Publish only real SHA-bound results and screenshots. | `tests.md` section 5 and final PDF |
 | 9 | Resolve peer-review gaps in Action revisions, retry idempotency, exact field limits, and lifecycle test traceability. | Preserve before-images, require stable create keys, reuse documented Lab 2/3 validation limits, and map assign/complete/cancel/inactive-target behavior to named tests. | Fifth PR review comments; Lab 2 `specification.md` BR-05 and Lab 3 `api-spec.md` comment/note rules; Lab 4 contract and Test DD |
+| 10 | Resolve the reviewed lifecycle gap for completed Actions with outstanding follow-up. | Define a dedicated versioned follow-up-resolution operation for authorized active staff/admin; preserve completion state, append a revision, and test the full path through Ticket resolution. | Sixth PR review #5703003512 and comment #4416372908; Lab 4 BR-12a, API spec, and API/UI/E2E test plan |
 
 ## My Reflection
 
