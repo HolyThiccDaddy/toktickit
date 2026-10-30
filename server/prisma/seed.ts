@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { getPrisma } from "../src/prisma.js";
 import { hashPassword, migrationPendingHash } from "../src/auth.js";
 
@@ -173,6 +174,119 @@ export async function seed(prisma = getPrisma()) {
     update: {},
     create: { year: currentYear, lastSequence: 0 },
   });
+
+  // Stable Lab 4 fixture identities cover all Ticket statuses/priorities,
+  // assigned and unassigned owners, and zero/one/many Actions. Reserved ticket
+  // numbers are upserted; no existing user-created Ticket is removed.
+  const category = await prisma.category.findUniqueOrThrow({ where: { name: "Account and Access" } });
+  const relatedSystem = await prisma.relatedSystem.findUniqueOrThrow({ where: { name: "Email" } });
+  const requester = await prisma.user.findUniqueOrThrow({ where: { email: "jennifer.anderson@example.com" } });
+  const staffUsers = await Promise.all([
+    prisma.user.findUniqueOrThrow({ where: { email: "alex.staff@example.com" } }),
+    prisma.user.findUniqueOrThrow({ where: { email: "casey.staff@example.com" } }),
+  ]);
+  const administrator = await prisma.user.findUniqueOrThrow({ where: { email: "admin@example.com" } });
+
+  const fixtureTickets = [
+    { suffix: "980001", status: "NEW", priority: "LOW", ownerId: null },
+    { suffix: "980002", status: "OPEN", priority: "MEDIUM", ownerId: staffUsers[0].id },
+    { suffix: "980003", status: "IN_PROGRESS", priority: "HIGH", ownerId: null },
+    { suffix: "980004", status: "WAITING_FOR_REQUESTER", priority: "URGENT", ownerId: staffUsers[1].id },
+    { suffix: "980005", status: "RESOLVED", priority: "LOW", ownerId: null },
+    { suffix: "980006", status: "CLOSED", priority: "MEDIUM", ownerId: staffUsers[0].id },
+    { suffix: "980007", status: "REOPENED", priority: "HIGH", ownerId: null },
+    { suffix: "980008", status: "CANCELLED", priority: "URGENT", ownerId: staffUsers[1].id },
+  ] as const;
+  const tickets = new Map<string, number>();
+  for (const fixture of fixtureTickets) {
+    const ticket = await prisma.ticket.upsert({
+      where: { ticketNumber: `TKT-2026-${fixture.suffix}` },
+      update: {
+        summary: `Lab 4 fixture ${fixture.status}`,
+        description: `Deterministic Lab 4 seed ticket for ${fixture.status} and ${fixture.priority}.`,
+        requestedPriority: fixture.priority,
+        itPriority: fixture.priority,
+        currentStatus: fixture.status,
+        requesterId: requester.id,
+        ownerId: fixture.ownerId,
+        categoryId: category.id,
+        relatedSystemId: relatedSystem.id,
+      },
+      create: {
+        ticketNumber: `TKT-2026-${fixture.suffix}`,
+        summary: `Lab 4 fixture ${fixture.status}`,
+        description: `Deterministic Lab 4 seed ticket for ${fixture.status} and ${fixture.priority}.`,
+        requestedPriority: fixture.priority,
+        itPriority: fixture.priority,
+        currentStatus: fixture.status,
+        requesterId: requester.id,
+        ownerId: fixture.ownerId,
+        categoryId: category.id,
+        relatedSystemId: relatedSystem.id,
+      },
+    });
+    tickets.set(fixture.suffix, ticket.id);
+  }
+
+  const actionFixtures = [
+    { ticket: "980002", number: "1", state: "OPEN", assigneeId: staffUsers[0].id, performedById: staffUsers[0].id, followUpRequired: false },
+    { ticket: "980003", number: "1", state: "IN_PROGRESS", assigneeId: staffUsers[1].id, performedById: staffUsers[0].id, followUpRequired: false },
+    { ticket: "980003", number: "2", state: "COMPLETED", assigneeId: null, performedById: staffUsers[1].id, followUpRequired: true },
+    { ticket: "980004", number: "1", state: "COMPLETED", assigneeId: staffUsers[1].id, performedById: staffUsers[0].id, followUpRequired: false },
+    { ticket: "980005", number: "1", state: "COMPLETED", assigneeId: null, performedById: administrator.id, followUpRequired: false },
+    { ticket: "980006", number: "1", state: "CANCELLED", assigneeId: staffUsers[0].id, performedById: staffUsers[0].id, followUpRequired: false },
+    { ticket: "980007", number: "1", state: "COMPLETED", assigneeId: staffUsers[1].id, performedById: staffUsers[1].id, followUpRequired: false },
+    { ticket: "980008", number: "1", state: "CANCELLED", assigneeId: null, performedById: administrator.id, followUpRequired: false },
+  ] as const;
+  const fixtureDate = new Date("2026-10-29T10:00:00.000Z");
+  for (const fixture of actionFixtures) {
+    const ticketId = tickets.get(fixture.ticket)!;
+    const idempotencyKey = `00000000-0000-4000-8000-${fixture.ticket}${fixture.number.padStart(2, "0")}0000`;
+    const actionDateTime = fixtureDate;
+    const description = `Lab 4 fixture action ${fixture.number} for ${fixture.state.toLowerCase()}`;
+    const result = `Seeded result for ${fixture.state.toLowerCase()} workflow coverage`;
+    const followUpNote = fixture.followUpRequired ? "Recheck after the next maintenance window" : null;
+    const attachmentNotes = null;
+    const normalized = { actionDateTime: actionDateTime.toISOString(), description, result, followUpRequired: fixture.followUpRequired, followUpNote, attachmentNotes, assigneeId: fixture.assigneeId };
+    const idempotencyFingerprint = createHash("sha256").update(JSON.stringify(normalized)).digest("hex");
+    const existing = await prisma.actionTaken.findUnique({ where: { ticketId_idempotencyKey: { ticketId, idempotencyKey } }, select: { id: true } });
+    if (existing) continue;
+
+    const completed = fixture.state === "COMPLETED";
+    const cancelled = fixture.state === "CANCELLED";
+    await prisma.actionTaken.create({
+      data: {
+        ticketId,
+        actionDateTime,
+        description,
+        result,
+        state: fixture.state,
+        assigneeId: fixture.assigneeId,
+        performedById: fixture.performedById,
+        completedAt: completed ? fixtureDate : null,
+        completedById: completed ? fixture.performedById : null,
+        cancelledAt: cancelled ? fixtureDate : null,
+        cancelledById: cancelled ? fixture.performedById : null,
+        followUpRequired: fixture.followUpRequired,
+        followUpNote,
+        attachmentNotes,
+        idempotencyKey,
+        idempotencyFingerprint,
+        createdAt: fixtureDate,
+        updatedAt: fixtureDate,
+      },
+    });
+  }
+
+  // The reserved fixture ticket numbers use the 2026 range 980001–980008.
+  // Keep newly allocated 2026 ticket numbers above that range while preserving
+  // any counter that has already advanced further.
+  if (currentYear === 2026) {
+    await prisma.ticketCounter.updateMany({
+      where: { year: currentYear, lastSequence: { lt: 980008 } },
+      data: { lastSequence: 980008 },
+    });
+  }
 
   return {
     categoriesCount: categories.length,

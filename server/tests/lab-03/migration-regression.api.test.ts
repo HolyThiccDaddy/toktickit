@@ -11,7 +11,18 @@ describe("Lab 3 migration and deterministic fixtures", () => {
     await prisma.authSession.deleteMany();
     await prisma.publicComment.deleteMany();
     await prisma.internalNote.deleteMany();
+    await prisma.actionRevision.deleteMany();
+    await prisma.actionTaken.deleteMany();
+    await prisma.attachment.deleteMany();
+    await prisma.ticket.deleteMany();
     await prisma.user.deleteMany({ where: { role: { not: "REQUESTER" } } });
+    // This suite verifies the forward-migration state. Earlier suites may
+    // have changed seeded requester credentials, so restore the exact
+    // migration-pending state before each independent fixture run.
+    await prisma.user.updateMany({
+      where: { role: "REQUESTER" },
+      data: { passwordHash: migrationPendingHash, mustChangePassword: true },
+    });
   });
 
   afterAll(async () => {
@@ -201,7 +212,9 @@ describe("Lab 3 migration and deterministic fixtures", () => {
     const categoryBefore = await prisma.category.findMany({ orderBy: { id: "asc" }, select: { id: true, name: true, isActive: true } });
     const systemBefore = await prisma.relatedSystem.findMany({ orderBy: { id: "asc" }, select: { id: true, name: true, isActive: true } });
     const counterBefore = await prisma.ticketCounter.findMany({ orderBy: { year: "asc" } });
-    const ticketNumber = `TKT-${new Date().getFullYear()}-980001`;
+    // Lab 4 reserves 2026 ticket numbers 980001–980008 for seeded workflow
+    // coverage; keep this preservation fixture outside that reserved range.
+    const ticketNumber = `TKT-${new Date().getFullYear()}-990001`;
     const storageKey = `migration-preservation-${randomUUID()}`;
     const ticket = await prisma.ticket.create({
       data: {

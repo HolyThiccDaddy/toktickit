@@ -28,6 +28,13 @@ enum TicketStatus {
   CANCELLED
 }
 
+enum ActionState {
+  OPEN
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
 enum UserRole {
   REQUESTER
   IT_STAFF
@@ -48,22 +55,28 @@ model RequesterUser {
 // schema during the incremental migration so Lab 2 routes and records can be
 // read while Issue #37 moves requester operations to session-derived identity.
 model User {
-  id                  Int             @id @default(autoincrement())
-  email               String          @unique
+  id                  Int              @id @default(autoincrement())
+  email               String           @unique
   displayName         String
   department          String?
   role                UserRole
   passwordHash        String
-  mustChangePassword  Boolean         @default(true)
-  active              Boolean         @default(true)
-  createdAt           DateTime        @default(now())
-  updatedAt           DateTime        @updatedAt
+  mustChangePassword  Boolean          @default(true)
+  active              Boolean          @default(true)
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
   sessions            AuthSession[]
-  requesterTickets    Ticket[]        @relation("TicketRequester")
-  ownedTickets        Ticket[]        @relation("TicketOwner")
-  uploadedAttachments Attachment[]    @relation("AttachmentUploader")
-  publicComments      PublicComment[] @relation("PublicCommentAuthor")
-  internalNotes       InternalNote[]  @relation("InternalNoteAuthor")
+  requesterTickets    Ticket[]         @relation("TicketRequester")
+  ownedTickets        Ticket[]         @relation("TicketOwner")
+  uploadedAttachments Attachment[]     @relation("AttachmentUploader")
+  publicComments      PublicComment[]  @relation("PublicCommentAuthor")
+  internalNotes       InternalNote[]   @relation("InternalNoteAuthor")
+  assignedActions     ActionTaken[]    @relation("ActionTakenAssignee")
+  performedActions    ActionTaken[]    @relation("ActionTakenPerformer")
+  completedActions    ActionTaken[]    @relation("ActionTakenCompleter")
+  cancelledActions    ActionTaken[]    @relation("ActionTakenCanceller")
+  resolvedActions     ActionTaken[]    @relation("ActionTakenFollowUpResolver")
+  actionRevisions     ActionRevision[] @relation("ActionRevisionEditor")
 
   @@index([role])
   @@index([active, role])
@@ -126,6 +139,7 @@ model Ticket {
   attachments    Attachment[]
   publicComments PublicComment[]
   internalNotes  InternalNote[]
+  actions        ActionTaken[]
 
   @@index([requesterId, createdAt])
   @@index([requesterId, updatedAt])
@@ -183,4 +197,58 @@ model Attachment {
 model TicketCounter {
   year         Int @id
   lastSequence Int @default(0)
+}
+
+model ActionTaken {
+  id                     Int         @id @default(autoincrement())
+  ticketId               Int
+  actionDateTime         DateTime    @db.Timestamptz(6)
+  description            String      @db.VarChar(2000)
+  result                 String      @db.VarChar(2000)
+  state                  ActionState @default(OPEN)
+  assigneeId             Int?
+  performedById          Int
+  completedAt            DateTime?   @db.Timestamptz(6)
+  completedById          Int?
+  cancelledAt            DateTime?   @db.Timestamptz(6)
+  cancelledById          Int?
+  followUpRequired       Boolean     @default(false)
+  followUpNote           String?     @db.VarChar(2000)
+  followUpResolvedAt     DateTime?   @db.Timestamptz(6)
+  followUpResolvedById   Int?
+  attachmentNotes        String?     @db.VarChar(2000)
+  idempotencyKey         String      @db.Uuid
+  idempotencyFingerprint String      @db.Char(64)
+  idempotencyResponse    Json?
+  createdAt              DateTime    @default(now()) @db.Timestamptz(6)
+  updatedAt              DateTime    @updatedAt @db.Timestamptz(6)
+  version                Int         @default(1)
+
+  ticket             Ticket           @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  assignee           User?            @relation("ActionTakenAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
+  performedBy        User             @relation("ActionTakenPerformer", fields: [performedById], references: [id], onDelete: Restrict)
+  completedBy        User?            @relation("ActionTakenCompleter", fields: [completedById], references: [id], onDelete: Restrict)
+  cancelledBy        User?            @relation("ActionTakenCanceller", fields: [cancelledById], references: [id], onDelete: Restrict)
+  followUpResolvedBy User?            @relation("ActionTakenFollowUpResolver", fields: [followUpResolvedById], references: [id], onDelete: Restrict)
+  revisions          ActionRevision[]
+
+  @@unique([ticketId, idempotencyKey])
+  @@index([ticketId, actionDateTime, id])
+  @@index([performedById, actionDateTime])
+  @@index([assigneeId, state])
+  @@index([state, completedAt])
+}
+
+model ActionRevision {
+  id          Int      @id @default(autoincrement())
+  actionId    Int
+  version     Int
+  before      Json
+  changedById Int
+  changedAt   DateTime @default(now()) @db.Timestamptz(6)
+
+  action    ActionTaken @relation(fields: [actionId], references: [id], onDelete: Cascade)
+  changedBy User        @relation("ActionRevisionEditor", fields: [changedById], references: [id], onDelete: Restrict)
+
+  @@unique([actionId, version])
 }

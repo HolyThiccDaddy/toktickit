@@ -6,6 +6,7 @@ import ticketsRouter, { createAttachmentsRouter } from "./tickets.js";
 import { createStaffCommunicationRouter, createStaffRouter } from "./staff.js";
 import { createAdminRouter } from "./admin.js";
 import { apiError, authRouter, requireAuth, sessionMiddleware } from "./auth.js";
+import { createActionsRouter } from "./actions.js";
 
 // The Express app is exported separately from app.listen() (see index.ts) so
 // Supertest can import `app` without opening a port. Do not merge these files.
@@ -29,6 +30,8 @@ app.use("/api/auth", authRouter());
 app.use("/api/staff", createStaffRouter());
 app.use("/api/admin", createAdminRouter());
 app.use("/api/tickets", createStaffCommunicationRouter());
+// Register Action Taken endpoints before the requester-only Lab 2 ticket router.
+app.use("/api/tickets", createActionsRouter());
 app.use("/api/tickets", ticketsRouter);
 app.use("/api/attachments", createAttachmentsRouter());
 

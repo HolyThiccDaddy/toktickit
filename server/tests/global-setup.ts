@@ -19,7 +19,7 @@ export default async function setup() {
   const prisma = getPrisma();
   await prisma.$executeRawUnsafe(`
     TRUNCATE TABLE
-      "AuthSession", "InternalNote", "PublicComment", "Attachment", "Ticket",
+      "AuthSession", "ActionRevision", "ActionTaken", "InternalNote", "PublicComment", "Attachment", "Ticket",
       "TicketCounter", "User", "RequesterUser", "RelatedSystem", "Category"
     RESTART IDENTITY CASCADE
   `);
