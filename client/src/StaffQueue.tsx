@@ -23,20 +23,24 @@ function priorityClass(value: TicketPriority) {
   return `priority-badge priority-${value.toLowerCase()}`;
 }
 
-export default function StaffQueue({ user, onView }: { user: UserSummary; onView: (ticketId: number) => void }) {
+export default function StaffQueue({ user, onView, initialHref }: { user: UserSummary; onView: (ticketId: number) => void; initialHref?: string }) {
+  const initialParams = new URLSearchParams(initialHref?.split("?")[1] ?? "");
   const [tickets, setTickets] = useState<StaffTicketListItem[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [categoryError, setCategoryError] = useState("");
   const [q, setQ] = useState("");
-  const [status, setStatus] = useState<TicketStatus | "">("");
+  const [status, setStatus] = useState<TicketStatus | "">((initialParams.get("status") as TicketStatus | "") || "");
+  const [statusesFilter, setStatusesFilter] = useState<TicketStatus[]>(initialParams.get("statuses")?.split(",").filter(Boolean) as TicketStatus[] ?? []);
   const [itPriority, setItPriority] = useState<TicketPriority | "">("");
-  const [assigneeId, setAssigneeId] = useState("");
+  const [assigneeId, setAssigneeId] = useState(initialParams.get("assigneeId") ?? "");
   const [categoryId, setCategoryId] = useState("");
   const [sortBy, setSortBy] = useState<StaffSortField>("updatedAt");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
+  const [updatedFrom, setUpdatedFrom] = useState(initialParams.get("updatedFrom") ?? "");
+  const [updatedTo, setUpdatedTo] = useState(initialParams.get("updatedTo") ?? "");
   const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -60,8 +64,11 @@ export default function StaffQueue({ user, onView }: { user: UserSummary; onView
       q: q.trim() || undefined,
       status: status || undefined,
       itPriority: itPriority || undefined,
-      assigneeId: parsedAssignee,
+      assigneeId: assigneeId === "me" || assigneeId === "unassigned" ? assigneeId : parsedAssignee,
+      statuses: statusesFilter.length ? statusesFilter : undefined,
       categoryId: parsedCategory,
+      updatedFrom: updatedFrom || undefined,
+      updatedTo: updatedTo || undefined,
       sortBy, sortDir, page, pageSize,
     };
     try {
@@ -79,19 +86,19 @@ export default function StaffQueue({ user, onView }: { user: UserSummary; onView
     } finally {
       if (requestNumber === latestRequest.current) setLoading(false);
     }
-  }, [assigneeId, categoryId, itPriority, page, pageSize, q, sortBy, sortDir, status]);
+  }, [assigneeId, categoryId, itPriority, page, pageSize, q, sortBy, sortDir, status, statusesFilter, updatedFrom, updatedTo]);
 
   useEffect(() => { void loadCategories(); }, [loadCategories]);
   useEffect(() => { void loadTickets(); }, [loadTickets]);
 
-  function update(setter: (value: string) => void, value: string) { setter(value); setPage(1); }
-  function clearFilters() { setQ(""); setStatus(""); setItPriority(""); setAssigneeId(""); setCategoryId(""); setPage(1); }
+  function update(setter: (value: string) => void, value: string) { setter(value); setStatusesFilter([]); setUpdatedFrom(""); setUpdatedTo(""); setPage(1); }
+  function clearFilters() { setQ(""); setStatus(""); setItPriority(""); setAssigneeId(""); setCategoryId(""); setStatusesFilter([]); setUpdatedFrom(""); setUpdatedTo(""); setPage(1); }
   function changeSort(field: StaffSortField) {
     setPage(1);
     if (sortBy === field) setSortDir((value) => value === "asc" ? "desc" : "asc");
     else { setSortBy(field); setSortDir("asc"); }
   }
-  const hasFilters = Boolean(q.trim() || status || itPriority || assigneeId || categoryId);
+  const hasFilters = Boolean(q.trim() || status || statusesFilter.length || itPriority || assigneeId || categoryId || updatedFrom || updatedTo);
   const pageNumbers = Array.from({ length: totalPages }, (_, index) => index + 1)
     .filter((number) => number === 1 || number === totalPages || Math.abs(number - page) <= 1);
   const sortLabel = (field: StaffSortField, label: string) => `Sort by ${label}${sortBy === field ? `, currently ${sortDir === "asc" ? "ascending" : "descending"}` : ""}`;
