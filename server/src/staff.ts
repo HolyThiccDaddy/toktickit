@@ -230,11 +230,15 @@ export function createStaffRouter() {
     const nextStatus = req.body?.status;
     const confirm = req.body?.confirm;
     const resolutionActionId = req.body?.resolutionActionId;
+    const versionValue = req.body?.version;
     const updatedAtValue = req.body?.updatedAt;
     if (typeof nextStatus !== "string" || !statuses.includes(nextStatus as StaffStatus)) return validationError(res, { status: "Status is invalid" });
     if (confirm !== undefined && typeof confirm !== "boolean") return validationError(res, { confirm: "Confirm must be a boolean when provided" });
     if (resolutionActionId !== undefined && (!Number.isSafeInteger(resolutionActionId) || resolutionActionId <= 0)) {
       return validationError(res, { resolutionActionId: "Resolution Action must be a positive integer when provided" });
+    }
+    if (versionValue !== undefined) {
+      return validationError(res, { version: "Ticket status updates use updatedAt as the precondition; version is unsupported" });
     }
     const updatedAt = updatedAtValue === undefined
       ? undefined
