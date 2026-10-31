@@ -247,14 +247,14 @@ export function createActionsRouter() {
       const payloadFingerprint = fingerprint(payload);
       const record = await getPrisma().$transaction(async (tx) => {
         await tx.$executeRaw`SELECT id FROM "Ticket" WHERE id = ${ticketId} FOR UPDATE`;
-        if (payload.assigneeId !== null) {
-          const eligible = await tx.user.findFirst({ where: { id: payload.assigneeId, active: true, role: { in: ["IT_STAFF", "ADMIN"] } }, select: { id: true } });
-          if (!eligible) throw new ActionError(400, "VALIDATION_ERROR", "Action creation failed", { assigneeId: "Assignee must be an active IT Staff member or Administrator" });
-        }
         const existing = await tx.actionTaken.findUnique({ where: { ticketId_idempotencyKey: { ticketId, idempotencyKey: key } }, include: actionInclude });
         if (existing) {
           if (existing.idempotencyFingerprint !== payloadFingerprint) throw new ActionError(409, "CONFLICT", "Idempotency key was already used with a different Action payload");
           return { body: existing.idempotencyResponse ?? actionMetadata(existing), replayed: true };
+        }
+        if (payload.assigneeId !== null) {
+          const eligible = await tx.user.findFirst({ where: { id: payload.assigneeId, active: true, role: { in: ["IT_STAFF", "ADMIN"] } }, select: { id: true } });
+          if (!eligible) throw new ActionError(400, "VALIDATION_ERROR", "Action creation failed", { assigneeId: "Assignee must be an active IT Staff member or Administrator" });
         }
         const createdAt = new Date();
         const action = await tx.actionTaken.create({

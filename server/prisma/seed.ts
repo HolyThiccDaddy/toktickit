@@ -201,17 +201,9 @@ export async function seed(prisma = getPrisma()) {
   for (const fixture of fixtureTickets) {
     const ticket = await prisma.ticket.upsert({
       where: { ticketNumber: `TKT-2026-${fixture.suffix}` },
-      update: {
-        summary: `Lab 4 fixture ${fixture.status}`,
-        description: `Deterministic Lab 4 seed ticket for ${fixture.status} and ${fixture.priority}.`,
-        requestedPriority: fixture.priority,
-        itPriority: fixture.priority,
-        currentStatus: fixture.status,
-        requesterId: requester.id,
-        ownerId: fixture.ownerId,
-        categoryId: category.id,
-        relatedSystemId: relatedSystem.id,
-      },
+      // Fixture rows are only initialized on first creation. Re-running the
+      // seed must not overwrite edits made while exercising the application.
+      update: {},
       create: {
         ticketNumber: `TKT-2026-${fixture.suffix}`,
         summary: `Lab 4 fixture ${fixture.status}`,

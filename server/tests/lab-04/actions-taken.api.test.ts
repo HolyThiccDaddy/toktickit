@@ -76,6 +76,34 @@ describe("Issue #52 Actions Taken read API", () => {
     expect(first.body.data).not.toHaveProperty("idempotencyResponse");
   });
 
+  it("replays an idempotent Action after its assignee is deactivated", async () => {
+    const ticket = await createTicket("520030");
+    const assignee = await prisma.user.findUniqueOrThrow({ where: { email: "casey.staff@example.com" }, select: { id: true } });
+    const { agent, csrfToken } = await login(staff);
+    const key = "b77c8f42-8e10-4fb5-9b03-e3f3d1df0031";
+    const payload = { ...actionPayload, assigneeId: assignee.id };
+
+    const first = await agent.post(`/api/tickets/${ticket.id}/actions`)
+      .set("X-CSRF-Token", csrfToken)
+      .set("Idempotency-Key", key)
+      .send(payload);
+    expect(first.status).toBe(201);
+
+    await prisma.user.update({ where: { id: assignee.id }, data: { active: false } });
+    try {
+      const retry = await agent.post(`/api/tickets/${ticket.id}/actions`)
+        .set("X-CSRF-Token", csrfToken)
+        .set("Idempotency-Key", key)
+        .send(payload);
+
+      expect(retry.status).toBe(201);
+      expect(retry.headers["idempotency-replayed"]).toBe("true");
+      expect(retry.body).toEqual(first.body);
+    } finally {
+      await prisma.user.update({ where: { id: assignee.id }, data: { active: true } });
+    }
+  });
+
   it("rejects key reuse with a changed normalized payload and creates no duplicate", async () => {
     const ticket = await createTicket("520010");
     const { agent, csrfToken } = await login(staff);

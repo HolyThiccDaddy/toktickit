@@ -44,9 +44,6 @@ describe("Issue #52 Actions Taken seed idempotency", () => {
     } });
 
     await seed(prisma);
-    await seed(prisma);
-    expect(await prisma.ticket.findUnique({ where: { id: userCreatedTicket.id }, select: { id: true } })).toEqual({ id: userCreatedTicket.id });
-
     const tickets = await prisma.ticket.findMany({
       where: { ticketNumber: { startsWith: "TKT-2026-98000" } },
       orderBy: { ticketNumber: "asc" },
@@ -65,6 +62,25 @@ describe("Issue #52 Actions Taken seed idempotency", () => {
     expect(new Set(tickets.flatMap((ticket) => ticket.actions.map((action) => action.state)))).toEqual(new Set(["OPEN", "IN_PROGRESS", "COMPLETED", "CANCELLED"]));
 
     const actionCount = tickets.reduce((count, ticket) => count + ticket.actions.length, 0);
+    expect(await prisma.actionTaken.count({ where: { ticketId: { in: tickets.map((ticket) => ticket.id) } } })).toBe(actionCount);
+
+    const editedFixture = await prisma.ticket.findUniqueOrThrow({ where: { ticketNumber: "TKT-2026-980001" } });
+    const staffOwner = await prisma.user.findUniqueOrThrow({ where: { email: "alex.staff@example.com" }, select: { id: true } });
+    await prisma.ticket.update({
+      where: { id: editedFixture.id },
+      data: {
+        currentStatus: "CLOSED",
+        ownerId: staffOwner.id,
+        description: "Edited after the initial Lab 4 seed run",
+      },
+    });
+    await seed(prisma);
+    expect(await prisma.ticket.findUnique({ where: { id: userCreatedTicket.id }, select: { id: true } })).toEqual({ id: userCreatedTicket.id });
+    expect(await prisma.ticket.findUniqueOrThrow({ where: { id: editedFixture.id }, select: { currentStatus: true, ownerId: true, description: true } })).toEqual({
+      currentStatus: "CLOSED",
+      ownerId: staffOwner.id,
+      description: "Edited after the initial Lab 4 seed run",
+    });
     expect(await prisma.actionTaken.count({ where: { ticketId: { in: tickets.map((ticket) => ticket.id) } } })).toBe(actionCount);
   });
 });
