@@ -20,53 +20,62 @@ def link(label, url):
     return Paragraph(f'<link href="{url}" color="#006B3C"><u>{label}</u></link>', styles["BodyText"])
 
 parts = [
-    ("Answer Part 1 - Engineering contract and test design", [
-        "Lab 4 uses four committed contracts: specification.md, api-spec.md, ui-spec.md, and tests.md. The contract regression test verifies their presence, required sections, and Action Taken/workflow/dashboard language.",
+    ("Answer Part 1 - Git Use with Engineering Workflow", [
+        "The ordered Lab 4 workflow is recorded in reviewer.md: Issues #51-#55 were implemented on feature branches, reviewed, and merged into lab4-staging; the final release branch then targets main through PR #62. The final Issue #56 remains pending formal approval and teammate merge, so no post-merge main result is claimed.",
+        link("reviewer.md (peer identity, PR links, comments, responses, approvals)", "https://github.com/HolyThiccDaddy/toktickit/blob/feature/lab4-issue-6-final-release/docs/lab-04/reviewer.md"),
+        link("PR #62 and commit history", "https://github.com/HolyThiccDaddy/toktickit/pull/62"),
+        link("README", "https://github.com/HolyThiccDaddy/toktickit/blob/feature/lab4-issue-6-final-release/README.md"),
+        link(".gitignore", "https://github.com/HolyThiccDaddy/toktickit/blob/feature/lab4-issue-6-final-release/.gitignore"),
+        "The committed repository tree and the evidence folders provide the required directory-structure record; the final Kanban and main-branch checks are explicitly a post-merge gate.",
+    ]),
+    ("Answer Part 2 - Spec DD", [
+        "The rendered specification contract defines numbered requirements, business rules, Actions Taken behavior, Ticket transition rules, dashboard calculations, acceptance criteria, migration decisions, and the Product Definition of Done. It was committed before the implementation PRs were completed.",
         link("specification.md", "https://github.com/HolyThiccDaddy/toktickit/blob/feature/lab4-issue-6-final-release/docs/lab-04/specification.md"),
         link("api-spec.md", "https://github.com/HolyThiccDaddy/toktickit/blob/feature/lab4-issue-6-final-release/docs/lab-04/api-spec.md"),
         link("ui-spec.md", "https://github.com/HolyThiccDaddy/toktickit/blob/feature/lab4-issue-6-final-release/docs/lab-04/ui-spec.md"),
-        link("tests.md", "https://github.com/HolyThiccDaddy/toktickit/blob/feature/lab4-issue-6-final-release/docs/lab-04/tests.md"),
+        "Rendered excerpts in this report cover the contract headings and link directly to the committed source documents so a grader can inspect the full numbered requirements.",
     ]),
-    ("Answer Part 2 - Actions Taken data, migration, seed, and API", [
-        "Issue 2 delivers the one-to-many Action Taken model, immutable revision history, foreign keys and indexes, idempotent seed data, retry-safe creation, validation, role authorization, assignment, terminal protection, and safe error envelopes.",
-        "The guarded migration check used PostgreSQL database toktickit_test and reported no pending migrations. The compiled seed was run twice with the test-database guard enabled and produced the same categories, related systems, requesters, and ticket-counter output.",
-        link("API tests", "https://github.com/HolyThiccDaddy/toktickit/blob/feature/lab4-issue-6-final-release/server/tests/lab-04/actions-taken.api.test.ts"),
+    ("Answer Part 3 - Test DD and Traceability", [
+        "The Test DD maps acceptance criteria to actual server unit/API/integration tests, client UI tests, authorization/workflow tests, regression suites, and Playwright journeys. The final run reports server 22 files/136 tests, client 20 files/66 tests, and Playwright 30 total with 28 passed and 2 documented responsive variants skipped by the project guard.",
+        link("tests.md (planned tests, AC mapping, paths, and final status)", "https://github.com/HolyThiccDaddy/toktickit/blob/feature/lab4-issue-6-final-release/docs/lab-04/tests.md"),
+        link("server Lab 4 tests", "https://github.com/HolyThiccDaddy/toktickit/tree/feature/lab4-issue-6-final-release/server/tests/lab-04"),
+        link("client Lab 4 tests", "https://github.com/HolyThiccDaddy/toktickit/tree/feature/lab4-issue-6-final-release/client/tests/lab-04"),
+        link("Playwright Lab 4 tests", "https://github.com/HolyThiccDaddy/toktickit/tree/feature/lab4-issue-6-final-release/e2e/lab-04"),
     ]),
-    ("Answer Part 3 - Actions Taken UI", [
-        "Ticket Detail supports requester read-only history, staff/admin create and edit, validation, retry-preserved forms, idempotency keys, assignment and state controls, edit history, follow-up resolution, loading/empty/error states, accessible names, and responsive layouts.",
+    ("Answer Part 4 - AI Use with Reflection", [
+        "The AI-use record names OpenAI Codex (GPT-5), preserves ten selected specification/coding/review prompts, and includes a reflection that treats the handout, repository contracts, tests, and peer review as authoritative. It records rejection of suggestions that weaken authorization, overwrite work, expose credentials, or claim unexecuted tests.",
+        link("ai-use.md (LLM identity, selected prompts, and My Reflection)", "https://github.com/HolyThiccDaddy/toktickit/blob/feature/lab4-issue-6-final-release/docs/lab-04/ai-use.md"),
+    ]),
+    ("Answer Part 5 - Working IT Staff Dashboard UI", [
+        "The IT Staff and Administrator dashboards expose approved operational metrics, current-user Actions Taken, recent/urgent Tickets, exact query-backed counts, drill-down destinations, loading/empty/forbidden/error states, and responsive behavior. The smoke test now waits for loading to finish and for real metric content before measuring the performance budget.",
+        link("staff-dashboard.api.test.ts", "https://github.com/HolyThiccDaddy/toktickit/blob/feature/lab4-issue-6-final-release/server/tests/lab-04/staff-dashboard.api.test.ts"),
+        link("dashboard UI tests", "https://github.com/HolyThiccDaddy/toktickit/tree/feature/lab4-issue-6-final-release/client/tests/lab-04"),
+        link("dashboard-performance-smoke.spec.ts", "https://github.com/HolyThiccDaddy/toktickit/blob/feature/lab4-issue-6-final-release/e2e/lab-04/dashboard-performance-smoke.spec.ts"),
+    ]),
+    ("Answer Part 6 - Working Actions Taken UI", [
+        "Ticket Detail supports list/create/assign/edit/complete/cancel flows, validation, inactive-assignee rejection, role restrictions, safe failure and retry states, and multiple Actions Taken on one Ticket. Requesters receive a read-only history while staff/admin users receive authorized controls.",
         link("ActionsTaken.test.tsx", "https://github.com/HolyThiccDaddy/toktickit/blob/feature/lab4-issue-6-final-release/client/tests/lab-04/ActionsTaken.test.tsx"),
         link("actions-taken-flow.spec.ts", "https://github.com/HolyThiccDaddy/toktickit/blob/feature/lab4-issue-6-final-release/e2e/lab-04/actions-taken-flow.spec.ts"),
+        link("actions-taken API tests", "https://github.com/HolyThiccDaddy/toktickit/blob/feature/lab4-issue-6-final-release/server/tests/lab-04/actions-taken.api.test.ts"),
     ]),
-    ("Answer Part 4 - Ticket workflow and resolution gate", [
-        "The workflow covers the full status matrix, role restrictions, confirmation-required terminal transitions, stale-update conflicts, completed Action evidence, outstanding follow-up blocking, follow-up resolution audit/versioning, reopen behavior, and safe retry/error feedback.",
+    ("Answer Part 7 - Working Ticket Workflow", [
+        "The workflow covers all permitted status transitions, stable ordering, append-only Action evidence, role-appropriate visibility, confirmation-required terminal transitions, stale-update conflicts, completed Action evidence, outstanding follow-up blocking, follow-up resolution audit/versioning, and reopen behavior.",
         link("ticket-workflow.api.test.ts", "https://github.com/HolyThiccDaddy/toktickit/blob/feature/lab4-issue-6-final-release/server/tests/lab-04/ticket-workflow.api.test.ts"),
         link("TicketWorkflow.test.tsx", "https://github.com/HolyThiccDaddy/toktickit/blob/feature/lab4-issue-6-final-release/client/tests/lab-04/TicketWorkflow.test.tsx"),
         link("ticket-resolution.spec.ts", "https://github.com/HolyThiccDaddy/toktickit/blob/feature/lab4-issue-6-final-release/e2e/lab-04/ticket-resolution.spec.ts"),
     ]),
-    ("Answer Part 5 - Requester, IT Staff, and Administrator dashboards", [
-        "Requester metrics are ownership-scoped. Staff and Administrator metrics use the authenticated role, exact queue predicates, UTC windows, and a real My Actions destination. Dashboard APIs and role-aware UI are covered by focused server, client, and browser tests.",
+    ("Answer Part 8 - Working Requester Dashboard and Final Regression UI", [
+        "Requester metrics are ownership-scoped and drill down to recent and attention-required Tickets without leaking another requester's data. The regression matrix retains authentication, My Tickets, Ticket Detail, attachments, public comments, IT Staff functions, internal notes, and Administrator user management across the approved Lab 1-3 suites.",
         link("requester-dashboard.api.test.ts", "https://github.com/HolyThiccDaddy/toktickit/blob/feature/lab4-issue-6-final-release/server/tests/lab-04/requester-dashboard.api.test.ts"),
-        link("staff-dashboard.api.test.ts", "https://github.com/HolyThiccDaddy/toktickit/blob/feature/lab4-issue-6-final-release/server/tests/lab-04/staff-dashboard.api.test.ts"),
-    ]),
-    ("Answer Part 6 - Regression, accessibility, and responsive verification", [
-        "All approved Lab 1-3 server and client suites and the existing Playwright flows remain in the final run. The release evidence spec captures dashboard, Actions Taken, workflow, loading, empty, error/retry, and forbidden states across desktop, tablet, and mobile widths. Accessible labels, keyboard operation, live feedback, focus-visible styling, and no page-level horizontal overflow are part of the checks.",
         link("release-evidence.visual.spec.ts", "https://github.com/HolyThiccDaddy/toktickit/blob/feature/lab4-issue-6-final-release/e2e/lab-04/release-evidence.visual.spec.ts"),
+        link("verification artifacts", "https://github.com/HolyThiccDaddy/toktickit/tree/feature/lab4-issue-6-final-release/artifacts/lab-04/verification"),
     ]),
-    ("Answer Part 7 - Verification results", [
-        "Server: 22 files and 136 tests passed; production build passed.",
-        "Client: 20 files and 66 tests passed; production build passed.",
-        "Playwright: 30 tests total, 28 passed and 2 responsive workflow variants intentionally skipped by the project guard.",
-        "Prisma migrate deploy: passed with no pending migrations on the guarded _test database. Compiled seed: two consecutive guarded runs passed with 4 categories, 7 related systems, 5 development requesters, and an initialized ticket counter.",
-        "git diff --check and credential-pattern scan: passed with no credential matches.",
-    ]),
-    ("Answer Part 8 - Screenshot and document evidence", [
-        "The release screenshot set contains real requester, staff, administrator, Actions Taken, workflow, loading, empty, error/retry, and forbidden states. The full set is committed under artifacts/lab-04/screenshots/release with desktop, tablet, and mobile folders.",
-        link("release screenshots", "https://github.com/HolyThiccDaddy/toktickit/tree/feature/lab4-issue-6-final-release/artifacts/lab-04/screenshots/release"),
+    ("Answer Part 9 - Zen Green UI, Responsive, Accessibility, and Final Polish", [
+        "The committed ui-spec.md defines the Zen Green tokens and shared components. Release screenshots cover desktop, tablet, and mobile requester/staff/admin dashboards, Actions Taken, loading, empty, error/retry, forbidden, and resolution-gate states. The checklist verifies readable labels, keyboard/focus behavior, live feedback, clipping/overlap, and page-level horizontal overflow.",
+        link("ui-spec.md", "https://github.com/HolyThiccDaddy/toktickit/blob/feature/lab4-issue-6-final-release/docs/lab-04/ui-spec.md"),
+        link("release screenshots (desktop/tablet/mobile)", "https://github.com/HolyThiccDaddy/toktickit/tree/feature/lab4-issue-6-final-release/artifacts/lab-04/screenshots/release"),
         link("final Markdown report", "https://github.com/HolyThiccDaddy/toktickit/blob/feature/lab4-issue-6-final-release/docs/lab-04/LAB_04_FINAL_SUBMISSION_REPORT.md"),
-    ]),
-    ("Answer Part 9 - Final integration and delivery gate", [
-        "The final release branch is based on merged lab4-staging commit 026ba36348b553449bc2e5b4fda799110ddad4e6 and targets main with Closes #56. Formal peer approval and teammate merge remain required before Issue #56 is marked Done. Final main verification must confirm the merge commit, PDF, document links, six Issue states, and Kanban board.",
-        link("Issue #56", "https://github.com/HolyThiccDaddy/toktickit/issues/56"),
+        "The final integration gate remains explicit: formal peer approval, teammate merge into main, and post-merge verification of the PDF, documents, six Issues, and Kanban board are still required.",
     ]),
 ]
 
