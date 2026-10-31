@@ -105,6 +105,44 @@ export interface TicketDetail {
   publicComments?: PublicComment[];
   internalNotes?: InternalNote[];
 }
+
+export type ActionState = "OPEN" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
+export interface ActionPerson { id: number; displayName: string; role: AuthRole; }
+export interface ActionTaken {
+  id: number;
+  ticketId: number;
+  actionDateTime: string;
+  description: string;
+  result: string;
+  state: ActionState;
+  assignee: ActionPerson | null;
+  performedBy: ActionPerson;
+  completedAt: string | null;
+  completedBy: ActionPerson | null;
+  cancelledAt: string | null;
+  cancelledBy: ActionPerson | null;
+  followUpRequired: boolean;
+  followUpNote: string | null;
+  followUpResolvedAt: string | null;
+  followUpResolvedBy: ActionPerson | null;
+  attachmentNotes: string | null;
+  createdAt: string;
+  updatedAt: string;
+  version: number;
+  revisionCount: number;
+}
+export interface ActionsResponse { items: ActionTaken[]; meta: { page: number; pageSize: number; total: number; totalPages: number }; }
+export interface ActionRevision { id: number; actionId: number; version: number; before: Record<string, unknown>; changedBy: ActionPerson; changedAt: string; }
+export interface ActionCreateInput {
+  actionDateTime: string;
+  description: string;
+  result: string;
+  followUpRequired: boolean;
+  followUpNote?: string | null;
+  attachmentNotes?: string | null;
+  assigneeId?: number | null;
+}
+export interface ActionUpdateInput extends Partial<ActionCreateInput> { version?: number; updatedAt?: string; state?: ActionState; }
 export interface CreatedTicket {
   id: number;
   ticketNumber: string;
@@ -255,6 +293,38 @@ export async function getStaffTickets(query: StaffTicketListQuery): Promise<Staf
 
 export async function getStaffTicket(ticketId: number): Promise<TicketDetail> {
   return requestJson<TicketDetail>(`/api/staff/tickets/${ticketId}`, {}, "Unable to load ticket details");
+}
+
+export async function getActions(ticketId: number): Promise<ActionsResponse> {
+  return requestJson<ActionsResponse>(`/api/tickets/${ticketId}/actions`, {}, "Unable to load Actions Taken");
+}
+
+export async function createAction(ticketId: number, input: ActionCreateInput, idempotencyKey: string): Promise<ActionTaken> {
+  return requestJson<ActionTaken>(`/api/tickets/${ticketId}/actions`, {
+    method: "POST",
+    headers: { "content-type": "application/json", "Idempotency-Key": idempotencyKey, ...await csrfHeaders() },
+    body: JSON.stringify(input),
+  }, "Unable to create Action Taken");
+}
+
+export async function updateAction(ticketId: number, actionId: number, input: ActionUpdateInput): Promise<ActionTaken> {
+  return requestJson<ActionTaken>(`/api/tickets/${ticketId}/actions/${actionId}`, {
+    method: "PATCH",
+    headers: { "content-type": "application/json", ...await csrfHeaders() },
+    body: JSON.stringify(input),
+  }, "Unable to update Action Taken");
+}
+
+export async function getActionRevisions(ticketId: number, actionId: number): Promise<ActionRevision[]> {
+  return requestJson<ActionRevision[]>(`/api/tickets/${ticketId}/actions/${actionId}/revisions`, {}, "Unable to load Action Taken history");
+}
+
+export async function resolveActionFollowUp(ticketId: number, actionId: number, version: number): Promise<ActionTaken> {
+  return requestJson<ActionTaken>(`/api/tickets/${ticketId}/actions/${actionId}/follow-up-resolution`, {
+    method: "POST",
+    headers: { "content-type": "application/json", ...await csrfHeaders() },
+    body: JSON.stringify({ version }),
+  }, "Unable to resolve Action follow-up");
 }
 
 export async function claimStaffTicket(ticketId: number): Promise<TicketDetail> {
