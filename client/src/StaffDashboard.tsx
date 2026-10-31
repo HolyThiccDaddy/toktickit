@@ -3,7 +3,7 @@ import { ApiError, getStaffDashboard, type DashboardMetric, type DashboardRespon
 
 function formatDate(value: string) { return new Date(value).toLocaleString(); }
 
-export default function StaffDashboard({ user, onOpenQueue, onViewTicket }: { user: UserSummary; onOpenQueue: (href?: string) => void; onViewTicket: (ticketId: number) => void }) {
+export default function StaffDashboard({ user, onOpenQueue, onOpenActions, onViewTicket }: { user: UserSummary; onOpenQueue: (href?: string) => void; onOpenActions: (href?: string) => void; onViewTicket: (ticketId: number) => void }) {
   const [dashboard, setDashboard] = useState<DashboardResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -17,7 +17,11 @@ export default function StaffDashboard({ user, onOpenQueue, onViewTicket }: { us
   }, [admin]);
   useEffect(() => { void load(); }, [load]);
 
-  function followMetric(event: MouseEvent<HTMLAnchorElement>, metric: DashboardMetric) { event.preventDefault(); onOpenQueue(metric.href); }
+  function followMetric(event: MouseEvent<HTMLAnchorElement>, metric: DashboardMetric) {
+    event.preventDefault();
+    if (metric.key === "myActionsTaken") onOpenActions(metric.href);
+    else onOpenQueue(metric.href);
+  }
 
   return <section className="dashboard staff-dashboard" aria-labelledby="staff-dashboard-title">
     <div className="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
@@ -27,7 +31,7 @@ export default function StaffDashboard({ user, onOpenQueue, onViewTicket }: { us
     {loading && <div role="status" aria-live="polite" aria-busy="true">Loading staff dashboard...</div>}
     {!loading && error && <div className="alert alert-danger" role="alert"><p className="mb-2">{error}</p><button className="btn btn-outline-danger" type="button" onClick={() => void load()}>Retry dashboard</button></div>}
     {!loading && !error && dashboard && <>
-      <div className="dashboard-metric-grid" aria-label="Staff ticket metrics">{dashboard.metrics.map((metric) => <a className="card shadow-sm p-3 dashboard-metric-card" href={metric.href} key={metric.key} onClick={(event) => followMetric(event, metric)}><span className="small text-muted">{metric.label}</span><strong className="display-6 text-zen" aria-label={`${metric.label}: ${metric.value}`}>{metric.value}</strong><span className="small text-zen">Open matching queue →</span></a>)}</div>
+      <div className="dashboard-metric-grid" aria-label="Staff ticket metrics">{dashboard.metrics.map((metric) => <a className="card shadow-sm p-3 dashboard-metric-card" href={metric.href} key={metric.key} onClick={(event) => followMetric(event, metric)}><span className="small text-muted">{metric.label}</span><strong className="display-6 text-zen" aria-label={`${metric.label}: ${metric.value}`}>{metric.value}</strong><span className="small text-zen">{metric.key === "myActionsTaken" ? "Open Actions Taken →" : "Open matching queue →"}</span></a>)}</div>
       {dashboard.accounts && <section className="card shadow-sm p-4 mt-4" aria-labelledby="account-summary-title"><h2 id="account-summary-title" className="h5">Account summary</h2><div className="d-flex flex-wrap gap-3 mt-3">{Object.entries(dashboard.accounts).map(([key, value]) => <span className="category-badge" key={key}>{key}: {value}</span>)}</div></section>}
       <section className="card shadow-sm p-4 mt-4" aria-labelledby="staff-recent-title">
         <div className="d-flex flex-wrap align-items-center justify-content-between gap-2"><h2 id="staff-recent-title" className="h5 mb-0">Recent and urgent queue items</h2><span className="small text-muted">UTC window: {formatDate(dashboard.meta.from)} – {formatDate(dashboard.meta.to)}</span></div>
@@ -36,3 +40,4 @@ export default function StaffDashboard({ user, onOpenQueue, onViewTicket }: { us
     </>}
   </section>;
 }
+
