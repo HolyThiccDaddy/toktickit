@@ -229,16 +229,49 @@ export function createStaffRouter() {
     if (ticketId === null) return notFound(res);
     const nextStatus = req.body?.status;
     const confirm = req.body?.confirm;
+    const resolutionActionId = req.body?.resolutionActionId;
+    const updatedAtValue = req.body?.updatedAt;
     if (typeof nextStatus !== "string" || !statuses.includes(nextStatus as StaffStatus)) return validationError(res, { status: "Status is invalid" });
     if (confirm !== undefined && typeof confirm !== "boolean") return validationError(res, { confirm: "Confirm must be a boolean when provided" });
+    if (resolutionActionId !== undefined && (!Number.isSafeInteger(resolutionActionId) || resolutionActionId <= 0)) {
+      return validationError(res, { resolutionActionId: "Resolution Action must be a positive integer when provided" });
+    }
+    const updatedAt = updatedAtValue === undefined
+      ? undefined
+      : typeof updatedAtValue === "string" && /(?:Z|[+-]\d{2}:\d{2})$/i.test(updatedAtValue)
+        ? new Date(updatedAtValue)
+        : null;
+    if (updatedAtValue !== undefined && (!updatedAt || Number.isNaN(updatedAt.getTime()))) {
+      return validationError(res, { updatedAt: "updatedAt must be a valid timestamp when provided" });
+    }
     try {
       await getPrisma().$transaction(async (tx) => {
         await tx.$executeRaw`SELECT id FROM "Ticket" WHERE id = ${ticketId} FOR UPDATE`;
-        const ticket = await tx.ticket.findUnique({ where: { id: ticketId }, select: { currentStatus: true } });
+        const ticket = await tx.ticket.findUnique({ where: { id: ticketId }, select: { currentStatus: true, updatedAt: true } });
         if (!ticket) throw new Error("NOT_FOUND");
+        if (updatedAt && ticket.updatedAt.getTime() !== updatedAt.getTime()) {
+          throw new ConflictError("Ticket was changed by another user; reload before saving");
+        }
         const requiredConfirmation = transitionRules[ticket.currentStatus as StaffStatus][nextStatus as StaffStatus];
         if (requiredConfirmation === undefined) throw new ConflictError("This status transition is not allowed");
         if (requiredConfirmation && confirm !== true) throw new ConflictError("Confirmation is required for this status transition");
+        if (nextStatus === "RESOLVED" || nextStatus === "CLOSED") {
+          if (!Number.isSafeInteger(resolutionActionId) || resolutionActionId <= 0) {
+            throw new ConflictError("A qualifying resolution Action is required");
+          }
+          const completedActions = await tx.actionTaken.findMany({
+            where: { ticketId, state: "COMPLETED" },
+            select: { id: true, description: true, result: true, completedAt: true, completedById: true },
+          });
+          const qualifyingAction = completedActions.find((action) => action.id === resolutionActionId
+            && action.description.trim().length > 0
+            && action.result.trim().length > 0
+            && action.completedAt !== null
+            && action.completedById !== null);
+          if (!qualifyingAction) throw new ConflictError("The selected resolution Action is not qualifying");
+          const outstandingFollowUps = await tx.actionTaken.count({ where: { ticketId, followUpRequired: true, followUpResolvedAt: null } });
+          if (outstandingFollowUps > 0) throw new ConflictError("Resolve all outstanding Action follow-ups before changing Ticket status");
+        }
         await tx.ticket.update({ where: { id: ticketId }, data: { currentStatus: nextStatus as StaffStatus } });
       });
       return responseTicket(res, ticketId).catch(() => apiError(res, 500, "INTERNAL_ERROR", "Unable to load ticket details"));

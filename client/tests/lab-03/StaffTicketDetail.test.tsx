@@ -16,6 +16,7 @@ describe("IT Staff Ticket Detail operations", () => {
 
   it("supports claim, priority/status updates, public comments, and internal notes", async () => {
     vi.spyOn(api, "getStaffTicket").mockResolvedValue({ ...detail, attachments: [{ id: 8, originalFilename: "vpn-error.png", fileSize: 1024, mimeType: "image/png", isDeleted: false, createdAt: "2026-09-16T08:30:00.000Z" }] });
+    vi.spyOn(api, "getActions").mockResolvedValue({ items: [], meta: { page: 1, pageSize: 0, total: 0, totalPages: 0 } });
     const claimed = vi.spyOn(api, "claimStaffTicket").mockResolvedValue({ ...detail, owner: user });
     const priority = vi.spyOn(api, "updateStaffPriority").mockResolvedValue({ ...detail, itPriority: "URGENT" });
     const status = vi.spyOn(api, "updateStaffStatus").mockResolvedValue({ ...detail, currentStatus: "OPEN" });
@@ -34,7 +35,7 @@ describe("IT Staff Ticket Detail operations", () => {
     await waitFor(() => expect(priority).toHaveBeenCalledWith(detail.id, "URGENT"));
     fireEvent.change(screen.getByLabelText("Move status"), { target: { value: "OPEN" } });
     fireEvent.click(screen.getByRole("button", { name: "Update status" }));
-    await waitFor(() => expect(status).toHaveBeenCalledWith(detail.id, "OPEN", false));
+    await waitFor(() => expect(status).toHaveBeenCalledWith(detail.id, "OPEN", false, { updatedAt: detail.updatedAt }));
     fireEvent.change(screen.getByLabelText("Add a public comment"), { target: { value: "Working on this." } });
     fireEvent.click(screen.getByRole("button", { name: "Post public comment" }));
     await waitFor(() => expect(addComment).toHaveBeenCalledWith(detail.id, "Working on this."));

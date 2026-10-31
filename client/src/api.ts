@@ -343,8 +343,9 @@ export async function updateStaffPriority(ticketId: number, itPriority: TicketPr
   return requestJson<TicketDetail>(`/api/staff/tickets/${ticketId}/priority`, { method: "PATCH", headers: { "content-type": "application/json", ...await csrfHeaders() }, body: JSON.stringify({ itPriority }) }, "Unable to update IT Priority");
 }
 
-export async function updateStaffStatus(ticketId: number, status: TicketStatus, confirm = false): Promise<TicketDetail> {
-  return requestJson<TicketDetail>(`/api/staff/tickets/${ticketId}/status`, { method: "PATCH", headers: { "content-type": "application/json", ...await csrfHeaders() }, body: JSON.stringify({ status, confirm }) }, "Unable to update ticket status");
+export interface StaffStatusUpdateOptions { resolutionActionId?: number; updatedAt?: string; }
+export async function updateStaffStatus(ticketId: number, status: TicketStatus, confirm = false, options: StaffStatusUpdateOptions = {}): Promise<TicketDetail> {
+  return requestJson<TicketDetail>(`/api/staff/tickets/${ticketId}/status`, { method: "PATCH", headers: { "content-type": "application/json", ...await csrfHeaders() }, body: JSON.stringify({ status, confirm, ...options }) }, "Unable to update ticket status");
 }
 
 export async function getInternalNotes(ticketId: number): Promise<InternalNote[]> {
