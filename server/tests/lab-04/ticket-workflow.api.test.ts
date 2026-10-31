@@ -120,6 +120,20 @@ describe("Issue 4 ticket workflow and resolution gate", () => {
     expect(await currentStatus(ticket.id)).toBe("IN_PROGRESS");
   });
 
+  it("rejects unsupported ticket version preconditions instead of ignoring them", async () => {
+    const ticket = await createTicket("440007", { currentStatus: "NEW" });
+    const { agent, csrfToken } = await login(staff);
+
+    const response = await agent.patch(`/api/staff/tickets/${ticket.id}/status`)
+      .set("X-CSRF-Token", csrfToken)
+      .send({ status: "OPEN", version: 1 });
+
+    expect(response.status).toBe(400);
+    expect(response.body.error.code).toBe("VALIDATION_ERROR");
+    expect(response.body.error.fieldErrors.version).toMatch(/updatedAt.*unsupported/i);
+    expect(await currentStatus(ticket.id)).toBe("NEW");
+  });
+
   it("does not allow requesters to change workflow status", async () => {
     const ticket = await createTicket("440006", { currentStatus: "NEW" });
     const { agent, csrfToken } = await login(requester);
