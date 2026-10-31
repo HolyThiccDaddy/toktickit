@@ -50,7 +50,7 @@ describe("Lab 4 staff and administrator dashboards", () => {
     expect(dashboard.status).toBe(200);
     const metric = dashboard.body.data.metrics.find((entry: { key: string }) => entry.key === "recentlyUpdated");
     expect(metric.value).toBe(1);
-    expect(metric.href).toContain("statuses=NEW,OPEN,IN_PROGRESS,WAITING_FOR_REQUESTER,RESOLVED,REOPENED");
+    expect(metric.href).toContain("statuses=NEW,OPEN,IN_PROGRESS,WAITING_FOR_REQUESTER,RESOLVED,CLOSED,REOPENED");
     const queue = await agent.get(`/api/staff/tickets?${metric.href.split("?")[1]}`);
     expect(queue.status).toBe(200);
     expect(queue.body.data.meta.total).toBe(1);
