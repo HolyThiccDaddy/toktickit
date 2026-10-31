@@ -73,8 +73,9 @@ function staffTicketSummary(ticket: {
   };
 }
 
-const queueQueryFields = new Set(["q", "status", "itPriority", "assigneeId", "categoryId", "sortBy", "sortDir", "page", "pageSize"]);
+const queueQueryFields = new Set(["q", "status", "statuses", "itPriority", "assigneeId", "categoryId", "updatedFrom", "updatedTo", "sortBy", "sortDir", "page", "pageSize"]);
 const queueSortFields = new Set(["ticketNumber", "createdAt", "updatedAt", "status", "itPriority"] as const);
+const queueStatuses = new Set<string>(statuses);
 
 function queueQuery(req: Request) {
   const query = req.query;
@@ -82,6 +83,7 @@ function queueQuery(req: Request) {
   const value = (name: string) => typeof query[name] === "string" ? query[name] as string : undefined;
   const q = value("q")?.trim();
   const status = value("status");
+  const statusesValue = value("statuses");
   const itPriority = value("itPriority");
   const assigneeValue = value("assigneeId");
   const categoryValue = value("categoryId");
@@ -91,17 +93,26 @@ function queueQuery(req: Request) {
   const pageSizeValue = value("pageSize") ?? "20";
   const page = Number(pageValue);
   const pageSize = Number(pageSizeValue);
-  const assigneeId = assigneeValue === undefined ? undefined : Number(assigneeValue);
+  const assigneeId = assigneeValue === undefined ? undefined : (assigneeValue === "me" || assigneeValue === "unassigned" ? assigneeValue : Number(assigneeValue));
   const categoryId = categoryValue === undefined ? undefined : Number(categoryValue);
+  const selectedStatuses = statusesValue === undefined ? undefined : statusesValue.split(",");
+  const updatedFromValue = value("updatedFrom");
+  const updatedToValue = value("updatedTo");
+  const updatedFrom = updatedFromValue ? new Date(updatedFromValue) : undefined;
+  const updatedTo = updatedToValue ? new Date(updatedToValue) : undefined;
   const invalid =
     (status !== undefined && !statuses.includes(status as StaffStatus)) ||
+    (status !== undefined && statusesValue !== undefined) ||
+    (selectedStatuses !== undefined && (selectedStatuses.length === 0 || selectedStatuses.some((entry) => !queueStatuses.has(entry)) || new Set(selectedStatuses).size !== selectedStatuses.length)) ||
     (itPriority !== undefined && !priorities.has(itPriority as never)) ||
-    (assigneeId !== undefined && (!Number.isInteger(assigneeId) || assigneeId < 1)) ||
+    (assigneeId !== undefined && !(assigneeId === "me" || assigneeId === "unassigned" || (typeof assigneeId === "number" && Number.isInteger(assigneeId) && assigneeId > 0))) ||
     (categoryId !== undefined && (!Number.isInteger(categoryId) || categoryId < 1)) ||
+    ((updatedFromValue === undefined) !== (updatedToValue === undefined)) ||
+    (updatedFrom !== undefined && updatedTo !== undefined && (Number.isNaN(updatedFrom.getTime()) || Number.isNaN(updatedTo.getTime()) || updatedFrom >= updatedTo)) ||
     !queueSortFields.has(sortBy as never) || !["asc", "desc"].includes(sortDir) ||
     !Number.isInteger(page) || page < 1 || !Number.isInteger(pageSize) || pageSize < 1 || pageSize > 100;
   if (invalid) return { error: "Invalid queue query parameters" } as const;
-  return { q, status: status as StaffStatus | undefined, itPriority: itPriority as "LOW" | "MEDIUM" | "HIGH" | "URGENT" | undefined, assigneeId, categoryId, sortBy, sortDir: sortDir as "asc" | "desc", page, pageSize } as const;
+  return { q, status: status as StaffStatus | undefined, statuses: selectedStatuses as StaffStatus[] | undefined, itPriority: itPriority as "LOW" | "MEDIUM" | "HIGH" | "URGENT" | undefined, assigneeId, categoryId, updatedFrom, updatedTo, sortBy, sortDir: sortDir as "asc" | "desc", page, pageSize } as const;
 }
 
 export function createStaffRouter() {
@@ -121,15 +132,56 @@ export function createStaffRouter() {
     }
   });
 
+  router.get("/actions", async (req, res) => {
+    const performedBy = typeof req.query.performedBy === "string" ? req.query.performedBy : undefined;
+    const fromValue = typeof req.query.from === "string" ? req.query.from : undefined;
+    const toValue = typeof req.query.to === "string" ? req.query.to : undefined;
+    const from = fromValue ? new Date(fromValue) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const to = toValue ? new Date(toValue) : new Date();
+    if (performedBy !== "me" || Number.isNaN(from.getTime()) || Number.isNaN(to.getTime()) || from >= to) {
+      return validationError(res, { query: "performedBy=me and a valid UTC from/to window are required" });
+    }
+    try {
+      const actions = await getPrisma().actionTaken.findMany({
+        where: { performedById: req.auth!.user.id, actionDateTime: { gte: from, lt: to } },
+        orderBy: [{ actionDateTime: "desc" }, { id: "desc" }],
+        take: 50,
+        select: {
+          id: true, ticketId: true, actionDateTime: true, description: true, result: true, state: true,
+          ticket: { select: { ticketNumber: true, summary: true } },
+          performedBy: { select: userSelect },
+        },
+      });
+      return res.status(200).json({ data: {
+        items: actions.map((action) => ({
+          id: action.id,
+          ticketId: action.ticketId,
+          ticketNumber: action.ticket.ticketNumber,
+          summary: action.ticket.summary,
+          actionDateTime: action.actionDateTime.toISOString(),
+          description: action.description,
+          result: action.result,
+          state: action.state,
+          performedBy: safeUser(action.performedBy),
+        })),
+        meta: { page: 1, pageSize: 50, total: actions.length, totalPages: actions.length ? 1 : 0, from: from.toISOString(), to: to.toISOString(), timezone: "UTC" },
+      } });
+    } catch {
+      return apiError(res, 500, "INTERNAL_ERROR", "Unable to load Actions Taken");
+    }
+  });
+
   router.get("/tickets", async (req, res) => {
     const parsed = queueQuery(req);
     if ("error" in parsed) return validationError(res, { query: (parsed as { error: string }).error });
     try {
       const where: Prisma.TicketWhereInput = {
         ...(parsed.status ? { currentStatus: parsed.status } : {}),
+        ...(parsed.statuses ? { currentStatus: { in: parsed.statuses } } : {}),
         ...(parsed.itPriority ? { itPriority: parsed.itPriority } : {}),
-        ...(parsed.assigneeId !== undefined ? { ownerId: parsed.assigneeId } : {}),
+        ...(parsed.assigneeId !== undefined ? { ownerId: parsed.assigneeId === "me" ? req.auth!.user.id : parsed.assigneeId === "unassigned" ? null : parsed.assigneeId } : {}),
         ...(parsed.categoryId !== undefined ? { categoryId: parsed.categoryId } : {}),
+        ...(parsed.updatedFrom && parsed.updatedTo ? { updatedAt: { gte: parsed.updatedFrom, lt: parsed.updatedTo } } : {}),
         ...(parsed.q ? { OR: [
           { ticketNumber: { contains: parsed.q, mode: "insensitive" } },
           { summary: { contains: parsed.q, mode: "insensitive" } },
