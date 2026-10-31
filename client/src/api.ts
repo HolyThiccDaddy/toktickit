@@ -79,13 +79,39 @@ export interface StaffTicketListQuery {
   q?: string;
   status?: TicketStatus;
   itPriority?: TicketPriority;
-  assigneeId?: number;
+  assigneeId?: number | "me" | "unassigned";
+  statuses?: TicketStatus[];
+  updatedFrom?: string;
+  updatedTo?: string;
   categoryId?: number;
   sortBy: StaffSortField;
   sortDir: "asc" | "desc";
   page: number;
   pageSize: number;
 }
+
+export interface DashboardMetric { key: string; label: string; value: number; href: string; }
+export interface DashboardItem {
+  ticketId: number;
+  ticketNumber: string;
+  summary: string;
+  status: TicketStatus;
+  itPriority: TicketPriority;
+  owner: UserSummary | null;
+  updatedAt: string;
+  href: string;
+}
+export interface DashboardResponse {
+  metrics: DashboardMetric[];
+  items: DashboardItem[];
+  meta: { timezone: "UTC"; from: string; to: string };
+  accounts?: Record<string, number>;
+}
+export interface StaffActionListItem {
+  id: number; ticketId: number; ticketNumber: string; summary: string;
+  actionDateTime: string; description: string; result: string; state: ActionState; performedBy: ActionPerson;
+}
+export interface StaffActionListResponse { items: StaffActionListItem[]; meta: { page: number; pageSize: number; total: number; totalPages: number; from: string; to: string; timezone: "UTC" }; }
 export interface TicketDetail {
   id: number;
   ticketNumber: string;
@@ -157,6 +183,9 @@ export interface TicketListQuery {
   categoryId?: number;
   requestedPriority?: TicketPriority;
   currentStatus?: TicketStatus;
+  currentStatuses?: TicketStatus[];
+  updatedFrom?: string;
+  updatedTo?: string;
   sortBy: TicketSortField;
   sortOrder: "asc" | "desc";
   page: number;
@@ -276,7 +305,7 @@ export async function createTicket(formData: FormData): Promise<CreatedTicket> {
 
 export async function getTickets(query: TicketListQuery): Promise<TicketListResponse> {
   const params = new URLSearchParams();
-  Object.entries(query).forEach(([key, item]) => { if (item !== undefined && item !== "") params.set(key, String(item)); });
+  Object.entries(query).forEach(([key, item]) => { if (item !== undefined && item !== "") params.set(key, Array.isArray(item) ? item.join(",") : String(item)); });
   const result = await requestJson<TicketListResponse>(`/api/tickets?${params.toString()}`, {}, "Unable to load your tickets");
   return { ...result, tickets: result.items ?? result.tickets ?? [], pagination: result.pagination ?? { total: result.meta?.total ?? 0, page: result.meta?.page ?? 1, limit: result.meta?.pageSize ?? 10, totalPages: result.meta?.totalPages ?? 0 } };
 }
@@ -287,8 +316,29 @@ export async function getTicket(ticketId: number): Promise<TicketDetail> {
 
 export async function getStaffTickets(query: StaffTicketListQuery): Promise<StaffTicketListResponse> {
   const params = new URLSearchParams();
-  Object.entries(query).forEach(([key, item]) => { if (item !== undefined && item !== "") params.set(key, String(item)); });
+  Object.entries(query).forEach(([key, item]) => { if (item !== undefined && item !== "") params.set(key, Array.isArray(item) ? item.join(",") : String(item)); });
   return requestJson<StaffTicketListResponse>(`/api/staff/tickets?${params.toString()}`, {}, "Unable to load the staff ticket queue");
+}
+
+export async function getRequesterDashboard(window: { from?: string; to?: string } = {}): Promise<DashboardResponse> {
+  const params = new URLSearchParams();
+  if (window.from) params.set("from", window.from);
+  if (window.to) params.set("to", window.to);
+  return requestJson<DashboardResponse>(`/api/dashboard/requester${params.toString() ? `?${params.toString()}` : ""}`, {}, "Unable to load requester dashboard");
+}
+
+export async function getStaffDashboard(window: { from?: string; to?: string } = {}, admin = false): Promise<DashboardResponse> {
+  const params = new URLSearchParams();
+  if (window.from) params.set("from", window.from);
+  if (window.to) params.set("to", window.to);
+  return requestJson<DashboardResponse>(`/api/dashboard/${admin ? "admin" : "staff"}${params.toString() ? `?${params.toString()}` : ""}`, {}, "Unable to load staff dashboard");
+}
+
+export async function getStaffActions(window: { from?: string; to?: string } = {}): Promise<StaffActionListResponse> {
+  const params = new URLSearchParams({ performedBy: "me" });
+  if (window.from) params.set("from", window.from);
+  if (window.to) params.set("to", window.to);
+  return requestJson<StaffActionListResponse>(`/api/staff/actions?${params.toString()}`, {}, "Unable to load Actions Taken");
 }
 
 export async function getStaffTicket(ticketId: number): Promise<TicketDetail> {
