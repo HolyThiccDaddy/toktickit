@@ -108,6 +108,19 @@ export function createStaffRouter() {
   const router = Router();
   router.use(requireAuth(), staffAccess);
 
+  router.get("/assignees", async (_req, res) => {
+    try {
+      const assignees = await getPrisma().user.findMany({
+        where: { active: true, role: { in: ["IT_STAFF", "ADMIN"] } },
+        orderBy: [{ displayName: "asc" }, { id: "asc" }],
+        select: userSelect,
+      });
+      return res.status(200).json({ data: assignees.map(safeUser) });
+    } catch {
+      return apiError(res, 500, "INTERNAL_ERROR", "Unable to load eligible Action assignees");
+    }
+  });
+
   router.get("/tickets", async (req, res) => {
     const parsed = queueQuery(req);
     if ("error" in parsed) return validationError(res, { query: (parsed as { error: string }).error });

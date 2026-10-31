@@ -10,7 +10,7 @@ const staff: api.UserSummary = { id: 2, email: "alex.staff@example.com", display
 const action: api.ActionTaken = {
   id: 10,
   ticketId: 1,
-  actionDateTime: "2026-10-29T10:30:00.000Z",
+  actionDateTime: "2026-10-29T10:30:42.987Z",
   description: "Replaced the failed network adapter",
   result: "The ticket is responding normally",
   state: "COMPLETED",
@@ -34,7 +34,10 @@ const action: api.ActionTaken = {
 const emptyActions: api.ActionsResponse = { items: [], meta: { page: 1, pageSize: 0, total: 0, totalPages: 0 } };
 
 describe("Lab 4 Actions Taken UI", () => {
-  beforeEach(() => vi.restoreAllMocks());
+  beforeEach(() => {
+    vi.restoreAllMocks();
+    vi.spyOn(api, "getActionAssignees").mockResolvedValue([staff]);
+  });
 
   it("renders a requester read-only history with performer and follow-up details", async () => {
     vi.spyOn(api, "getActions").mockResolvedValue({ items: [action], meta: { page: 1, pageSize: 1, total: 1, totalPages: 1 } });
@@ -89,9 +92,28 @@ describe("Lab 4 Actions Taken UI", () => {
     expect(screen.getByLabelText("Result")).toHaveValue("");
   });
 
+  it("clears a hidden follow-up note before saving when follow-up is unchecked", async () => {
+    vi.spyOn(api, "getActions").mockResolvedValue(emptyActions);
+    const createAction = vi.spyOn(api, "createAction").mockResolvedValue(action);
+
+    render(<ActionsTaken user={staff} ticketId={1} />);
+    expect(await screen.findByRole("heading", { name: "Actions Taken" })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Create Action" }));
+    fireEvent.change(screen.getByLabelText("Action date and time"), { target: { value: "2026-10-29T10:30" } });
+    fireEvent.change(screen.getByLabelText("Description"), { target: { value: action.description } });
+    fireEvent.change(screen.getByLabelText("Result"), { target: { value: action.result } });
+    fireEvent.click(screen.getByLabelText("Follow-up required"));
+    fireEvent.change(screen.getByLabelText("Follow-up note"), { target: { value: "Temporary follow-up" } });
+    fireEvent.click(screen.getByLabelText("Follow-up required"));
+    expect(screen.queryByLabelText("Follow-up note")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Save Action" }));
+    await waitFor(() => expect(createAction).toHaveBeenCalledTimes(1));
+    expect(createAction.mock.calls[0][1]).toEqual(expect.objectContaining({ followUpRequired: false, followUpNote: null }));
+  });
+
   it("supports edit history and follow-up resolution, while reporting stale edits", async () => {
     vi.spyOn(api, "getActions").mockResolvedValue({ items: [action], meta: { page: 1, pageSize: 1, total: 1, totalPages: 1 } });
-    const revisions = vi.spyOn(api, "getActionRevisions").mockResolvedValue([{ id: 1, actionId: action.id, version: 1, before: { result: "Old result" }, changedBy: { id: staff.id, displayName: staff.displayName, role: staff.role }, changedAt: action.updatedAt }]);
+    const revisions = vi.spyOn(api, "getActionRevisions").mockResolvedValue([{ id: 1, actionId: action.id, version: 1, before: { result: "Old result", description: "Old description", actionDateTime: "2026-10-29T09:12:33.456Z", state: "OPEN", assigneeId: staff.id, followUpRequired: true, followUpNote: "Old follow-up", attachmentNotes: "Old attachment" }, changedBy: { id: staff.id, displayName: staff.displayName, role: staff.role }, changedAt: action.updatedAt }]);
     const resolveFollowUp = vi.spyOn(api, "resolveActionFollowUp").mockResolvedValue({ ...action, followUpResolvedAt: "2026-10-29T11:05:00.000Z", followUpResolvedBy: { id: staff.id, displayName: staff.displayName, role: staff.role }, version: 3 });
     const updateAction = vi.spyOn(api, "updateAction").mockRejectedValue(new api.ApiError("Action was changed by another user; reload before saving", {}, "CONFLICT", 409));
 
@@ -99,6 +121,10 @@ describe("Lab 4 Actions Taken UI", () => {
     expect(await screen.findByRole("heading", { name: "Actions Taken" })).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "View edit history" }));
     expect(await screen.findByText("Old result")).toBeInTheDocument();
+    expect(screen.getByText(/Action date\/time:/)).toBeInTheDocument();
+    expect(screen.getByText(/State:/)).toBeInTheDocument();
+    expect(screen.getByText(/Assignee:/)).toBeInTheDocument();
+    expect(screen.getByText(/Follow-up required:/)).toBeInTheDocument();
     expect(revisions).toHaveBeenCalledWith(1, action.id);
     fireEvent.click(screen.getByRole("button", { name: "Resolve follow-up" }));
     await waitFor(() => expect(resolveFollowUp).toHaveBeenCalledWith(1, action.id, action.version));
@@ -108,7 +134,7 @@ describe("Lab 4 Actions Taken UI", () => {
     fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
     expect(await screen.findByRole("alert")).toHaveTextContent("Action was changed by another user");
     expect(screen.getByRole("button", { name: "Reload actions" })).toBeInTheDocument();
-    expect(updateAction).toHaveBeenCalledWith(1, action.id, expect.objectContaining({ version: action.version, result: "A newer result" }));
+    expect(updateAction).toHaveBeenCalledWith(1, action.id, expect.objectContaining({ version: action.version, result: "A newer result", actionDateTime: action.actionDateTime }));
   });
 
   it("offers retry after a failed history load and keeps accessible live feedback", async () => {

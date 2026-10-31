@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ApiError,
   createAction,
+  getActionAssignees,
   getActionRevisions,
   getActions,
   resolveActionFollowUp,
@@ -72,6 +73,37 @@ function errorMessage(reason: unknown, fallback: string) {
   return reason instanceof ApiError || reason instanceof Error ? reason.message : fallback;
 }
 
+const revisionLabels: Record<string, string> = {
+  actionDateTime: "Action date/time",
+  description: "Prior description",
+  result: "Prior result",
+  state: "State",
+  assigneeId: "Assignee",
+  followUpRequired: "Follow-up required",
+  followUpNote: "Follow-up note",
+  attachmentNotes: "Attachment notes",
+  completedAt: "Completed at",
+  completedById: "Completed by",
+  cancelledAt: "Cancelled at",
+  cancelledById: "Cancelled by",
+  followUpResolvedAt: "Follow-up resolved at",
+  followUpResolvedById: "Follow-up resolved by",
+  version: "Version",
+};
+
+function revisionLabel(field: string) {
+  return revisionLabels[field] ?? field.replace(/([A-Z])/g, " $1").replace(/^./, (value) => value.toUpperCase());
+}
+
+function revisionValue(field: string, value: unknown) {
+  if (value === null || value === undefined || value === "") return "—";
+  if (field === "followUpRequired") return value === true ? "Yes" : "No";
+  if (field.endsWith("At") || field === "actionDateTime") return formatDate(String(value));
+  if (field.endsWith("Id") && field !== "version") return `User #${String(value)}`;
+  if (typeof value === "object") return JSON.stringify(value);
+  return String(value);
+}
+
 function actionPayload(form: ActionForm): { payload: ActionCreateInput | null; errors: Record<string, string> } {
   const errors: Record<string, string> = {};
   const actionDateTime = canonicalDateTime(form.actionDateTime);
@@ -118,11 +150,15 @@ function initialForm(action?: ActionTaken): ActionForm {
 
 export default function ActionsTaken({ user, ticketId }: { user: UserSummary; ticketId: number }) {
   const readOnly = user.role === "REQUESTER";
+  const canWrite = !readOnly && (user.role === "IT_STAFF" || user.role === "ADMIN");
   const [actions, setActions] = useState<ActionTaken[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [formError, setFormError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [assignees, setAssignees] = useState<UserSummary[]>([]);
+  const [assigneesLoading, setAssigneesLoading] = useState(false);
+  const [assigneesError, setAssigneesError] = useState("");
   const [success, setSuccess] = useState("");
   const [busy, setBusy] = useState("");
   const [editing, setEditing] = useState<ActionTaken | null>(null);
@@ -147,14 +183,35 @@ export default function ActionsTaken({ user, ticketId }: { user: UserSummary; ti
 
   useEffect(() => { void loadActions(); }, [loadActions]);
 
-  const canWrite = !readOnly && (user.role === "IT_STAFF" || user.role === "ADMIN");
+  const loadAssignees = useCallback(async () => {
+    if (!canWrite) return;
+    setAssigneesLoading(true); setAssigneesError("");
+    try {
+      setAssignees(await getActionAssignees());
+    } catch (reason) {
+      setAssigneesError(errorMessage(reason, "Unable to load eligible Action assignees"));
+    } finally {
+      setAssigneesLoading(false);
+    }
+  }, [canWrite]);
+
+  useEffect(() => { void loadAssignees(); }, [loadAssignees]);
+
   const editingLabel = editing ? "Edit Action" : "Create Action";
-  const activeAction = editing;
   const formBusy = busy === "create" || busy === "edit";
+  const assigneeOptions = editing?.assignee && !assignees.some((candidate) => candidate.id === editing.assignee?.id)
+    ? [...assignees, editing.assignee]
+    : assignees;
 
   function updateForm<K extends keyof ActionForm>(field: K, value: ActionForm[K]) {
     setForm((current) => ({ ...current, [field]: value }));
     setFieldErrors((current) => { const next = { ...current }; delete next[field]; return next; });
+    setFormError("");
+  }
+
+  function updateFollowUpRequired(value: boolean) {
+    setForm((current) => ({ ...current, followUpRequired: value, ...(value ? {} : { followUpNote: "" }) }));
+    setFieldErrors((current) => { const next = { ...current }; delete next.followUpRequired; delete next.followUpNote; return next; });
     setFormError("");
   }
 
@@ -181,7 +238,10 @@ export default function ActionsTaken({ user, ticketId }: { user: UserSummary; ti
     setBusy(editing ? "edit" : "create"); setFormError(""); setFieldErrors({}); setSuccess("");
     try {
       if (editing) {
-        const input: ActionUpdateInput = { ...checked.payload, version: editing.version };
+        const actionDateTime = form.actionDateTime === localDateTime(editing.actionDateTime)
+          ? editing.actionDateTime
+          : checked.payload.actionDateTime;
+        const input: ActionUpdateInput = { ...checked.payload, actionDateTime, version: editing.version };
         await updateAction(ticketId, editing.id, input);
         setSuccess("Action updated successfully.");
       } else {
@@ -255,10 +315,10 @@ export default function ActionsTaken({ user, ticketId }: { user: UserSummary; ti
       <div className="d-flex flex-wrap justify-content-between align-items-center gap-2"><h3 id="actions-taken-form-title" className="h5">{editing ? "Edit Action" : "Create Action"}</h3>{editing && <button className="btn btn-outline-zen" type="button" onClick={cancelEdit} disabled={formBusy}>Cancel edit</button>}</div>
       <div className="actions-form-grid mt-3">
         <div><label className="form-label" htmlFor="action-date-time">Action date and time</label><input id="action-date-time" className={`form-control ${fieldErrors.actionDateTime ? "is-invalid" : ""}`} type="datetime-local" value={form.actionDateTime} onChange={(event) => updateForm("actionDateTime", event.target.value)} aria-invalid={Boolean(fieldErrors.actionDateTime)} aria-describedby={fieldErrors.actionDateTime ? "action-date-time-error" : undefined} />{fieldErrors.actionDateTime && <div id="action-date-time-error" className="invalid-feedback d-block">{fieldErrors.actionDateTime}</div>}</div>
-        <div><label className="form-label" htmlFor="action-assignee-id">Assignee ID <span className="text-muted">(optional)</span></label><input id="action-assignee-id" className={`form-control ${fieldErrors.assigneeId ? "is-invalid" : ""}`} inputMode="numeric" value={form.assigneeId} onChange={(event) => updateForm("assigneeId", event.target.value)} placeholder="Active staff/admin ID" aria-invalid={Boolean(fieldErrors.assigneeId)} aria-describedby={fieldErrors.assigneeId ? "action-assignee-id-error" : undefined} />{fieldErrors.assigneeId && <div id="action-assignee-id-error" className="invalid-feedback d-block">{fieldErrors.assigneeId}</div>}</div>
+        <div><label className="form-label" htmlFor="action-assignee-id">Assignee <span className="text-muted">(optional)</span></label><select id="action-assignee-id" className={`form-select ${fieldErrors.assigneeId ? "is-invalid" : ""}`} value={form.assigneeId} onChange={(event) => updateForm("assigneeId", event.target.value)} aria-invalid={Boolean(fieldErrors.assigneeId)} aria-describedby={fieldErrors.assigneeId ? "action-assignee-id-error" : undefined} disabled={assigneesLoading}><option value="">Unassigned</option>{assigneeOptions.map((candidate) => <option key={candidate.id} value={candidate.id}>{candidate.displayName} · {candidate.role}</option>)}</select>{assigneesLoading && <div className="form-text" role="status">Loading eligible assignees…</div>}{fieldErrors.assigneeId && <div id="action-assignee-id-error" className="invalid-feedback d-block">{fieldErrors.assigneeId}</div>}{assigneesError && <div className="alert alert-danger mt-2" role="alert">{assigneesError}<button className="btn btn-sm btn-outline-danger ms-2" type="button" onClick={() => void loadAssignees()}>Retry assignees</button></div>}</div>
         <div className="actions-form-wide"><label className="form-label" htmlFor="action-description">Description</label><textarea id="action-description" className={`form-control ${fieldErrors.description ? "is-invalid" : ""}`} rows={3} maxLength={2000} value={form.description} onChange={(event) => updateForm("description", event.target.value)} aria-describedby={fieldErrors.description ? "action-description-error action-description-help" : "action-description-help"} aria-invalid={Boolean(fieldErrors.description)} /><div id="action-description-help" className="form-text">10–2,000 characters.</div>{fieldErrors.description && <div id="action-description-error" className="invalid-feedback d-block">{fieldErrors.description}</div>}</div>
         <div className="actions-form-wide"><label className="form-label" htmlFor="action-result">Result</label><textarea id="action-result" className={`form-control ${fieldErrors.result ? "is-invalid" : ""}`} rows={3} maxLength={2000} value={form.result} onChange={(event) => updateForm("result", event.target.value)} aria-invalid={Boolean(fieldErrors.result)} aria-describedby={fieldErrors.result ? "action-result-error" : undefined} /><div className="form-text">1–2,000 characters.</div>{fieldErrors.result && <div id="action-result-error" className="invalid-feedback d-block">{fieldErrors.result}</div>}</div>
-        <div className="actions-form-wide form-check"><input id="action-follow-up" className={`form-check-input ${fieldErrors.followUpRequired ? "is-invalid" : ""}`} type="checkbox" checked={form.followUpRequired} onChange={(event) => updateForm("followUpRequired", event.target.checked)} aria-invalid={Boolean(fieldErrors.followUpRequired)} /><label className="form-check-label" htmlFor="action-follow-up">Follow-up required</label>{fieldErrors.followUpRequired && <div className="invalid-feedback d-block">{fieldErrors.followUpRequired}</div>}</div>
+        <div className="actions-form-wide form-check"><input id="action-follow-up" className={`form-check-input ${fieldErrors.followUpRequired ? "is-invalid" : ""}`} type="checkbox" checked={form.followUpRequired} onChange={(event) => updateFollowUpRequired(event.target.checked)} aria-invalid={Boolean(fieldErrors.followUpRequired)} /><label className="form-check-label" htmlFor="action-follow-up">Follow-up required</label>{fieldErrors.followUpRequired && <div className="invalid-feedback d-block">{fieldErrors.followUpRequired}</div>}</div>
         {form.followUpRequired && <div className="actions-form-wide"><label className="form-label" htmlFor="action-follow-up-note">Follow-up note</label><textarea id="action-follow-up-note" className={`form-control ${fieldErrors.followUpNote ? "is-invalid" : ""}`} rows={2} maxLength={2000} value={form.followUpNote} onChange={(event) => updateForm("followUpNote", event.target.value)} aria-invalid={Boolean(fieldErrors.followUpNote)} aria-describedby={fieldErrors.followUpNote ? "action-follow-up-note-error" : undefined} />{fieldErrors.followUpNote && <div id="action-follow-up-note-error" className="invalid-feedback d-block">{fieldErrors.followUpNote}</div>}</div>}
         <div className="actions-form-wide"><label className="form-label" htmlFor="action-attachment-notes">Attachment notes <span className="text-muted">(optional)</span></label><textarea id="action-attachment-notes" className={`form-control ${fieldErrors.attachmentNotes ? "is-invalid" : ""}`} rows={2} maxLength={2000} value={form.attachmentNotes} onChange={(event) => updateForm("attachmentNotes", event.target.value)} aria-invalid={Boolean(fieldErrors.attachmentNotes)} aria-describedby={fieldErrors.attachmentNotes ? "action-attachment-notes-error" : undefined} />{fieldErrors.attachmentNotes && <div id="action-attachment-notes-error" className="invalid-feedback d-block">{fieldErrors.attachmentNotes}</div>}</div>
       </div>
@@ -282,7 +342,7 @@ export default function ActionsTaken({ user, ticketId }: { user: UserSummary; ti
             {canWrite && outstandingFollowUp && <button className="btn btn-sm btn-zen" type="button" onClick={() => void resolveFollowUp(item)} disabled={busy === `follow-up-${item.id}`}>{busy === `follow-up-${item.id}` ? "Resolving…" : "Resolve follow-up"}</button>}
             {canWrite && available.length > 0 && <><label className="visually-hidden" htmlFor={`action-state-${item.id}`}>Next state for Action {item.id}</label><select id={`action-state-${item.id}`} className="form-select form-select-sm action-state-select" value={nextStates[item.id] ?? ""} onChange={(event) => setNextStates((current) => ({ ...current, [item.id]: event.target.value as ActionState | "" }))}><option value="">Move Action…</option>{available.map((state) => <option key={state} value={state}>{state}</option>)}</select><button className="btn btn-sm btn-zen" type="button" onClick={() => void saveState(item)} disabled={!nextStates[item.id] || busy === `state-${item.id}`}>{busy === `state-${item.id}` ? "Saving…" : "Update Action state"}</button></>}
           </div>
-          {historyFor === item.id && <div className="action-history mt-3" aria-label={`Edit history for Action ${item.id}`}><h4 className="h6">Edit history</h4>{history.length === 0 ? <p className="text-muted mb-0">No edits recorded.</p> : <ol className="list-group list-group-numbered">{history.map((revision) => <li className="list-group-item" key={revision.id}><div className="small text-muted">Version {revision.version} · {revision.changedBy.displayName} · {formatDate(revision.changedAt)}</div>{typeof revision.before.result === "string" && <div><strong>Prior result:</strong> {revision.before.result}</div>}{typeof revision.before.description === "string" && <div><strong>Prior description:</strong> {revision.before.description}</div>}</li>)}</ol>}</div>}
+          {historyFor === item.id && <div className="action-history mt-3" aria-label={`Edit history for Action ${item.id}`}><h4 className="h6">Edit history</h4>{history.length === 0 ? <p className="text-muted mb-0">No edits recorded.</p> : <ol className="list-group list-group-numbered">{history.map((revision) => <li className="list-group-item" key={revision.id}><div className="small text-muted">Version {revision.version} · {revision.changedBy.displayName} · {formatDate(revision.changedAt)}</div>{Object.entries(revision.before).filter(([field]) => field !== "id" && field !== "actionId").map(([field, value]) => <div key={field}><strong>{revisionLabel(field)}:</strong> {revisionValue(field, value)}</div>)}</li>)}</ol>}</div>}
         </div>
       </article>;
     })}</div>}

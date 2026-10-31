@@ -295,6 +295,10 @@ export async function getStaffTicket(ticketId: number): Promise<TicketDetail> {
   return requestJson<TicketDetail>(`/api/staff/tickets/${ticketId}`, {}, "Unable to load ticket details");
 }
 
+export async function getActionAssignees(): Promise<UserSummary[]> {
+  return requestJson<UserSummary[]>("/api/staff/assignees", {}, "Unable to load eligible Action assignees");
+}
+
 export async function getActions(ticketId: number): Promise<ActionsResponse> {
   return requestJson<ActionsResponse>(`/api/tickets/${ticketId}/actions`, {}, "Unable to load Actions Taken");
 }

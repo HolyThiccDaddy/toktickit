@@ -27,6 +27,9 @@ test.describe("Lab 4 Actions Taken UI", () => {
     await expect(page.getByRole("heading", { name: "Actions Taken", exact: true })).toBeVisible();
     await expect(page.getByRole("button", { name: "Create Action" })).toBeVisible();
     await page.getByRole("button", { name: "Create Action" }).click();
+    const actionAssignee = page.getByLabel("Assignee (optional)", { exact: true });
+    await expect(actionAssignee).toBeVisible();
+    await expect(actionAssignee.locator("option").filter({ hasText: "Alex Staff" })).toHaveCount(1);
     await page.getByLabel("Action date and time").fill("2026-10-31T09:30");
     await page.getByLabel("Description").fill("Checked the VPN gateway and replaced the failing route.");
     await page.getByLabel("Result").fill("The requester can connect successfully after the route change.");

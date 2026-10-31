@@ -28,6 +28,18 @@ describe("Issue #52 Actions Taken read API", () => {
     await prisma.$disconnect();
   });
 
+  it("returns only active IT Staff and Administrator users for the Action assignee selector", async () => {
+    const { agent } = await login(staff);
+
+    const response = await agent.get("/api/staff/assignees");
+
+    expect(response.status).toBe(200);
+    expect(response.body.data.length).toBeGreaterThan(0);
+    expect(response.body.data.every((candidate: { active: boolean; role: string }) => candidate.active && ["IT_STAFF", "ADMIN"].includes(candidate.role))).toBe(true);
+    expect(response.body.data.some((candidate: { email: string }) => candidate.email === requester.email)).toBe(false);
+    expect(response.body.data.some((candidate: { email: string }) => candidate.email === admin.email)).toBe(true);
+  });
+
   it("returns an empty action collection for an owned legacy ticket", async () => {
     const owner = await prisma.user.findUniqueOrThrow({ where: { email: requester.email }, select: { id: true } });
     const ticket = await createTicket("520001", { requesterId: owner.id });
