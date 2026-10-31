@@ -1,0 +1,2 @@
+Migration: npx prisma migrate deploy; guarded DATABASE_URL ended in _test; no pending migrations.
+Seed: compiled dist/prisma/seed.js ran twice under the same _test guard; both runs seeded 4 categories, 7 related systems, 5 development requesters (4 active, 1 inactive), and initialized the ticket counter.

@@ -1,0 +1,2 @@
+Command: npm test
+Result: Test Files 20 passed (20); Tests 66 passed (66).

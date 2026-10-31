@@ -1,0 +1,2 @@
+Command: npm run test:e2e
+Result: Running 30 tests using 1 worker; 28 passed, 2 skipped. The two skips are the tablet/mobile workflow capture variants intentionally guarded by the project configuration.
