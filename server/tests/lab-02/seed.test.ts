@@ -125,15 +125,16 @@ describe("Database Seed Idempotency & Verification (Lab 2)", () => {
 
     expect(counter).not.toBeNull();
     expect(counter?.year).toBe(currentYear);
-    expect(counter?.lastSequence).toBe(0);
+    expect(counter?.lastSequence).toBe(980008);
   });
 
   it("should preserve lastSequence on an existing TicketCounter when re-seeded", async () => {
     const currentYear = new Date().getFullYear();
     // Simulate an existing counter where tickets were already issued (e.g. lastSequence = 5)
+    const fixtureSequenceFloor = 980008;
     await prisma.ticketCounter.update({
       where: { year: currentYear },
-      data: { lastSequence: 5 },
+      data: { lastSequence: fixtureSequenceFloor + 5 },
     });
 
     // Run seed again
@@ -143,12 +144,12 @@ describe("Database Seed Idempotency & Verification (Lab 2)", () => {
     const counter = await prisma.ticketCounter.findUnique({
       where: { year: currentYear },
     });
-    expect(counter?.lastSequence).toBe(5);
+    expect(counter?.lastSequence).toBe(fixtureSequenceFloor + 5);
 
-    // Reset back to 0 for subsequent test suites
+    // Reset to the reserved fixture floor for subsequent test suites.
     await prisma.ticketCounter.update({
       where: { year: currentYear },
-      data: { lastSequence: 0 },
+      data: { lastSequence: fixtureSequenceFloor },
     });
   });
 
