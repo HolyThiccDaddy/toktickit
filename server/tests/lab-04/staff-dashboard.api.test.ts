@@ -39,4 +39,38 @@ describe("Lab 4 staff and administrator dashboards", () => {
     expect(forbidden.status).toBe(403);
     expect(requesterUser.id).toBeGreaterThan(0);
   });
+
+  it("keeps the recent-ticket count and drill-down status predicate identical", async () => {
+    await createTicket("560005", { currentStatus: "OPEN", updatedAt: new Date("2026-10-10T10:00:00.000Z") });
+    await createTicket("560006", { currentStatus: "CANCELLED", updatedAt: new Date("2026-10-10T11:00:00.000Z") });
+    const { agent } = await login(staff);
+    const from = "2026-10-01T00:00:00.000Z";
+    const to = "2026-10-31T00:00:00.000Z";
+    const dashboard = await agent.get(`/api/dashboard/staff?from=${from}&to=${to}`);
+    expect(dashboard.status).toBe(200);
+    const metric = dashboard.body.data.metrics.find((entry: { key: string }) => entry.key === "recentlyUpdated");
+    expect(metric.value).toBe(1);
+    expect(metric.href).toContain("statuses=NEW,OPEN,IN_PROGRESS,WAITING_FOR_REQUESTER,RESOLVED,REOPENED");
+    const queue = await agent.get(`/api/staff/tickets?${metric.href.split("?")[1]}`);
+    expect(queue.status).toBe(200);
+    expect(queue.body.data.meta.total).toBe(1);
+  });
+
+  it("preserves a supplied non-default window for staff and admin dashboards", async () => {
+    await createTicket("560007", { currentStatus: "OPEN", updatedAt: new Date("2026-10-10T10:00:00.000Z") });
+    const from = "2026-10-01T00:00:00.000Z";
+    const to = "2026-10-31T00:00:00.000Z";
+    const { agent } = await login(staff);
+    const staffDashboard = await agent.get(`/api/dashboard/staff?from=${from}&to=${to}`);
+    expect(staffDashboard.status).toBe(200);
+    expect(staffDashboard.body.data.meta).toMatchObject({ from, to, timezone: "UTC" });
+    expect(staffDashboard.body.data.metrics.find((entry: { key: string }) => entry.key === "recentlyUpdated").href).toContain(`updatedFrom=${encodeURIComponent(from)}`);
+
+    const { agent: adminAgent } = await login({ email: "admin@example.com", password: "AdminOne!2026" });
+    const adminDashboard = await adminAgent.get(`/api/dashboard/admin?from=${from}&to=${to}`);
+    expect(adminDashboard.status).toBe(200);
+    expect(adminDashboard.body.data.meta).toMatchObject({ from, to, timezone: "UTC" });
+    expect(adminDashboard.body.data.metrics.find((entry: { key: string }) => entry.key === "recentlyUpdated").href).toContain(`updatedFrom=${encodeURIComponent(from)}`);
+  });
 });
+
