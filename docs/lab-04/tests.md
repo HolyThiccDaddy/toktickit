@@ -1,6 +1,6 @@
 # Lab 4 Test Driven Development Plan
 
-Status: Planned before implementation for Issue #51. A row is marked `Planned` until the named test is implemented and executed from the reviewed commit; no passing result is claimed in this contract.
+Status: Incrementally implemented by the Lab 4 issue PRs. A row remains `Planned` until its named test is implemented and executed from the reviewed commit; this Issue 5 PR records only the dashboard rows and tests it adds.
 
 ## 1. Test policy
 
@@ -17,12 +17,12 @@ Write a failing focused test before each implementation slice. Keep the Lab 1–
 | API-04 | API | AC-06 | Idempotent seed and zero/one/many Action fixtures | `server/tests/lab-04/seed.test.ts` | Planned |
 | API-05 | API/workflow | AC-07, AC-09 | Complete status transition matrix and terminal protection | `server/tests/lab-04/ticket-workflow.api.test.ts` | Planned |
 | API-06 | API/workflow | AC-08, AC-21 | Resolution gate blocks on outstanding follow-up, then permits Ticket resolution after authorized follow-up resolution records audit/revision/version | `server/tests/lab-04/ticket-workflow.api.test.ts` | Planned |
-| API-07 | API/dashboard | AC-10 | Requester metrics, UTC boundaries, zero/one/many, and equality between each dashboard count and the matching `GET /tickets` filter, including `currentStatus`, `currentStatuses`, and date windows | `server/tests/lab-04/requester-dashboard.api.test.ts` | Planned |
-| API-08 | API/dashboard | AC-11 | Staff/Admin metrics, exact queue drill-down equality using `assigneeId=me/unassigned`, multi-status and UTC date filters, current-user Actions filtering, role scope, and empty results | `server/tests/lab-04/staff-dashboard.api.test.ts` | Planned |
+| API-07 | API/dashboard | AC-10 | Requester metrics, UTC boundaries, zero/one/many, and equality between each dashboard count and the matching `GET /tickets` filter, including `currentStatus`, `currentStatuses`, and date windows | `server/tests/lab-04/requester-dashboard.api.test.ts` | Implemented in Issue 5; focused tests pass |
+| API-08 | API/dashboard | AC-11 | Staff/Admin metrics, exact queue drill-down equality using `assigneeId=me/unassigned`, multi-status and UTC date filters, current-user Actions filtering, role scope, and empty results | `server/tests/lab-04/staff-dashboard.api.test.ts` | Implemented in Issue 5; focused tests pass |
 | API-09 | migration/regression | AC-15 | Existing records and Lab 1–3 behavior survive migration | `server/tests/lab-04/migration-regression.api.test.ts` | Planned |
 | UI-01 | component | AC-12, AC-14, AC-18–AC-21 | Actions list/form exact validation, assignment/state controls, follow-up resolution, immutable edit-history timeline, focus, and live feedback | `client/tests/lab-04/ActionsTaken.test.tsx` | Planned |
-| UI-02 | component | AC-10, AC-12 | Requester dashboard metrics, ownership states, and exact Waiting/Open/Recently Updated/Recently Resolved list filters and links | `client/tests/lab-04/RequesterDashboard.test.tsx` | Planned |
-| UI-03 | component | AC-11, AC-12 | Staff/Admin dashboard metric-to-queue predicate equality, supported owner/unassigned/status/date filters, My Actions view, retry, empty, and forbidden states | `client/tests/lab-04/StaffDashboard.test.tsx` | Planned |
+| UI-02 | component | AC-10, AC-12 | Requester dashboard metrics, ownership states, and exact Waiting/Open/Recently Updated/Recently Resolved list filters and links | `client/tests/lab-04/RequesterDashboard.test.tsx` | Implemented in Issue 5; focused tests pass |
+| UI-03 | component | AC-11, AC-12 | Staff/Admin dashboard metric-to-queue predicate equality, supported owner/unassigned/status/date filters, My Actions view, retry, empty, and forbidden states | `client/tests/lab-04/StaffDashboard.test.tsx` | Implemented in Issue 5; focused tests pass |
 | UI-04 | component/workflow | AC-08, AC-09, AC-12 | Status controls and resolution gate feedback | `client/tests/lab-04/TicketWorkflow.test.tsx` | Planned |
 | UI-05 | visual/responsive | AC-13, AC-14 | Desktop/tablet/mobile layout and keyboard accessibility | `client/tests/lab-04/ResponsiveLayout.test.tsx` | Planned |
 | UI-STYLE-01 | UI style/unit | AC-12, AC-13, AC-14 | Shared Zen Green tokens, accessible names, focus ring, and no-overflow style contract | `client/tests/lab-04/ui-style.test.tsx` | Planned |
