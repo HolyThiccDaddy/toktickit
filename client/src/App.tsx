@@ -8,12 +8,15 @@ import TicketDetail from "./TicketDetail.js";
 import StaffQueue from "./StaffQueue.js";
 import StaffTicketDetail from "./StaffTicketDetail.js";
 import UserManagement from "./UserManagement.js";
+import RequesterDashboard from "./RequesterDashboard.js";
+import StaffDashboard from "./StaffDashboard.js";
 
 type SystemState = "idle" | "loading" | "success" | "error";
 
 function RequesterWorkspace({ user, onSignOut }: { user: UserSummary; onSignOut: () => void }) {
-  const [view, setView] = useState<"system" | "tickets" | "create" | "detail">("system");
+  const [view, setView] = useState<"system" | "dashboard" | "tickets" | "create" | "detail">("system");
   const [selectedTicketId, setSelectedTicketId] = useState<number | null>(null);
+  const [ticketHref, setTicketHref] = useState<string | undefined>();
   const [state, setState] = useState<SystemState>("idle");
   const [categories, setCategories] = useState<Category[]>([]);
   const [errorMessage, setErrorMessage] = useState("");
@@ -33,14 +36,16 @@ function RequesterWorkspace({ user, onSignOut }: { user: UserSummary; onSignOut:
 
   const navigation = <nav className="d-flex gap-2" aria-label="Primary navigation">
     <button className={`zen-nav-button px-2 py-1 ${view === "system" ? "active" : ""}`} type="button" onClick={() => setView("system")}>Home</button>
-    <button className={`zen-nav-button px-2 py-1 ${view === "tickets" || view === "detail" ? "active" : ""}`} type="button" onClick={() => setView("tickets")}>My Tickets</button>
+    <button className={`zen-nav-button px-2 py-1 ${view === "dashboard" ? "active" : ""}`} type="button" onClick={() => setView("dashboard")}>Dashboard</button>
+    <button className={`zen-nav-button px-2 py-1 ${view === "tickets" || view === "detail" ? "active" : ""}`} type="button" onClick={() => { setTicketHref(undefined); setView("tickets"); }}>My Tickets</button>
     <button className={`zen-nav-button px-2 py-1 ${view === "create" ? "active" : ""}`} type="button" onClick={() => setView("create")}>+ Create Ticket</button>
   </nav>;
   const header = <header className="zen-header d-flex flex-wrap align-items-center justify-content-between gap-2 px-3 py-2 text-white w-100">
     <strong>TokTickIT</strong>{navigation}<div className="d-flex align-items-center gap-2"><span className="d-flex flex-column align-items-end"><span>{user.displayName}</span><span className="small opacity-75">{user.role}</span></span><button className="btn btn-light btn-sm" type="button" onClick={onSignOut}>Sign out</button></div>
   </header>;
   if (view === "create") return <><div>{header}</div><main className="container py-4" style={{ maxWidth: 900 }}><CreateTicket user={user} onCancel={() => setView("tickets")} /></main></>;
-  if (view === "tickets") return <><div>{header}</div><main className="container py-4"><MyTickets user={user} onCreate={() => setView("create")} onView={(ticketId) => { setSelectedTicketId(ticketId); setView("detail"); }} /></main></>;
+  if (view === "dashboard") return <><div>{header}</div><main className="container py-4"><RequesterDashboard user={user} onOpenTickets={(href) => { setTicketHref(href); setView("tickets"); }} onViewTicket={(ticketId) => { setSelectedTicketId(ticketId); setView("detail"); }} /></main></>;
+  if (view === "tickets") return <><div>{header}</div><main className="container py-4"><MyTickets user={user} initialHref={ticketHref} onCreate={() => setView("create")} onView={(ticketId) => { setSelectedTicketId(ticketId); setView("detail"); }} /></main></>;
   if (view === "detail" && selectedTicketId !== null) return <><div>{header}</div><main className="container py-4"><TicketDetail user={user} ticketId={selectedTicketId} onBack={() => setView("tickets")} /></main></>;
   return <><div>{header}</div><main className="container py-5" style={{ maxWidth: 640 }}>
     <h1 className="h3 mb-4">TokTickIT <span className="text-success">IT Service Desk</span></h1>
@@ -51,17 +56,19 @@ function RequesterWorkspace({ user, onSignOut }: { user: UserSummary; onSignOut:
 }
 
 function StaffWorkspace({ user, onSignOut }: { user: UserSummary; onSignOut: () => void }) {
-  const [view, setView] = useState<"queue" | "detail">("queue");
+  const [view, setView] = useState<"dashboard" | "queue" | "detail">("queue");
   const [selectedTicketId, setSelectedTicketId] = useState<number | null>(null);
-  const header = <header className="zen-header d-flex flex-wrap align-items-center justify-content-between gap-2 px-3 py-2 text-white w-100"><strong>TokTickIT</strong><nav className="d-flex gap-2" aria-label="Primary navigation"><button className={`zen-nav-button px-2 py-1 ${view === "queue" ? "active" : ""}`} type="button" onClick={() => setView("queue")}>Ticket Queue</button>{view === "detail" && selectedTicketId !== null && <button className="zen-nav-button px-2 py-1 active" type="button" aria-current="page" onClick={() => setView("detail")}>Ticket Detail</button>}</nav><div className="d-flex align-items-center gap-2"><span className="d-flex flex-column align-items-end"><span>{user.displayName}</span><span className="small opacity-75">{user.role}</span></span><button className="btn btn-light btn-sm" type="button" onClick={onSignOut}>Sign out</button></div></header>;
-  return <><div>{header}</div><main className="container py-4"><>{view === "queue" ? <StaffQueue user={user} onView={(ticketId) => { setSelectedTicketId(ticketId); setView("detail"); }} /> : selectedTicketId !== null ? <StaffTicketDetail user={user} ticketId={selectedTicketId} onBack={() => setView("queue")} /> : <StaffQueue user={user} onView={() => setView("queue")} />}</></main></>;
+  const [queueHref, setQueueHref] = useState<string | undefined>();
+  const header = <header className="zen-header d-flex flex-wrap align-items-center justify-content-between gap-2 px-3 py-2 text-white w-100"><strong>TokTickIT</strong><nav className="d-flex gap-2" aria-label="Primary navigation"><button className={`zen-nav-button px-2 py-1 ${view === "dashboard" ? "active" : ""}`} type="button" onClick={() => setView("dashboard")}>Dashboard</button><button className={`zen-nav-button px-2 py-1 ${view === "queue" ? "active" : ""}`} type="button" onClick={() => setView("queue")}>Ticket Queue</button>{view === "detail" && selectedTicketId !== null && <button className="zen-nav-button px-2 py-1 active" type="button" aria-current="page" onClick={() => setView("detail")}>Ticket Detail</button>}</nav><div className="d-flex align-items-center gap-2"><span className="d-flex flex-column align-items-end"><span>{user.displayName}</span><span className="small opacity-75">{user.role}</span></span><button className="btn btn-light btn-sm" type="button" onClick={onSignOut}>Sign out</button></div></header>;
+  return <><div>{header}</div><main className="container py-4">{view === "dashboard" ? <StaffDashboard user={user} onOpenQueue={(href) => { setQueueHref(href); setView("queue"); }} onViewTicket={(ticketId) => { setSelectedTicketId(ticketId); setView("detail"); }} /> : view === "queue" ? <StaffQueue user={user} initialHref={queueHref} onView={(ticketId) => { setSelectedTicketId(ticketId); setView("detail"); }} /> : selectedTicketId !== null ? <StaffTicketDetail user={user} ticketId={selectedTicketId} onBack={() => setView("queue")} /> : <StaffQueue user={user} initialHref={queueHref} onView={() => setView("queue")} />}</main></>;
 }
 
 function AdminWorkspace({ user, onSignOut }: { user: UserSummary; onSignOut: () => void }) {
-  const [view, setView] = useState<"users" | "queue" | "detail">("users");
+  const [view, setView] = useState<"dashboard" | "users" | "queue" | "detail">("users");
   const [selectedTicketId, setSelectedTicketId] = useState<number | null>(null);
-  const header = <header className="zen-header d-flex flex-wrap align-items-center justify-content-between gap-2 px-3 py-2 text-white w-100"><strong>TokTickIT</strong><nav className="d-flex gap-2" aria-label="Primary navigation"><button className={`zen-nav-button px-2 py-1 ${view === "users" ? "active" : ""}`} type="button" onClick={() => setView("users")}>User Management</button><button className={`zen-nav-button px-2 py-1 ${view === "queue" ? "active" : ""}`} type="button" onClick={() => setView("queue")}>Ticket Queue</button>{view === "detail" && selectedTicketId !== null && <button className="zen-nav-button px-2 py-1 active" type="button" onClick={() => setView("detail")}>Ticket Detail</button>}</nav><div className="d-flex align-items-center gap-2"><span className="d-flex flex-column align-items-end"><span>{user.displayName}</span><span className="small opacity-75">{user.role}</span></span><button className="btn btn-light btn-sm" type="button" onClick={onSignOut}>Sign out</button></div></header>;
-  return <><div>{header}</div><main className="container py-4">{view === "users" ? <UserManagement user={user} /> : view === "queue" ? <StaffQueue user={user} onView={(ticketId) => { setSelectedTicketId(ticketId); setView("detail"); }} /> : selectedTicketId !== null ? <StaffTicketDetail user={user} ticketId={selectedTicketId} onBack={() => setView("queue")} /> : <StaffQueue user={user} onView={() => setView("queue")} />}</main></>;
+  const [queueHref, setQueueHref] = useState<string | undefined>();
+  const header = <header className="zen-header d-flex flex-wrap align-items-center justify-content-between gap-2 px-3 py-2 text-white w-100"><strong>TokTickIT</strong><nav className="d-flex gap-2" aria-label="Primary navigation"><button className={`zen-nav-button px-2 py-1 ${view === "dashboard" ? "active" : ""}`} type="button" onClick={() => setView("dashboard")}>Dashboard</button><button className={`zen-nav-button px-2 py-1 ${view === "users" ? "active" : ""}`} type="button" onClick={() => setView("users")}>User Management</button><button className={`zen-nav-button px-2 py-1 ${view === "queue" ? "active" : ""}`} type="button" onClick={() => setView("queue")}>Ticket Queue</button>{view === "detail" && selectedTicketId !== null && <button className="zen-nav-button px-2 py-1 active" type="button" onClick={() => setView("detail")}>Ticket Detail</button>}</nav><div className="d-flex align-items-center gap-2"><span className="d-flex flex-column align-items-end"><span>{user.displayName}</span><span className="small opacity-75">{user.role}</span></span><button className="btn btn-light btn-sm" type="button" onClick={onSignOut}>Sign out</button></div></header>;
+  return <><div>{header}</div><main className="container py-4">{view === "dashboard" ? <StaffDashboard user={user} onOpenQueue={(href) => { setQueueHref(href); setView("queue"); }} onViewTicket={(ticketId) => { setSelectedTicketId(ticketId); setView("detail"); }} /> : view === "users" ? <UserManagement user={user} /> : view === "queue" ? <StaffQueue user={user} initialHref={queueHref} onView={(ticketId) => { setSelectedTicketId(ticketId); setView("detail"); }} /> : selectedTicketId !== null ? <StaffTicketDetail user={user} ticketId={selectedTicketId} onBack={() => setView("queue")} /> : <StaffQueue user={user} initialHref={queueHref} onView={() => setView("queue")} />}</main></>;
 }
 
 export default function App() {
