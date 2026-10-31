@@ -6,7 +6,8 @@ import {
 
 type SortOrder = "asc" | "desc";
 
-export default function MyTickets({ user, onCreate, onView }: { user: UserSummary; onCreate: () => void; onView?: (ticketId: number) => void }) {
+export default function MyTickets({ user, onCreate, onView, initialHref }: { user: UserSummary; onCreate: () => void; onView?: (ticketId: number) => void; initialHref?: string }) {
+  const initialParams = new URLSearchParams(initialHref?.split("?")[1] ?? "");
   const displayName = user.displayName;
   const [tickets, setTickets] = useState<TicketListItem[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -15,7 +16,10 @@ export default function MyTickets({ user, onCreate, onView }: { user: UserSummar
   const [search, setSearch] = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [priority, setPriority] = useState("");
-  const [status, setStatus] = useState("");
+  const [status, setStatus] = useState(initialParams.get("currentStatus") ?? "");
+  const [currentStatuses, setCurrentStatuses] = useState(initialParams.get("currentStatuses")?.split(",").filter(Boolean) ?? []);
+  const [updatedFrom, setUpdatedFrom] = useState(initialParams.get("updatedFrom") ?? "");
+  const [updatedTo, setUpdatedTo] = useState(initialParams.get("updatedTo") ?? "");
   const [sortBy, setSortBy] = useState<TicketSortField>("createdAt");
   const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
   const [page, setPage] = useState(1);
@@ -32,7 +36,10 @@ export default function MyTickets({ user, onCreate, onView }: { user: UserSummar
         search: search.trim() || undefined,
         categoryId: categoryId ? Number(categoryId) : undefined,
         requestedPriority: (priority || undefined) as TicketPriority | undefined,
-        currentStatus: status === "NEW" ? "NEW" : undefined,
+        currentStatus: status ? status as never : undefined,
+        currentStatuses: currentStatuses.length ? currentStatuses as never : undefined,
+        updatedFrom: updatedFrom || undefined,
+        updatedTo: updatedTo || undefined,
         sortBy, sortOrder, page, limit: 10,
       });
       if (requestNumber === latestRequest.current) {
@@ -43,7 +50,7 @@ export default function MyTickets({ user, onCreate, onView }: { user: UserSummar
     } finally {
       if (requestNumber === latestRequest.current) setLoading(false);
     }
-  }, [search, categoryId, priority, status, sortBy, sortOrder, page]);
+  }, [search, categoryId, priority, status, currentStatuses, updatedFrom, updatedTo, sortBy, sortOrder, page]);
 
   async function loadCategories() {
     setCategoriesLoading(true); setCategoryError("");
@@ -54,14 +61,14 @@ export default function MyTickets({ user, onCreate, onView }: { user: UserSummar
   useEffect(() => { void loadCategories(); }, []);
   useEffect(() => { void loadTickets(); }, [loadTickets]);
 
-  function updateFilter(setter: (value: string) => void, value: string) { setter(value); setPage(1); }
-  function clearFilters() { setSearch(""); setCategoryId(""); setPriority(""); setStatus(""); setPage(1); }
+  function updateFilter(setter: (value: string) => void, value: string) { setter(value); setCurrentStatuses([]); setUpdatedFrom(""); setUpdatedTo(""); setPage(1); }
+  function clearFilters() { setSearch(""); setCategoryId(""); setPriority(""); setStatus(""); setCurrentStatuses([]); setUpdatedFrom(""); setUpdatedTo(""); setPage(1); }
   function changeSort(field: TicketSortField) {
     setPage(1);
     if (sortBy === field) setSortOrder((value) => value === "asc" ? "desc" : "asc");
     else { setSortBy(field); setSortOrder("asc"); }
   }
-  const hasFilters = Boolean(search.trim() || categoryId || priority || status);
+  const hasFilters = Boolean(search.trim() || categoryId || priority || status || currentStatuses.length || updatedFrom || updatedTo);
   const sortLabel = (field: TicketSortField, label: string) => `Sort by ${label}${sortBy === field ? `, currently ${sortOrder === "asc" ? "ascending" : "descending"}` : ""}`;
   const sortIndicator = (field: TicketSortField) => sortBy === field ? (sortOrder === "asc" ? " ↑" : " ↓") : "";
   const pageNumbers = Array.from({ length: pagination.totalPages }, (_, index) => index + 1)
