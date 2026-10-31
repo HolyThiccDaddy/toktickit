@@ -22,22 +22,26 @@ describe("Lab 4 staff/admin dashboard", () => {
 
   it("keeps staff metrics linked to queue predicates and opens ticket details", async () => {
     vi.spyOn(api, "getStaffDashboard").mockResolvedValue(response);
-    const openQueue = vi.fn(); const viewTicket = vi.fn();
-    render(<StaffDashboard user={staff} onOpenQueue={openQueue} onViewTicket={viewTicket} />);
+    const openQueue = vi.fn(); const openActions = vi.fn(); const viewTicket = vi.fn();
+    render(<StaffDashboard user={staff} onOpenQueue={openQueue} onOpenActions={openActions} onViewTicket={viewTicket} />);
     expect(await screen.findByRole("heading", { name: "IT Staff Dashboard" })).toBeInTheDocument();
     const unassigned = screen.getByRole("link", { name: /Unassigned Tickets/ });
     expect(unassigned).toHaveAttribute("href", expect.stringContaining("assigneeId=unassigned"));
     fireEvent.click(unassigned);
     expect(openQueue).toHaveBeenCalledWith(unassigned.getAttribute("href"));
+    const actions = screen.getByRole("link", { name: /My Actions Taken/ });
+    fireEvent.click(actions);
+    expect(openActions).toHaveBeenCalledWith(actions.getAttribute("href"));
     fireEvent.click(screen.getByRole("link", { name: "TKT-2026-560001" }));
     expect(viewTicket).toHaveBeenCalledWith(9);
   });
 
   it("shows administrator account summary without exposing credentials", async () => {
     vi.spyOn(api, "getStaffDashboard").mockResolvedValue({ ...response, accounts: { adminActive: 1, requesterActive: 2 } });
-    render(<StaffDashboard user={admin} onOpenQueue={vi.fn()} onViewTicket={vi.fn()} />);
+    render(<StaffDashboard user={admin} onOpenQueue={vi.fn()} onOpenActions={vi.fn()} onViewTicket={vi.fn()} />);
     expect(await screen.findByRole("heading", { name: "Administrator Dashboard" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Account summary" })).toBeInTheDocument();
     expect(screen.queryByText(/password/i)).not.toBeInTheDocument();
   });
 });
+
