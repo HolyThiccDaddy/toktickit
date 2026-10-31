@@ -1,2 +1,22 @@
-Migration: npx prisma migrate deploy; guarded DATABASE_URL ended in _test; no pending migrations.
-Seed: compiled dist/prisma/seed.js ran twice under the same _test guard; both runs seeded 4 categories, 7 related systems, 5 development requesters (4 active, 1 inactive), and initialized the ticket counter.
+Commands: guarded npx prisma migrate deploy; guarded node dist/prisma/seed.js; guarded node dist/prisma/seed.js
+Working directory: server/
+Tested commit SHA: bab573b01cc13455d7e3d623b0a68f3461198a5c
+Exit status: 0
+
+Guard output:
+  Guard: DATABASE_URL is PostgreSQL and contains _test (value hidden).
+  Datasource: PostgreSQL database "toktickit_test" at localhost:5432
+  6 migrations found in prisma/migrations
+  No pending migrations to apply.
+
+Actual compiled-seed output (two consecutive runs):
+  Seeded 4 categories.
+  Seeded 7 related systems.
+  Seeded 5 development requesters (4 active, 1 inactive).
+  Initialized ticket counter.
+  Seeded 4 categories.
+  Seeded 7 related systems.
+  Seeded 5 development requesters (4 active, 1 inactive).
+  Initialized ticket counter.
+
+Post-merge main verification: PENDING until PR #62 is approved and merged.

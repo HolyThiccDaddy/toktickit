@@ -1,2 +1,10 @@
 Command: npm run build
-Result: TypeScript build passed.
+Working directory: server/
+Tested commit SHA: bab573b01cc13455d7e3d623b0a68f3461198a5c
+Exit status: 0
+
+Actual output:
+  > toktickit-server@1.0.0 build
+  > tsc
+
+Post-merge main verification: PENDING until PR #62 is approved and merged.

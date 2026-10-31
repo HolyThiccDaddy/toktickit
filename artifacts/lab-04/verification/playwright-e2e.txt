@@ -1,2 +1,16 @@
 Command: npm run test:e2e
-Result: Running 30 tests using 1 worker; 28 passed, 2 skipped. The two skips are the tablet/mobile workflow capture variants intentionally guarded by the project configuration.
+Working directory: client/
+Tested commit SHA: bab573b01cc13455d7e3d623b0a68f3461198a5c
+Exit status: 0
+
+Actual output (release run):
+  Running 30 tests using 1 worker
+  ok 11 [desktop] dashboard-performance-smoke.spec.ts (568ms)
+  ok 14/15/16 [desktop] release-evidence.visual.spec.ts
+  - 23 [tablet] release-evidence.visual.spec.ts: captures the staff workflow and resolution gate
+  - 29 [mobile] release-evidence.visual.spec.ts: captures the staff workflow and resolution gate
+  2 skipped
+  28 passed (3.4m)
+
+The two skips are intentional and explicit in release-evidence.visual.spec.ts: workflow evidence is captured at desktop width; tablet/mobile still execute the requester/staff/admin dashboard and state-capture tests.
+Post-merge main verification: PENDING until PR #62 is approved and merged.
