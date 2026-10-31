@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  addComment, addInternalNote, ApiError, assignStaffTicket, claimStaffTicket, downloadAttachment, getStaffTicket,
-  type InternalNote, type PublicComment, type TicketAttachment, type TicketDetail as TicketDetailData, type TicketPriority,
+  addComment, addInternalNote, ApiError, assignStaffTicket, claimStaffTicket, downloadAttachment, getActions, getStaffTicket,
+  type ActionTaken, type InternalNote, type PublicComment, type TicketAttachment, type TicketDetail as TicketDetailData, type TicketPriority,
   type TicketStatus, type UserSummary, updateStaffPriority, updateStaffStatus,
 } from "./api.js";
 import ActionsTaken from "./ActionsTaken.js";
@@ -40,15 +40,34 @@ export default function StaffTicketDetail({ user, ticketId, onBack }: { user: Us
   const [commentError, setCommentError] = useState("");
   const [noteBody, setNoteBody] = useState("");
   const [noteError, setNoteError] = useState("");
+  const [actions, setActions] = useState<ActionTaken[]>([]);
+  const [evidenceError, setEvidenceError] = useState("");
+  const [actionsLoading, setActionsLoading] = useState(false);
+  const [resolutionActionId, setResolutionActionId] = useState("");
+
+  const loadActions = useCallback(async () => {
+    setActionsLoading(true);
+    setEvidenceError("");
+    try {
+      const result = await getActions(ticketId);
+      setActions(result.items);
+    } catch (reason) {
+      setActions([]);
+      setEvidenceError(reason instanceof Error ? reason.message : "Unable to load Actions Taken evidence");
+    } finally {
+      setActionsLoading(false);
+    }
+  }, [ticketId]);
 
   const loadTicket = useCallback(async () => {
     setLoading(true); setError("");
     try {
       const loaded = await getStaffTicket(ticketId);
       setTicket(loaded); setPriority(loaded.itPriority ?? loaded.requestedPriority); setAssignmentId(loaded.owner ? String(loaded.owner.id) : "");
+      await loadActions();
     } catch (reason) { setError(reason instanceof Error ? reason.message : "Unable to load ticket details"); }
     finally { setLoading(false); }
-  }, [ticketId]);
+  }, [loadActions, ticketId]);
   useEffect(() => { void loadTicket(); }, [loadTicket]);
 
   const transitions = useMemo(() => ticket ? transitionRules[ticket.currentStatus] : [], [ticket]);
@@ -75,8 +94,20 @@ export default function StaffTicketDetail({ user, ticketId, onBack }: { user: Us
     const rule = transitions.find((item) => item.status === selectedStatus);
     if (!rule) return;
     if (rule.confirm && !confirmStatus) { setActionError("Confirm this status transition before saving."); return; }
-    void runAction("status", () => updateStaffStatus(ticketId, selectedStatus, confirmStatus));
-    setSelectedStatus(""); setConfirmStatus(false);
+    const requiresResolution = selectedStatus === "RESOLVED" || selectedStatus === "CLOSED";
+    const selectedAction = requiresResolution ? actions.find((action) => String(action.id) === resolutionActionId) : undefined;
+    if (requiresResolution && !selectedAction) { setActionError("Select a completed qualifying Action before resolving or closing this ticket."); return; }
+    if (requiresResolution && actions.some((action) => action.followUpRequired && !action.followUpResolvedAt)) {
+      setActionError("Resolve every outstanding Action follow-up before resolving or closing this ticket."); return;
+    }
+    void runAction("status", async () => {
+      const next = await updateStaffStatus(ticketId, selectedStatus, confirmStatus, {
+        ...(selectedAction ? { resolutionActionId: selectedAction.id } : {}),
+        ...(ticket?.updatedAt ? { updatedAt: ticket.updatedAt } : {}),
+      });
+      setSelectedStatus(""); setConfirmStatus(false); setResolutionActionId("");
+      return next;
+    });
   }
   async function submitComment() {
     const body = commentBody.trim();
@@ -115,8 +146,8 @@ export default function StaffTicketDetail({ user, ticketId, onBack }: { user: Us
     <div className="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3"><button className="btn btn-link px-0" type="button" onClick={onBack}>← Back to queue</button><span className="status-badge">{ticket.currentStatus}</span></div>
     {actionError && <div className="alert alert-danger" role="alert">{actionError}</div>}
     <div className="card shadow-sm p-4 mb-3"><div className="d-flex flex-wrap justify-content-between gap-2"><div><p className="text-muted mb-1">Ticket No.</p><h1 id="staff-ticket-detail-title" className="h3 text-zen">{ticket.ticketNumber}</h1></div><span className={priorityClass(ticket.itPriority ?? ticket.requestedPriority)}>{ticket.itPriority ?? ticket.requestedPriority}</span></div><dl className="row g-3 ticket-detail-metadata mt-2"><div className="col-sm-6"><dt>Requester</dt><dd>{ticket.requester.displayName} ({ticket.requester.email})</dd></div><div className="col-sm-6"><dt>Category</dt><dd>{ticket.category.name}</dd></div><div className="col-sm-6"><dt>Related system</dt><dd>{ticket.relatedSystem.name}</dd></div><div className="col-sm-6"><dt>Created</dt><dd>{formatDate(ticket.createdAt)}</dd></div><div className="col-sm-6"><dt>Updated</dt><dd>{formatDate(ticket.updatedAt)}</dd></div></dl><div className="border-top pt-3"><h2 className="h5">{ticket.summary}</h2><p className="ticket-description">{ticket.description}</p></div></div>
-    <div className="card shadow-sm p-4 mb-3"><h2 className="h5">Ticket operations</h2><div className="row g-3 align-items-end"><div className="col-md-4"><label className="form-label" htmlFor="staff-assignee-id">Assignee ID</label><input id="staff-assignee-id" className="form-control" inputMode="numeric" value={assignmentId} onChange={(event) => setAssignmentId(event.target.value)} placeholder="Blank to unassign" /></div><div className="col-md-4 d-flex gap-2"><button className="btn btn-zen" type="button" onClick={claim} disabled={busy || Boolean(ticket.owner)}>Claim for me</button><button className="btn btn-outline-zen" type="button" onClick={assign} disabled={busy}>{busyAction === "assignment" ? "Saving…" : "Save assignment"}</button></div><div className="col-md-4"><label className="form-label" htmlFor="staff-it-priority">IT Priority</label><div className="input-group"><select id="staff-it-priority" className="form-select" value={priority} onChange={(event) => setPriority(event.target.value as TicketPriority)}>{priorityValues.map((value) => <option key={value}>{value}</option>)}</select><button className="btn btn-outline-zen" type="button" onClick={savePriority} disabled={busy || priority === ticket.itPriority}>{busyAction === "priority" ? "Saving…" : "Save"}</button></div></div></div><div className="row g-3 align-items-end mt-1"><div className="col-md-6"><label className="form-label" htmlFor="staff-next-status">Move status</label><select id="staff-next-status" className="form-select" value={selectedStatus} onChange={(event) => { setSelectedStatus(event.target.value as TicketStatus); setConfirmStatus(false); }}><option value="">Select an allowed transition</option>{transitions.map((item) => <option key={item.status} value={item.status}>{item.status}{item.confirm ? " (confirmation required)" : ""}</option>)}</select></div><div className="col-md-3 form-check mt-4"><input id="staff-status-confirm" className="form-check-input" type="checkbox" checked={confirmStatus} onChange={(event) => setConfirmStatus(event.target.checked)} disabled={!transitions.find((item) => item.status === selectedStatus)?.confirm} /><label className="form-check-label" htmlFor="staff-status-confirm">Confirm transition</label></div><div className="col-md-3"><button className="btn btn-zen w-100" type="button" onClick={saveStatus} disabled={busy || !selectedStatus}>{busyAction === "status" ? "Saving…" : "Update status"}</button></div></div></div>
-    <div className="card shadow-sm p-4 mb-3"><ActionsTaken user={user} ticketId={ticketId} /></div>
+    <div className="card shadow-sm p-4 mb-3"><h2 className="h5">Ticket operations</h2><div className="row g-3 align-items-end"><div className="col-md-4"><label className="form-label" htmlFor="staff-assignee-id">Assignee ID</label><input id="staff-assignee-id" className="form-control" inputMode="numeric" value={assignmentId} onChange={(event) => setAssignmentId(event.target.value)} placeholder="Blank to unassign" /></div><div className="col-md-4 d-flex gap-2"><button className="btn btn-zen" type="button" onClick={claim} disabled={busy || Boolean(ticket.owner)}>Claim for me</button><button className="btn btn-outline-zen" type="button" onClick={assign} disabled={busy}>{busyAction === "assignment" ? "Saving…" : "Save assignment"}</button></div><div className="col-md-4"><label className="form-label" htmlFor="staff-it-priority">IT Priority</label><div className="input-group"><select id="staff-it-priority" className="form-select" value={priority} onChange={(event) => setPriority(event.target.value as TicketPriority)}>{priorityValues.map((value) => <option key={value}>{value}</option>)}</select><button className="btn btn-outline-zen" type="button" onClick={savePriority} disabled={busy || priority === ticket.itPriority}>{busyAction === "priority" ? "Saving…" : "Save"}</button></div></div></div><div className="row g-3 align-items-end mt-1"><div className="col-md-6"><label className="form-label" htmlFor="staff-next-status">Move status</label><select id="staff-next-status" className="form-select" value={selectedStatus} onChange={(event) => { setSelectedStatus(event.target.value as TicketStatus); setConfirmStatus(false); setResolutionActionId(""); setActionError(""); }}><option value="">Select an allowed transition</option>{transitions.map((item) => <option key={item.status} value={item.status}>{item.status}{item.confirm ? " (confirmation required)" : ""}</option>)}</select></div><div className="col-md-3 form-check mt-4"><input id="staff-status-confirm" className="form-check-input" type="checkbox" checked={confirmStatus} onChange={(event) => setConfirmStatus(event.target.checked)} disabled={!transitions.find((item) => item.status === selectedStatus)?.confirm} /><label className="form-check-label" htmlFor="staff-status-confirm">Confirm transition</label></div><div className="col-md-3"><button className="btn btn-zen w-100" type="button" onClick={saveStatus} disabled={busy || !selectedStatus}>{busyAction === "status" ? "Saving…" : "Update status"}</button></div></div>{(selectedStatus === "RESOLVED" || selectedStatus === "CLOSED") && <div className="mt-3"><label className="form-label" htmlFor="staff-resolution-action">Resolution Action evidence</label><select id="staff-resolution-action" className="form-select" value={resolutionActionId} onChange={(event) => setResolutionActionId(event.target.value)} disabled={Boolean(evidenceError) || actionsLoading}><option value="">Select a completed qualifying Action</option>{actions.filter((action) => action.state === "COMPLETED" && action.description.trim() && action.result.trim() && action.completedAt && action.completedBy).map((action) => <option key={action.id} value={action.id}>Action #{action.id}: {action.description.slice(0, 80)}</option>)}</select>{evidenceError && <div className="form-text text-danger" role="alert"><span>{evidenceError}</span> <button className="btn btn-sm btn-outline-danger ms-2" type="button" onClick={() => void loadActions()} disabled={actionsLoading}>{actionsLoading ? "Retrying…" : "Retry Action evidence"}</button></div>}{actions.some((action) => action.followUpRequired && !action.followUpResolvedAt) && <div className="alert alert-warning mt-2 mb-0" role="alert">Resolve every outstanding Action follow-up before resolving or closing this ticket.</div>}</div>}</div>
+    <div className="card shadow-sm p-4 mb-3"><ActionsTaken user={user} ticketId={ticketId} onChanged={() => void loadActions()} /></div>
     <div className="card shadow-sm p-4 mb-3"><h2 className="h5">Attachments</h2>{ticket.attachments.length === 0 ? <p className="text-muted mb-0">No attachments on this ticket.</p> : <ul className="list-group">{ticket.attachments.map((attachment) => <li className="list-group-item d-flex flex-wrap align-items-center justify-content-between gap-2" key={attachment.id}><div><strong>{attachment.originalFilename}</strong><div className="small text-muted">{formatSize(attachment.fileSize)} · {attachment.isDeleted ? `Removed ${formatDate(attachment.deletedAt)}` : `Uploaded ${formatDate(attachment.createdAt)}`}</div>{attachment.isDeleted && <div className="small">Reason: {attachment.deletionReason || "No reason provided"}</div>}</div>{attachment.isDeleted ? <span className="text-muted small">Download unavailable</span> : <button className="btn btn-sm btn-outline-zen" type="button" onClick={() => void handleDownload(attachment)} disabled={busy}>{busyAction === `download-${attachment.id}` ? "Downloading…" : "Download"}</button>}</li>)}</ul>}</div>
     <div className="card shadow-sm p-4 mb-3"><h2 className="h5">Public comments</h2>{comments.length === 0 ? <p className="text-muted">No public comments yet.</p> : <ul className="list-group mb-3">{comments.map((comment) => <li className="list-group-item" key={comment.id}><div className="small text-muted">{comment.author.displayName} · {formatDate(comment.createdAt)}</div><p className="mb-0" style={{ whiteSpace: "pre-wrap" }}>{comment.body}</p></li>)}</ul>}<label className="form-label" htmlFor="staff-public-comment">Add a public comment</label><textarea id="staff-public-comment" aria-invalid={Boolean(commentError)} aria-describedby={commentError ? "staff-public-comment-error" : undefined} className={`form-control ${commentError ? "is-invalid" : ""}`} rows={3} maxLength={2000} value={commentBody} onChange={(event) => setCommentBody(event.target.value)} />{commentError && <div id="staff-public-comment-error" className="invalid-feedback" role="alert">{commentError}</div>}<button className="btn btn-zen mt-2" type="button" onClick={() => void submitComment()} disabled={busy || !commentBody.trim()}>{busyAction === "comment" ? "Posting…" : "Post public comment"}</button></div>
     <div className="card shadow-sm p-4"><h2 className="h5">Internal notes <span className="badge text-bg-secondary">Staff only</span></h2>{notes.length === 0 ? <p className="text-muted">No internal notes yet.</p> : <ul className="list-group mb-3">{notes.map((note) => <li className="list-group-item" key={note.id}><div className="small text-muted">{note.author.displayName} · {formatDate(note.createdAt)}</div><p className="mb-0" style={{ whiteSpace: "pre-wrap" }}>{note.body}</p></li>)}</ul>}<label className="form-label" htmlFor="staff-internal-note">Add an internal note</label><textarea id="staff-internal-note" aria-invalid={Boolean(noteError)} aria-describedby={noteError ? "staff-internal-note-error" : undefined} className={`form-control ${noteError ? "is-invalid" : ""}`} rows={3} maxLength={2000} value={noteBody} onChange={(event) => setNoteBody(event.target.value)} />{noteError && <div id="staff-internal-note-error" className="invalid-feedback" role="alert">{noteError}</div>}<button className="btn btn-outline-zen mt-2" type="button" onClick={() => void submitNote()} disabled={busy || !noteBody.trim()}>{busyAction === "note" ? "Saving…" : "Add internal note"}</button></div>

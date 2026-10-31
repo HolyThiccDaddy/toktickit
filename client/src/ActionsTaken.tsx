@@ -148,7 +148,7 @@ function initialForm(action?: ActionTaken): ActionForm {
   };
 }
 
-export default function ActionsTaken({ user, ticketId }: { user: UserSummary; ticketId: number }) {
+export default function ActionsTaken({ user, ticketId, onChanged }: { user: UserSummary; ticketId: number; onChanged?: () => void }) {
   const readOnly = user.role === "REQUESTER";
   const canWrite = !readOnly && (user.role === "IT_STAFF" || user.role === "ADMIN");
   const [actions, setActions] = useState<ActionTaken[]>([]);
@@ -250,7 +250,7 @@ export default function ActionsTaken({ user, ticketId }: { user: UserSummary; ti
         keyRef.current = idempotencyKey();
       }
       cancelEdit();
-      await loadActions();
+      await loadActions(); onChanged?.();
     } catch (reason) {
       const apiErrors = reason instanceof ApiError ? reason.fieldErrors : {};
       setFieldErrors(apiErrors);
@@ -280,7 +280,7 @@ export default function ActionsTaken({ user, ticketId }: { user: UserSummary; ti
     setBusy(`state-${action.id}`); setFormError(""); setSuccess("");
     try {
       await updateAction(ticketId, action.id, { version: action.version, state });
-      setSuccess(`Action moved to ${state}.`); setNextStates((current) => ({ ...current, [action.id]: "" })); await loadActions();
+      setSuccess(`Action moved to ${state}.`); setNextStates((current) => ({ ...current, [action.id]: "" })); await loadActions(); onChanged?.();
     } catch (reason) {
       setFormError(errorMessage(reason, "Unable to update Action state"));
     } finally {
@@ -292,7 +292,7 @@ export default function ActionsTaken({ user, ticketId }: { user: UserSummary; ti
     setBusy(`follow-up-${action.id}`); setFormError(""); setSuccess("");
     try {
       await resolveActionFollowUp(ticketId, action.id, action.version);
-      setSuccess("Follow-up resolved and audit history updated."); await loadActions();
+      setSuccess("Follow-up resolved and audit history updated."); await loadActions(); onChanged?.();
     } catch (reason) {
       setFormError(errorMessage(reason, "Unable to resolve Action follow-up"));
     } finally {

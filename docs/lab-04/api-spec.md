@@ -100,7 +100,7 @@ Lab 4 extends the authenticated `GET /staff/tickets` Lab 3 queue filters without
 
 ## 4. Ticket status workflow
 
-`PATCH /staff/tickets/:ticketId/status` accepts `{ "status": TicketStatus, "confirm"?: true, "resolutionActionId"?: number, "version"?: number }`. IT Staff and Administrators may use the matrix below; Requesters never may. For `RESOLVED` and `CLOSED`, `resolutionActionId` must identify an Action with `state=COMPLETED`, non-empty description/result, completion audit fields, and no outstanding `followUpRequired=true` Action lacking `followUpResolvedAt`.
+`PATCH /staff/tickets/:ticketId/status` accepts `{ "status": TicketStatus, "confirm"?: true, "resolutionActionId"?: number, "updatedAt"?: string }`. IT Staff and Administrators may use the matrix below; Requesters never may. `updatedAt` is the only supported Ticket precondition; a supplied `version` field is rejected with `400 VALIDATION_ERROR` because Tickets do not expose an independent numeric version. For `RESOLVED` and `CLOSED`, `resolutionActionId` must identify an Action with `state=COMPLETED`, non-empty description/result, completion audit fields, and no outstanding `followUpRequired=true` Action lacking `followUpResolvedAt`.
 
 | From | To | Required |
 |---|---|---|
@@ -114,7 +114,7 @@ Lab 4 extends the authenticated `GET /staff/tickets` Lab 3 queue filters without
 | REOPENED | IN_PROGRESS | no confirmation |
 | NEW/OPEN/IN_PROGRESS/WAITING_FOR_REQUESTER/REOPENED | CANCELLED | `confirm=true` |
 
-Unlisted or terminal transitions return `409 CONFLICT` and leave the row unchanged. The backend locks or atomically predicates the update and returns `409 CONFLICT` for a stale `version`/`updatedAt`.
+Unlisted or terminal transitions return `409 CONFLICT` and leave the row unchanged. The backend locks or atomically predicates the update and returns `409 CONFLICT` for a stale `updatedAt`; unsupported `version` preconditions return `400 VALIDATION_ERROR` before any mutation.
 
 ## 5. Shared status and authorization codes
 

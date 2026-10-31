@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import request from "supertest";
 import { expect } from "vitest";
 import { app } from "../../src/app.js";
@@ -57,6 +58,27 @@ export async function createTicket(suffix: string, data: Record<string, unknown>
 export async function currentStatus(ticketId: number) {
   const ticket = await prisma.ticket.findUniqueOrThrow({ where: { id: ticketId }, select: { currentStatus: true } });
   return ticket.currentStatus;
+}
+
+export async function createCompletedAction(ticketId: number, options: { followUpRequired?: boolean } = {}) {
+  const staffUser = await prisma.user.findUniqueOrThrow({ where: { email: staff.email }, select: { id: true } });
+  const followUpRequired = options.followUpRequired === true;
+  return prisma.actionTaken.create({
+    data: {
+      ticketId,
+      actionDateTime: new Date("2026-01-01T12:00:00.000Z"),
+      description: "Completed diagnostic and remediation work.",
+      result: "The requested service behavior was restored.",
+      state: "COMPLETED",
+      performedById: staffUser.id,
+      completedAt: new Date("2026-01-01T12:30:00.000Z"),
+      completedById: staffUser.id,
+      followUpRequired,
+      followUpNote: followUpRequired ? "Confirm the service remains stable." : null,
+      idempotencyKey: randomUUID(),
+      idempotencyFingerprint: "a".repeat(64),
+    },
+  });
 }
 
 export const validStatusTransitions = [
