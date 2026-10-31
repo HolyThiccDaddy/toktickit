@@ -39,6 +39,19 @@ body { background: var(--zen-body); }
 .ticket-attachment-deleted { background: #f1f3f2; color: #68756e; }
 .ticket-modal-backdrop { position: fixed; inset: 0; z-index: 1050; display: grid; place-items: center; padding: 1rem; background: rgb(0 0 0 / 45%); }
 .ticket-modal { width: min(100%, 520px); }
+.actions-taken { min-width: 0; }
+.actions-taken-status { min-height: 1.5rem; color: #315b47; }
+.actions-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+.actions-form-wide { grid-column: 1 / -1; }
+.actions-taken-list { display: grid; gap: 1rem; }
+.actions-taken-card { min-width: 0; overflow-wrap: anywhere; }
+.actions-taken-card dt { color: #5b6f64; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; }
+.actions-taken-card dd { margin-bottom: 0; }
+.action-content { white-space: pre-wrap; overflow-wrap: anywhere; }
+.actions-taken-controls { min-width: 0; }
+.action-state-select { width: min(100%, 13rem); }
+.action-history { border-top: 1px solid #d1ddd6; padding-top: 1rem; }
+.actions-taken-card .btn { min-height: 40px; }
 
 @media (max-width: 767.98px) {
   .ticket-actions { display: grid !important; grid-template-columns: 1fr; }
@@ -49,4 +62,8 @@ body { background: var(--zen-body); }
   .admin-user-table { display: none; }
   .admin-user-card-list { display: grid; gap: 1rem; }
   .my-tickets .btn { min-height: 44px; }
+  .actions-form-grid { grid-template-columns: 1fr; }
+  .actions-form-wide { grid-column: auto; }
+  .actions-taken-controls { display: grid !important; grid-template-columns: 1fr; align-items: stretch !important; }
+  .actions-taken-controls .btn, .actions-taken-controls .action-state-select { width: 100%; }
 }
