@@ -71,9 +71,12 @@ const ticketSelect = {
   owner: { select: userSelect },
 } as const;
 
-async function staffDashboardData(userId: number, role: "IT_STAFF" | "ADMIN", now = new Date()) {
+type DashboardWindow = { from: Date; to: Date };
+
+async function staffDashboardData(userId: number, role: "IT_STAFF" | "ADMIN", window: DashboardWindow) {
   const prisma = getPrisma();
-  const weekFrom = new Date(now.getTime() - weekMs);
+  const weekFrom = window.from;
+  const now = window.to;
   const actionFrom = new Date(now.getTime() - actionWindowMs);
   const accessible: Prisma.TicketWhereInput = { currentStatus: { not: "CANCELLED" } };
   const [unassigned, owned, inProgressWaiting, recentlyUpdated, myActions, items] = await prisma.$transaction([
@@ -90,7 +93,7 @@ async function staffDashboardData(userId: number, role: "IT_STAFF" | "ADMIN", no
     metric("unassignedTickets", "Unassigned Tickets", unassigned, "/staff/queue?assigneeId=unassigned&statuses=NEW,OPEN,IN_PROGRESS,WAITING_FOR_REQUESTER,RESOLVED,REOPENED"),
     metric("myOwnedTickets", "My Owned Tickets", owned, "/staff/queue?assigneeId=me&statuses=NEW,OPEN,IN_PROGRESS,WAITING_FOR_REQUESTER,RESOLVED,REOPENED"),
     metric("inProgressWaiting", "In-Progress / Waiting", inProgressWaiting, "/staff/queue?statuses=IN_PROGRESS,WAITING_FOR_REQUESTER"),
-    metric("recentlyUpdated", "Recently Updated (7 days)", recentlyUpdated, `/staff/queue?updatedFrom=${encodeURIComponent(weekFrom.toISOString())}&updatedTo=${encodeURIComponent(now.toISOString())}`),
+    metric("recentlyUpdated", "Recently Updated", recentlyUpdated, `/staff/queue?statuses=${staffStatuses.join(",")}&updatedFrom=${encodeURIComponent(weekFrom.toISOString())}&updatedTo=${encodeURIComponent(now.toISOString())}`),
     metric("myActionsTaken", "My Actions Taken (30 days)", myActions, `/staff/actions?performedBy=me&from=${encodeURIComponent(actionFrom.toISOString())}&to=${encodeURIComponent(now.toISOString())}`),
   ];
   const accounts = role === "ADMIN"
@@ -138,16 +141,17 @@ export function createDashboardRouter() {
   router.get("/staff", requireAuth(), staffOnly, async (req, res) => {
     const window = parseWindow(req, weekMs);
     if (!window) return apiError(res, 400, "VALIDATION_ERROR", "Dashboard window must contain valid UTC timestamps", { from: "from must be before to" });
-    try { return res.status(200).json({ data: await staffDashboardData(req.auth!.user.id, req.auth!.user.role as "IT_STAFF" | "ADMIN", window.to) }); }
+    try { return res.status(200).json({ data: await staffDashboardData(req.auth!.user.id, req.auth!.user.role as "IT_STAFF" | "ADMIN", window) }); }
     catch { return apiError(res, 500, "INTERNAL_ERROR", "Unable to load staff dashboard"); }
   });
 
   router.get("/admin", requireAuth(), adminOnly, async (req, res) => {
     const window = parseWindow(req, weekMs);
     if (!window) return apiError(res, 400, "VALIDATION_ERROR", "Dashboard window must contain valid UTC timestamps", { from: "from must be before to" });
-    try { return res.status(200).json({ data: await staffDashboardData(req.auth!.user.id, "ADMIN", window.to) }); }
+    try { return res.status(200).json({ data: await staffDashboardData(req.auth!.user.id, "ADMIN", window) }); }
     catch { return apiError(res, 500, "INTERNAL_ERROR", "Unable to load administrator dashboard"); }
   });
 
   return router;
 }
+
