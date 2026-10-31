@@ -213,11 +213,15 @@ export function createTicketsRouter(options: TicketsRouterOptions = {}) {
     const requesterId = requesterIdFrom(req);
     if (requesterId === null || !(await requesterIsActive(req, requesterId))) return apiError(res, 403, "FORBIDDEN", "Requester account is inactive or unavailable");
 
+    if (Object.values(req.query).some((value) => Array.isArray(value))) return validationError(res, { query: "Repeated query parameters are not supported" });
     const value = (name: string) => typeof req.query[name] === "string" ? req.query[name] as string : undefined;
     const search = value("search")?.trim();
     const categoryIdValue = value("categoryId");
     const requestedPriority = value("requestedPriority");
     const currentStatus = value("currentStatus");
+    const currentStatusesValue = value("currentStatuses");
+    const updatedFromValue = value("updatedFrom");
+    const updatedToValue = value("updatedTo");
     const sortBy = value("sortBy") ?? "createdAt";
     const sortOrder = value("sortOrder") ?? "desc";
     const pageValue = value("page") ?? "1";
@@ -227,10 +231,17 @@ export function createTicketsRouter(options: TicketsRouterOptions = {}) {
     const limit = Number(limitValue);
     const allowedSortFields = new Set(["createdAt", "updatedAt", "ticketNumber", "summary", "requestedPriority", "itPriority"]);
     const validStatuses = ["NEW", "OPEN", "IN_PROGRESS", "WAITING_FOR_REQUESTER", "RESOLVED", "CLOSED", "REOPENED", "CANCELLED"];
+    const currentStatuses = currentStatusesValue === undefined ? undefined : currentStatusesValue.split(",");
+    const updatedFrom = updatedFromValue ? new Date(updatedFromValue) : undefined;
+    const updatedTo = updatedToValue ? new Date(updatedToValue) : undefined;
     const invalid =
       (categoryId !== undefined && (!Number.isInteger(categoryId) || categoryId < 1)) ||
       (requestedPriority !== undefined && !priorities.has(requestedPriority as never)) ||
       (currentStatus !== undefined && !validStatuses.includes(currentStatus)) ||
+      (currentStatus !== undefined && currentStatusesValue !== undefined) ||
+      (currentStatuses !== undefined && (currentStatuses.length === 0 || currentStatuses.some((entry) => !validStatuses.includes(entry)) || new Set(currentStatuses).size !== currentStatuses.length)) ||
+      ((updatedFromValue === undefined) !== (updatedToValue === undefined)) ||
+      (updatedFrom !== undefined && updatedTo !== undefined && (Number.isNaN(updatedFrom.getTime()) || Number.isNaN(updatedTo.getTime()) || updatedFrom >= updatedTo)) ||
       !allowedSortFields.has(sortBy) || !["asc", "desc"].includes(sortOrder) ||
       !Number.isInteger(page) || page < 1 || !Number.isInteger(limit) || limit < 1 || limit > 50;
     if (invalid) return validationError(res, { query: "Invalid ticket query parameters" });
@@ -242,6 +253,8 @@ export function createTicketsRouter(options: TicketsRouterOptions = {}) {
         ...(categoryId !== undefined ? { categoryId } : {}),
         ...(requestedPriority ? { requestedPriority: requestedPriority as "LOW" | "MEDIUM" | "HIGH" | "URGENT" } : {}),
         ...(currentStatus ? { currentStatus: currentStatus as never } : {}),
+        ...(currentStatuses ? { currentStatus: { in: currentStatuses as never[] } } : {}),
+        ...(updatedFrom && updatedTo ? { updatedAt: { gte: updatedFrom, lt: updatedTo } } : {}),
         ...(search ? { OR: [
           { ticketNumber: { contains: search, mode: "insensitive" } },
           { summary: { contains: search, mode: "insensitive" } },
