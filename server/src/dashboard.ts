@@ -6,6 +6,7 @@ import { safeUser, userSelect } from "./tickets.js";
 
 const openStatuses = ["NEW", "OPEN", "IN_PROGRESS", "WAITING_FOR_REQUESTER", "REOPENED"] as const;
 const staffStatuses = ["NEW", "OPEN", "IN_PROGRESS", "WAITING_FOR_REQUESTER", "RESOLVED", "REOPENED"] as const;
+const staffRecentStatuses = ["NEW", "OPEN", "IN_PROGRESS", "WAITING_FOR_REQUESTER", "RESOLVED", "CLOSED", "REOPENED"] as const;
 const staffRoles = new Set(["IT_STAFF", "ADMIN"] as const);
 const weekMs = 7 * 24 * 60 * 60 * 1000;
 const actionWindowMs = 30 * 24 * 60 * 60 * 1000;
@@ -78,7 +79,7 @@ async function staffDashboardData(userId: number, role: "IT_STAFF" | "ADMIN", wi
   const weekFrom = window.from;
   const now = window.to;
   const actionFrom = new Date(now.getTime() - actionWindowMs);
-  const accessible: Prisma.TicketWhereInput = { currentStatus: { not: "CANCELLED" } };
+  const accessible: Prisma.TicketWhereInput = { currentStatus: { in: [...staffRecentStatuses] } };
   const [unassigned, owned, inProgressWaiting, recentlyUpdated, myActions, items] = await prisma.$transaction([
     prisma.ticket.count({ where: { ...accessible, ownerId: null, currentStatus: { in: [...staffStatuses] } } }),
     prisma.ticket.count({ where: { ...accessible, ownerId: userId, currentStatus: { in: [...staffStatuses] } } }),
@@ -93,7 +94,7 @@ async function staffDashboardData(userId: number, role: "IT_STAFF" | "ADMIN", wi
     metric("unassignedTickets", "Unassigned Tickets", unassigned, "/staff/queue?assigneeId=unassigned&statuses=NEW,OPEN,IN_PROGRESS,WAITING_FOR_REQUESTER,RESOLVED,REOPENED"),
     metric("myOwnedTickets", "My Owned Tickets", owned, "/staff/queue?assigneeId=me&statuses=NEW,OPEN,IN_PROGRESS,WAITING_FOR_REQUESTER,RESOLVED,REOPENED"),
     metric("inProgressWaiting", "In-Progress / Waiting", inProgressWaiting, "/staff/queue?statuses=IN_PROGRESS,WAITING_FOR_REQUESTER"),
-    metric("recentlyUpdated", "Recently Updated", recentlyUpdated, `/staff/queue?statuses=${staffStatuses.join(",")}&updatedFrom=${encodeURIComponent(weekFrom.toISOString())}&updatedTo=${encodeURIComponent(now.toISOString())}`),
+    metric("recentlyUpdated", "Recently Updated", recentlyUpdated, `/staff/queue?statuses=${staffRecentStatuses.join(",")}&updatedFrom=${encodeURIComponent(weekFrom.toISOString())}&updatedTo=${encodeURIComponent(now.toISOString())}`),
     metric("myActionsTaken", "My Actions Taken (30 days)", myActions, `/staff/actions?performedBy=me&from=${encodeURIComponent(actionFrom.toISOString())}&to=${encodeURIComponent(now.toISOString())}`),
   ];
   const accounts = role === "ADMIN"
