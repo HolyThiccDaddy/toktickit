@@ -69,4 +69,20 @@ describe("Ticket workflow resolution gate", () => {
     expect((await screen.findAllByRole("alert")).some((element) => /outstanding Action follow-up/i.test(element.textContent ?? ""))).toBe(true);
     expect(update).not.toHaveBeenCalled();
   });
+
+  it("retries Action evidence after an initial load failure", async () => {
+    const getActions = vi.spyOn(api, "getActions")
+      .mockRejectedValueOnce(new Error("Actions temporarily unavailable"))
+      .mockResolvedValue(actions([completedAction]));
+    render(<StaffTicketDetail user={user} ticketId={detail.id} onBack={vi.fn()} />);
+
+    await screen.findByRole("heading", { name: detail.ticketNumber });
+    fireEvent.change(screen.getByLabelText("Move status"), { target: { value: "RESOLVED" } });
+    expect(await screen.findByRole("alert")).toHaveTextContent(/temporarily unavailable/i);
+    const initialCalls = getActions.mock.calls.length;
+    fireEvent.click(screen.getByRole("button", { name: "Retry Action evidence" }));
+
+    await waitFor(() => expect(getActions.mock.calls.length).toBe(initialCalls + 1));
+    expect(await screen.findByRole("option", { name: /Action #7/ })).toBeInTheDocument();
+  });
 });
