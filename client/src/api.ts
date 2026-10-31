@@ -79,13 +79,39 @@ export interface StaffTicketListQuery {
   q?: string;
   status?: TicketStatus;
   itPriority?: TicketPriority;
-  assigneeId?: number;
+  assigneeId?: number | "me" | "unassigned";
+  statuses?: TicketStatus[];
+  updatedFrom?: string;
+  updatedTo?: string;
   categoryId?: number;
   sortBy: StaffSortField;
   sortDir: "asc" | "desc";
   page: number;
   pageSize: number;
 }
+
+export interface DashboardMetric { key: string; label: string; value: number; href: string; }
+export interface DashboardItem {
+  ticketId: number;
+  ticketNumber: string;
+  summary: string;
+  status: TicketStatus;
+  itPriority: TicketPriority;
+  owner: UserSummary | null;
+  updatedAt: string;
+  href: string;
+}
+export interface DashboardResponse {
+  metrics: DashboardMetric[];
+  items: DashboardItem[];
+  meta: { timezone: "UTC"; from: string; to: string };
+  accounts?: Record<string, number>;
+}
+export interface StaffActionListItem {
+  id: number; ticketId: number; ticketNumber: string; summary: string;
+  actionDateTime: string; description: string; result: string; state: ActionState; performedBy: ActionPerson;
+}
+export interface StaffActionListResponse { items: StaffActionListItem[]; meta: { page: number; pageSize: number; total: number; totalPages: number; from: string; to: string; timezone: "UTC" }; }
 export interface TicketDetail {
   id: number;
   ticketNumber: string;
@@ -105,6 +131,44 @@ export interface TicketDetail {
   publicComments?: PublicComment[];
   internalNotes?: InternalNote[];
 }
+
+export type ActionState = "OPEN" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
+export interface ActionPerson { id: number; displayName: string; role: AuthRole; }
+export interface ActionTaken {
+  id: number;
+  ticketId: number;
+  actionDateTime: string;
+  description: string;
+  result: string;
+  state: ActionState;
+  assignee: ActionPerson | null;
+  performedBy: ActionPerson;
+  completedAt: string | null;
+  completedBy: ActionPerson | null;
+  cancelledAt: string | null;
+  cancelledBy: ActionPerson | null;
+  followUpRequired: boolean;
+  followUpNote: string | null;
+  followUpResolvedAt: string | null;
+  followUpResolvedBy: ActionPerson | null;
+  attachmentNotes: string | null;
+  createdAt: string;
+  updatedAt: string;
+  version: number;
+  revisionCount: number;
+}
+export interface ActionsResponse { items: ActionTaken[]; meta: { page: number; pageSize: number; total: number; totalPages: number }; }
+export interface ActionRevision { id: number; actionId: number; version: number; before: Record<string, unknown>; changedBy: ActionPerson; changedAt: string; }
+export interface ActionCreateInput {
+  actionDateTime: string;
+  description: string;
+  result: string;
+  followUpRequired: boolean;
+  followUpNote?: string | null;
+  attachmentNotes?: string | null;
+  assigneeId?: number | null;
+}
+export interface ActionUpdateInput extends Partial<ActionCreateInput> { version?: number; updatedAt?: string; state?: ActionState; }
 export interface CreatedTicket {
   id: number;
   ticketNumber: string;
@@ -119,6 +183,9 @@ export interface TicketListQuery {
   categoryId?: number;
   requestedPriority?: TicketPriority;
   currentStatus?: TicketStatus;
+  currentStatuses?: TicketStatus[];
+  updatedFrom?: string;
+  updatedTo?: string;
   sortBy: TicketSortField;
   sortOrder: "asc" | "desc";
   page: number;
@@ -238,7 +305,7 @@ export async function createTicket(formData: FormData): Promise<CreatedTicket> {
 
 export async function getTickets(query: TicketListQuery): Promise<TicketListResponse> {
   const params = new URLSearchParams();
-  Object.entries(query).forEach(([key, item]) => { if (item !== undefined && item !== "") params.set(key, String(item)); });
+  Object.entries(query).forEach(([key, item]) => { if (item !== undefined && item !== "") params.set(key, Array.isArray(item) ? item.join(",") : String(item)); });
   const result = await requestJson<TicketListResponse>(`/api/tickets?${params.toString()}`, {}, "Unable to load your tickets");
   return { ...result, tickets: result.items ?? result.tickets ?? [], pagination: result.pagination ?? { total: result.meta?.total ?? 0, page: result.meta?.page ?? 1, limit: result.meta?.pageSize ?? 10, totalPages: result.meta?.totalPages ?? 0 } };
 }
@@ -249,12 +316,69 @@ export async function getTicket(ticketId: number): Promise<TicketDetail> {
 
 export async function getStaffTickets(query: StaffTicketListQuery): Promise<StaffTicketListResponse> {
   const params = new URLSearchParams();
-  Object.entries(query).forEach(([key, item]) => { if (item !== undefined && item !== "") params.set(key, String(item)); });
+  Object.entries(query).forEach(([key, item]) => { if (item !== undefined && item !== "") params.set(key, Array.isArray(item) ? item.join(",") : String(item)); });
   return requestJson<StaffTicketListResponse>(`/api/staff/tickets?${params.toString()}`, {}, "Unable to load the staff ticket queue");
+}
+
+export async function getRequesterDashboard(window: { from?: string; to?: string } = {}): Promise<DashboardResponse> {
+  const params = new URLSearchParams();
+  if (window.from) params.set("from", window.from);
+  if (window.to) params.set("to", window.to);
+  return requestJson<DashboardResponse>(`/api/dashboard/requester${params.toString() ? `?${params.toString()}` : ""}`, {}, "Unable to load requester dashboard");
+}
+
+export async function getStaffDashboard(window: { from?: string; to?: string } = {}, admin = false): Promise<DashboardResponse> {
+  const params = new URLSearchParams();
+  if (window.from) params.set("from", window.from);
+  if (window.to) params.set("to", window.to);
+  return requestJson<DashboardResponse>(`/api/dashboard/${admin ? "admin" : "staff"}${params.toString() ? `?${params.toString()}` : ""}`, {}, "Unable to load staff dashboard");
+}
+
+export async function getStaffActions(window: { from?: string; to?: string } = {}): Promise<StaffActionListResponse> {
+  const params = new URLSearchParams({ performedBy: "me" });
+  if (window.from) params.set("from", window.from);
+  if (window.to) params.set("to", window.to);
+  return requestJson<StaffActionListResponse>(`/api/staff/actions?${params.toString()}`, {}, "Unable to load Actions Taken");
 }
 
 export async function getStaffTicket(ticketId: number): Promise<TicketDetail> {
   return requestJson<TicketDetail>(`/api/staff/tickets/${ticketId}`, {}, "Unable to load ticket details");
+}
+
+export async function getActionAssignees(): Promise<UserSummary[]> {
+  return requestJson<UserSummary[]>("/api/staff/assignees", {}, "Unable to load eligible Action assignees");
+}
+
+export async function getActions(ticketId: number): Promise<ActionsResponse> {
+  return requestJson<ActionsResponse>(`/api/tickets/${ticketId}/actions`, {}, "Unable to load Actions Taken");
+}
+
+export async function createAction(ticketId: number, input: ActionCreateInput, idempotencyKey: string): Promise<ActionTaken> {
+  return requestJson<ActionTaken>(`/api/tickets/${ticketId}/actions`, {
+    method: "POST",
+    headers: { "content-type": "application/json", "Idempotency-Key": idempotencyKey, ...await csrfHeaders() },
+    body: JSON.stringify(input),
+  }, "Unable to create Action Taken");
+}
+
+export async function updateAction(ticketId: number, actionId: number, input: ActionUpdateInput): Promise<ActionTaken> {
+  return requestJson<ActionTaken>(`/api/tickets/${ticketId}/actions/${actionId}`, {
+    method: "PATCH",
+    headers: { "content-type": "application/json", ...await csrfHeaders() },
+    body: JSON.stringify(input),
+  }, "Unable to update Action Taken");
+}
+
+export async function getActionRevisions(ticketId: number, actionId: number): Promise<ActionRevision[]> {
+  return requestJson<ActionRevision[]>(`/api/tickets/${ticketId}/actions/${actionId}/revisions`, {}, "Unable to load Action Taken history");
+}
+
+export async function resolveActionFollowUp(ticketId: number, actionId: number, version: number): Promise<ActionTaken> {
+  return requestJson<ActionTaken>(`/api/tickets/${ticketId}/actions/${actionId}/follow-up-resolution`, {
+    method: "POST",
+    headers: { "content-type": "application/json", ...await csrfHeaders() },
+    body: JSON.stringify({ version }),
+  }, "Unable to resolve Action follow-up");
 }
 
 export async function claimStaffTicket(ticketId: number): Promise<TicketDetail> {
@@ -269,8 +393,9 @@ export async function updateStaffPriority(ticketId: number, itPriority: TicketPr
   return requestJson<TicketDetail>(`/api/staff/tickets/${ticketId}/priority`, { method: "PATCH", headers: { "content-type": "application/json", ...await csrfHeaders() }, body: JSON.stringify({ itPriority }) }, "Unable to update IT Priority");
 }
 
-export async function updateStaffStatus(ticketId: number, status: TicketStatus, confirm = false): Promise<TicketDetail> {
-  return requestJson<TicketDetail>(`/api/staff/tickets/${ticketId}/status`, { method: "PATCH", headers: { "content-type": "application/json", ...await csrfHeaders() }, body: JSON.stringify({ status, confirm }) }, "Unable to update ticket status");
+export interface StaffStatusUpdateOptions { resolutionActionId?: number; updatedAt?: string; }
+export async function updateStaffStatus(ticketId: number, status: TicketStatus, confirm = false, options: StaffStatusUpdateOptions = {}): Promise<TicketDetail> {
+  return requestJson<TicketDetail>(`/api/staff/tickets/${ticketId}/status`, { method: "PATCH", headers: { "content-type": "application/json", ...await csrfHeaders() }, body: JSON.stringify({ status, confirm, ...options }) }, "Unable to update ticket status");
 }
 
 export async function getInternalNotes(ticketId: number): Promise<InternalNote[]> {

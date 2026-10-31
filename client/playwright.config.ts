@@ -33,12 +33,12 @@ export default defineConfig({
     },
     {
       name: "tablet",
-      testMatch: /responsive\.visual\.spec\.ts/,
+      testMatch: /(?:responsive|release-evidence)\.visual\.spec\.ts/,
       use: { ...devices["Desktop Chrome"], baseURL: frontendUrl, viewport: { width: 768, height: 1024 }, isMobile: false },
     },
     {
       name: "mobile",
-      testMatch: /responsive\.visual\.spec\.ts/,
+      testMatch: /(?:responsive|release-evidence)\.visual\.spec\.ts/,
       use: { ...devices["Pixel 5"], baseURL: frontendUrl },
     },
   ],

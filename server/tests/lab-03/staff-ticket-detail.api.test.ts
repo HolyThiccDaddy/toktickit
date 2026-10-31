@@ -1,6 +1,7 @@
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import {
   createTicket,
+  createCompletedAction,
   confirmationRequiredTransitions,
   currentStatus,
   login,
@@ -33,10 +34,11 @@ describe("Issue 38 IT Staff ticket detail operations", () => {
 
   it.each(validStatusTransitions)("allows the BR-08 transition $from -> $to", async ({ from, to, confirm }) => {
     const ticket = await createTicket("380005", { currentStatus: from });
+    const resolutionAction = to === "RESOLVED" || to === "CLOSED" ? await createCompletedAction(ticket.id) : null;
     const { agent, csrfToken } = await login(staff);
     const response = await agent.patch(`/api/staff/tickets/${ticket.id}/status`)
       .set("X-CSRF-Token", csrfToken)
-      .send({ status: to, ...(confirm ? { confirm: true } : {}) });
+      .send({ status: to, ...(confirm ? { confirm: true } : {}), ...(resolutionAction ? { resolutionActionId: resolutionAction.id } : {}) });
 
     expect(response.status).toBe(200);
     expect(response.body.data.currentStatus).toBe(to);
