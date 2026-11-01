@@ -14,10 +14,35 @@ import StaffActionsList from "./StaffActionsList.js";
 
 type SystemState = "idle" | "loading" | "success" | "error";
 
+type WorkspaceView = "system" | "tickets" | "create" | "dashboard" | "queue" | "actions" | "users" | "detail";
+type InitialWorkspaceLocation = { view: WorkspaceView; ticketId: number | null; href?: string };
+
+function getInitialWorkspaceLocation(role: UserSummary["role"]): InitialWorkspaceLocation {
+  const { pathname, search } = window.location;
+  const href = `${pathname}${search}`;
+  const ticketPattern = role === "REQUESTER" ? /^\/tickets\/([1-9]\d*)\/?$/ : /^\/staff\/tickets\/([1-9]\d*)\/?$/;
+  const ticketMatch = ticketPattern.exec(pathname);
+  if (ticketMatch) {
+    const ticketId = Number(ticketMatch[1]);
+    if (Number.isSafeInteger(ticketId)) return { view: "detail", ticketId };
+  }
+
+  if (role === "REQUESTER") {
+    if (/^\/my-tickets\/?$/.test(pathname)) return { view: "tickets", ticketId: null, href };
+    return { view: "system", ticketId: null };
+  }
+
+  if (/^\/staff\/queue\/?$/.test(pathname)) return { view: "queue", ticketId: null, href };
+  if (/^\/staff\/actions\/?$/.test(pathname)) return { view: "actions", ticketId: null, href };
+  if (/^\/staff\/dashboard\/?$/.test(pathname)) return { view: "dashboard", ticketId: null };
+  return { view: role === "ADMIN" ? "users" : "queue", ticketId: null };
+}
+
 function RequesterWorkspace({ user, onSignOut }: { user: UserSummary; onSignOut: () => void }) {
-  const [view, setView] = useState<WorkspaceView>("system");
-  const [selectedTicketId, setSelectedTicketId] = useState<number | null>(null);
-  const [ticketHref, setTicketHref] = useState<string | undefined>();
+  const [initialLocation] = useState(() => getInitialWorkspaceLocation(user.role));
+  const [view, setView] = useState<WorkspaceView>(initialLocation.view);
+  const [selectedTicketId, setSelectedTicketId] = useState<number | null>(initialLocation.ticketId);
+  const [ticketHref, setTicketHref] = useState<string | undefined>(initialLocation.href);
   const [state, setState] = useState<SystemState>("idle");
   const [categories, setCategories] = useState<Category[]>([]);
   const [errorMessage, setErrorMessage] = useState("");
@@ -41,8 +66,6 @@ function RequesterWorkspace({ user, onSignOut }: { user: UserSummary; onSignOut:
   </section>;
   return <WorkspaceShell user={user} activeView={view} isAdmin={false} onNavigate={(next) => { if (next === "tickets") setTicketHref(undefined); setView(next); }} onSearch={(query) => { setTicketHref(`/my-tickets?search=${encodeURIComponent(query)}`); setView("tickets"); }} onSignOut={onSignOut}>{content}</WorkspaceShell>;
 }
-
-type WorkspaceView = "system" | "tickets" | "create" | "dashboard" | "queue" | "actions" | "users" | "detail";
 
 function WorkspaceIcon({ name }: { name: "overview" | "queue" | "actions" | "users" }) {
   const paths = {
@@ -127,19 +150,21 @@ function WorkspaceShell({ user, activeView, isAdmin, onNavigate, onSearch, onSig
 }
 
 function StaffWorkspace({ user, onSignOut }: { user: UserSummary; onSignOut: () => void }) {
-  const [view, setView] = useState<WorkspaceView>("queue");
-  const [selectedTicketId, setSelectedTicketId] = useState<number | null>(null);
-  const [queueHref, setQueueHref] = useState<string | undefined>();
-  const [actionsHref, setActionsHref] = useState<string | undefined>();
+  const [initialLocation] = useState(() => getInitialWorkspaceLocation(user.role));
+  const [view, setView] = useState<WorkspaceView>(initialLocation.view);
+  const [selectedTicketId, setSelectedTicketId] = useState<number | null>(initialLocation.ticketId);
+  const [queueHref, setQueueHref] = useState<string | undefined>(initialLocation.view === "queue" ? initialLocation.href : undefined);
+  const [actionsHref, setActionsHref] = useState<string | undefined>(initialLocation.view === "actions" ? initialLocation.href : undefined);
   const content = view === "dashboard" ? <StaffDashboard user={user} onOpenQueue={(href) => { setQueueHref(href); setView("queue"); }} onOpenActions={(href) => { setActionsHref(href); setView("actions"); }} onViewTicket={(ticketId) => { setSelectedTicketId(ticketId); setView("detail"); }} /> : view === "queue" ? <StaffQueue key={queueHref} user={user} initialHref={queueHref} onView={(ticketId) => { setSelectedTicketId(ticketId); setView("detail"); }} /> : view === "actions" ? <StaffActionsList user={user} initialHref={actionsHref} onViewTicket={(ticketId) => { setSelectedTicketId(ticketId); setView("detail"); }} /> : selectedTicketId !== null ? <StaffTicketDetail user={user} ticketId={selectedTicketId} onBack={() => setView("queue")} /> : <StaffQueue key={queueHref} user={user} initialHref={queueHref} onView={() => setView("queue")} />;
   return <WorkspaceShell user={user} activeView={view} isAdmin={false} onNavigate={setView} onSearch={(query) => { setQueueHref(`/staff/queue?q=${encodeURIComponent(query)}`); setView("queue"); }} onSignOut={onSignOut}>{content}</WorkspaceShell>;
 }
 
 function AdminWorkspace({ user, onSignOut }: { user: UserSummary; onSignOut: () => void }) {
-  const [view, setView] = useState<WorkspaceView>("users");
-  const [selectedTicketId, setSelectedTicketId] = useState<number | null>(null);
-  const [queueHref, setQueueHref] = useState<string | undefined>();
-  const [actionsHref, setActionsHref] = useState<string | undefined>();
+  const [initialLocation] = useState(() => getInitialWorkspaceLocation(user.role));
+  const [view, setView] = useState<WorkspaceView>(initialLocation.view);
+  const [selectedTicketId, setSelectedTicketId] = useState<number | null>(initialLocation.ticketId);
+  const [queueHref, setQueueHref] = useState<string | undefined>(initialLocation.view === "queue" ? initialLocation.href : undefined);
+  const [actionsHref, setActionsHref] = useState<string | undefined>(initialLocation.view === "actions" ? initialLocation.href : undefined);
   const content = view === "dashboard" ? <StaffDashboard user={user} onOpenQueue={(href) => { setQueueHref(href); setView("queue"); }} onOpenActions={(href) => { setActionsHref(href); setView("actions"); }} onViewTicket={(ticketId) => { setSelectedTicketId(ticketId); setView("detail"); }} /> : view === "users" ? <UserManagement user={user} /> : view === "queue" ? <StaffQueue key={queueHref} user={user} initialHref={queueHref} onView={(ticketId) => { setSelectedTicketId(ticketId); setView("detail"); }} /> : view === "actions" ? <StaffActionsList user={user} initialHref={actionsHref} onViewTicket={(ticketId) => { setSelectedTicketId(ticketId); setView("detail"); }} /> : selectedTicketId !== null ? <StaffTicketDetail user={user} ticketId={selectedTicketId} onBack={() => setView("queue")} /> : <StaffQueue key={queueHref} user={user} initialHref={queueHref} onView={() => setView("queue")} />;
   return <WorkspaceShell user={user} activeView={view} isAdmin onNavigate={setView} onSearch={(query) => { setQueueHref(`/staff/queue?q=${encodeURIComponent(query)}`); setView("queue"); }} onSignOut={onSignOut}>{content}</WorkspaceShell>;
 }
