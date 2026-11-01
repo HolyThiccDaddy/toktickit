@@ -1,0 +1,1547 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "C:\\Users\\KEN\\.codex\\worktrees\\ux-ui-implementation\\toktickit\\client\\node_modules\\@playwright\\test\\cli.js",
+      "test"
+    ],
+    "configFile": "C:\\Users\\KEN\\.codex\\worktrees\\ux-ui-implementation\\toktickit\\client\\playwright.config.ts",
+    "rootDir": "C:/Users/KEN/.codex/worktrees/ux-ui-implementation/toktickit/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": "C:\\Users\\KEN\\.codex\\worktrees\\ux-ui-implementation\\toktickit\\e2e\\global-setup.mjs",
+    "globalTeardown": "C:\\Users\\KEN\\.codex\\worktrees\\ux-ui-implementation\\toktickit\\e2e\\global-teardown.mjs",
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "backendUrl": "http://127.0.0.1:3011",
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/KEN/.codex/worktrees/ux-ui-implementation/toktickit/client/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "backendUrl": "http://127.0.0.1:3011",
+          "actualWorkers": 1
+        },
+        "id": "desktop",
+        "name": "desktop",
+        "testDir": "C:/Users/KEN/.codex/worktrees/ux-ui-implementation/toktickit/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "C:/Users/KEN/.codex/worktrees/ux-ui-implementation/toktickit/client/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "backendUrl": "http://127.0.0.1:3011",
+          "actualWorkers": 1
+        },
+        "id": "tablet",
+        "name": "tablet",
+        "testDir": "C:/Users/KEN/.codex/worktrees/ux-ui-implementation/toktickit/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "/(?:responsive|release-evidence)\\.visual\\.spec\\.ts/"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "C:/Users/KEN/.codex/worktrees/ux-ui-implementation/toktickit/client/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "backendUrl": "http://127.0.0.1:3011",
+          "actualWorkers": 1
+        },
+        "id": "mobile",
+        "name": "mobile",
+        "testDir": "C:/Users/KEN/.codex/worktrees/ux-ui-implementation/toktickit/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "/(?:responsive|release-evidence)\\.visual\\.spec\\.ts/"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "C:/Users/KEN/.codex/worktrees/ux-ui-implementation/toktickit/artifacts/lab-04/verification/ui-rework/e2e-results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.62.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "lab-02\\multi-requester-isolation.spec.ts",
+      "file": "lab-02/multi-requester-isolation.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Issue #37 multi-requester isolation",
+          "file": "lab-02/multi-requester-isolation.spec.ts",
+          "line": 5,
+          "column": 6,
+          "specs": [
+            {
+              "title": "keeps requester A tickets invisible to requester B",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop",
+                  "projectName": "desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2973,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-01T05:45:59.763Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "65ef9d99aebe7b27d584-9a12d3d3023040e43d4f",
+              "file": "lab-02/multi-requester-isolation.spec.ts",
+              "line": 6,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "lab-02\\requester-ticket-flow.spec.ts",
+      "file": "lab-02/requester-ticket-flow.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Issue #37 authenticated requester ticket flow",
+          "file": "lab-02/requester-ticket-flow.spec.ts",
+          "line": 9,
+          "column": 6,
+          "specs": [
+            {
+              "title": "signs in, creates a ticket, opens detail, and removes an attachment",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop",
+                  "projectName": "desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3338,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-01T05:46:02.840Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "92c331ccfa9af6aaefb2-cf6e8ac6f499f7423685",
+              "file": "lab-02/requester-ticket-flow.spec.ts",
+              "line": 10,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "lab-02\\responsive.visual.spec.ts",
+      "file": "lab-02/responsive.visual.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "covers the requester journey across Create Ticket, My Tickets, and Ticket Detail",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2117,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-01T05:46:06.195Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "32a0b5ea95a5bdca6d38-93534187740a67d939a5",
+          "file": "lab-02/responsive.visual.spec.ts",
+          "line": 32,
+          "column": 1
+        },
+        {
+          "title": "covers the requester journey across Create Ticket, My Tickets, and Ticket Detail",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6996,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-01T05:47:33.069Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "32a0b5ea95a5bdca6d38-86c41f1d315131f7a069",
+          "file": "lab-02/responsive.visual.spec.ts",
+          "line": 32,
+          "column": 1
+        },
+        {
+          "title": "covers the requester journey across Create Ticket, My Tickets, and Ticket Detail",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 9346,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-01T05:49:15.630Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "32a0b5ea95a5bdca6d38-25d6942ec9352e042e66",
+          "file": "lab-02/responsive.visual.spec.ts",
+          "line": 32,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "lab-03\\authentication.spec.ts",
+      "file": "lab-03/authentication.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Issue #39 authenticated release journey",
+          "file": "lab-03/authentication.spec.ts",
+          "line": 10,
+          "column": 6,
+          "specs": [
+            {
+              "title": "completes first-login password setup and shows the Administrator shell",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop",
+                  "projectName": "desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2153,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-01T05:46:08.330Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2f8f92484edc49dc7cac-76a8dd9b3dcfb1e204fd",
+              "file": "lab-03/authentication.spec.ts",
+              "line": 11,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "lab-03\\requester-regression.spec.ts",
+      "file": "lab-03/requester-regression.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Issue #37 requester communication regression",
+          "file": "lab-03/requester-regression.spec.ts",
+          "line": 5,
+          "column": 6,
+          "specs": [
+            {
+              "title": "adds a public comment and records Problem appears resolved without closing the ticket",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop",
+                  "projectName": "desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3226,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-01T05:46:10.508Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "6ee36bc8209e78287b8d-359c4148bef6b32eec02",
+              "file": "lab-03/requester-regression.spec.ts",
+              "line": 6,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "lab-03\\responsive.visual.spec.ts",
+      "file": "lab-03/responsive.visual.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Issue #39 responsive release evidence",
+          "file": "lab-03/responsive.visual.spec.ts",
+          "line": 11,
+          "column": 6,
+          "specs": [
+            {
+              "title": "captures authentication, user management, staff queue, and staff detail",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop",
+                  "projectName": "desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 8909,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-01T05:46:13.763Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3606aaf34e7a0db09375-724d154e08a1b9984220",
+              "file": "lab-03/responsive.visual.spec.ts",
+              "line": 12,
+              "column": 3
+            },
+            {
+              "title": "captures authentication, user management, staff queue, and staff detail",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "tablet",
+                  "projectName": "tablet",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 18687,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-01T05:47:40.178Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3606aaf34e7a0db09375-77a97a9cae235da31164",
+              "file": "lab-03/responsive.visual.spec.ts",
+              "line": 12,
+              "column": 3
+            },
+            {
+              "title": "captures authentication, user management, staff queue, and staff detail",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile",
+                  "projectName": "mobile",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 21188,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-01T05:49:25.079Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3606aaf34e7a0db09375-d75b05d15a1391fe91fc",
+              "file": "lab-03/responsive.visual.spec.ts",
+              "line": 12,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "lab-03\\staff-ticket-flow.spec.ts",
+      "file": "lab-03/staff-ticket-flow.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Issue #38 IT Staff queue and ticket operations",
+          "file": "lab-03/staff-ticket-flow.spec.ts",
+          "line": 20,
+          "column": 6,
+          "specs": [
+            {
+              "title": "opens the shared queue and staff ticket detail with safe communication controls",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop",
+                  "projectName": "desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 11375,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-01T05:46:22.701Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "ff8eb5f30526dc3dd210-f0442654458fd14d9d81",
+              "file": "lab-03/staff-ticket-flow.spec.ts",
+              "line": 21,
+              "column": 3
+            },
+            {
+              "title": "keeps queue sorting controls usable with mobile ticket cards",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop",
+                  "projectName": "desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 876,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-01T05:46:34.092Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "ff8eb5f30526dc3dd210-ddcabd1b79af1c5a88fc",
+              "file": "lab-03/staff-ticket-flow.spec.ts",
+              "line": 206,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "lab-03\\user-administration.spec.ts",
+      "file": "lab-03/user-administration.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Issue #39 Administrator user management",
+          "file": "lab-03/user-administration.spec.ts",
+          "line": 14,
+          "column": 6,
+          "specs": [
+            {
+              "title": "lists users and supports create, edit, activation, and initial-password reset",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop",
+                  "projectName": "desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 9977,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-01T05:46:34.993Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "a11dbb5c18e1b3541c6b-02d2223c4240eb954a1d",
+              "file": "lab-03/user-administration.spec.ts",
+              "line": 15,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "lab-04\\actions-taken-flow.spec.ts",
+      "file": "lab-04/actions-taken-flow.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Lab 4 Actions Taken UI",
+          "file": "lab-04/actions-taken-flow.spec.ts",
+          "line": 5,
+          "column": 6,
+          "specs": [
+            {
+              "title": "keeps requester history read-only and gives staff/admin the shared action controls",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop",
+                  "projectName": "desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 12602,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-01T05:46:44.998Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3a7897b555732050aff0-b22bca8db859cfeb5e10",
+              "file": "lab-04/actions-taken-flow.spec.ts",
+              "line": 6,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "lab-04\\compliance-responsive.visual.spec.ts",
+      "file": "lab-04/compliance-responsive.visual.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "preserves sticky navigation, keyboard access, and reduced motion at each breakpoint",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2980,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-01T05:46:57.620Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4f4cdcff85e9c30ff7bb-525031e868e3126bb5fe",
+          "file": "lab-04/compliance-responsive.visual.spec.ts",
+          "line": 15,
+          "column": 1
+        },
+        {
+          "title": "preserves real Action create/edit and requester read-only views at each breakpoint",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6438,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-01T05:47:00.611Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4f4cdcff85e9c30ff7bb-61506d6744de1f038b69",
+          "file": "lab-04/compliance-responsive.visual.spec.ts",
+          "line": 51,
+          "column": 1
+        },
+        {
+          "title": "preserves sticky navigation, keyboard access, and reduced motion at each breakpoint",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6570,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-01T05:47:58.891Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4f4cdcff85e9c30ff7bb-72aef4f7f33bd6890b51",
+          "file": "lab-04/compliance-responsive.visual.spec.ts",
+          "line": 15,
+          "column": 1
+        },
+        {
+          "title": "preserves real Action create/edit and requester read-only views at each breakpoint",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 21357,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-01T05:48:05.473Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4f4cdcff85e9c30ff7bb-80c84af1ac29027c0b54",
+          "file": "lab-04/compliance-responsive.visual.spec.ts",
+          "line": 51,
+          "column": 1
+        },
+        {
+          "title": "preserves sticky navigation, keyboard access, and reduced motion at each breakpoint",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 7291,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-01T05:49:46.291Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4f4cdcff85e9c30ff7bb-6a4f372d58e791a5c5f5",
+          "file": "lab-04/compliance-responsive.visual.spec.ts",
+          "line": 15,
+          "column": 1
+        },
+        {
+          "title": "preserves real Action create/edit and requester read-only views at each breakpoint",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 26253,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-01T05:49:53.592Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4f4cdcff85e9c30ff7bb-58d7efb97df22aae2db4",
+          "file": "lab-04/compliance-responsive.visual.spec.ts",
+          "line": 51,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "lab-04\\dashboard-performance-smoke.spec.ts",
+      "file": "lab-04/dashboard-performance-smoke.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "loads the staff dashboard within the documented smoke budget",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 807,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-01T05:47:07.069Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "a6220a426be3948d32c3-7c4a0cb2e68b8dc4df9d",
+          "file": "lab-04/dashboard-performance-smoke.spec.ts",
+          "line": 5,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "lab-04\\dashboards.spec.ts",
+      "file": "lab-04/dashboards.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Issue #55 role-aware dashboard journeys",
+          "file": "lab-04/dashboards.spec.ts",
+          "line": 5,
+          "column": 6,
+          "specs": [
+            {
+              "title": "requester sees owned metrics and recent ticket links",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop",
+                  "projectName": "desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 723,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-01T05:47:07.895Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d66dd2b612b4f1e91e2a-d3a42ee7b6d5ffeaeb54",
+              "file": "lab-04/dashboards.spec.ts",
+              "line": 6,
+              "column": 3
+            },
+            {
+              "title": "staff and administrator see role-scoped dashboard shells",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop",
+                  "projectName": "desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 6324,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-01T05:47:08.627Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d66dd2b612b4f1e91e2a-3e8edcdea0f1d6a87573",
+              "file": "lab-04/dashboards.spec.ts",
+              "line": 14,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "lab-04\\release-evidence.visual.spec.ts",
+      "file": "lab-04/release-evidence.visual.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Lab 4 final release evidence",
+          "file": "lab-04/release-evidence.visual.spec.ts",
+          "line": 14,
+          "column": 6,
+          "specs": [
+            {
+              "title": "captures requester, staff, administrator, and Actions Taken views",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop",
+                  "projectName": "desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 7820,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-01T05:47:14.967Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e9ea7c43952171fa0aae-fc852cc34191cad64a44",
+              "file": "lab-04/release-evidence.visual.spec.ts",
+              "line": 15,
+              "column": 3
+            },
+            {
+              "title": "captures loading, empty, error, and forbidden dashboard states",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop",
+                  "projectName": "desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2111,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-01T05:47:22.797Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e9ea7c43952171fa0aae-027a56bc1e01975e90d1",
+              "file": "lab-04/release-evidence.visual.spec.ts",
+              "line": 37,
+              "column": 3
+            },
+            {
+              "title": "captures the staff workflow and resolution gate",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop",
+                  "projectName": "desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1372,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-01T05:47:24.920Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e9ea7c43952171fa0aae-19154718fcbac0115da9",
+              "file": "lab-04/release-evidence.visual.spec.ts",
+              "line": 70,
+              "column": 3
+            },
+            {
+              "title": "captures requester, staff, administrator, and Actions Taken views",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "tablet",
+                  "projectName": "tablet",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 18030,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-01T05:48:26.856Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e9ea7c43952171fa0aae-d1b7b7431848fa4c09dd",
+              "file": "lab-04/release-evidence.visual.spec.ts",
+              "line": 15,
+              "column": 3
+            },
+            {
+              "title": "captures loading, empty, error, and forbidden dashboard states",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "tablet",
+                  "projectName": "tablet",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 17670,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-01T05:48:44.897Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e9ea7c43952171fa0aae-c963e376ced712191e6e",
+              "file": "lab-04/release-evidence.visual.spec.ts",
+              "line": 37,
+              "column": 3
+            },
+            {
+              "title": "captures the staff workflow and resolution gate",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "tablet",
+                  "projectName": "tablet",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 6435,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-01T05:49:02.581Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e9ea7c43952171fa0aae-ebfa370a2008bdc5c2a0",
+              "file": "lab-04/release-evidence.visual.spec.ts",
+              "line": 70,
+              "column": 3
+            },
+            {
+              "title": "captures requester, staff, administrator, and Actions Taken views",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile",
+                  "projectName": "mobile",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 21540,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-01T05:50:19.875Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e9ea7c43952171fa0aae-28f435efd44bbfadb5da",
+              "file": "lab-04/release-evidence.visual.spec.ts",
+              "line": 15,
+              "column": 3
+            },
+            {
+              "title": "captures loading, empty, error, and forbidden dashboard states",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile",
+                  "projectName": "mobile",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 18922,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-01T05:50:41.425Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e9ea7c43952171fa0aae-58a42e607e8a7240bf28",
+              "file": "lab-04/release-evidence.visual.spec.ts",
+              "line": 37,
+              "column": 3
+            },
+            {
+              "title": "captures the staff workflow and resolution gate",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile",
+                  "projectName": "mobile",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 7419,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-01T05:51:00.358Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e9ea7c43952171fa0aae-2d267f1e9fc60b56736c",
+              "file": "lab-04/release-evidence.visual.spec.ts",
+              "line": 70,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "lab-04\\responsive.visual.spec.ts",
+      "file": "lab-04/responsive.visual.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "dashboard remains readable without page-level horizontal overflow",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 675,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-01T05:47:26.309Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d2808bc8abaee0dad929-eabf49a2055dbd9e9773",
+          "file": "lab-04/responsive.visual.spec.ts",
+          "line": 5,
+          "column": 1
+        },
+        {
+          "title": "dashboard remains readable without page-level horizontal overflow",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 5875,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-01T05:49:09.051Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d2808bc8abaee0dad929-712b3d2c3d80bf91f88b",
+          "file": "lab-04/responsive.visual.spec.ts",
+          "line": 5,
+          "column": 1
+        },
+        {
+          "title": "dashboard remains readable without page-level horizontal overflow",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6074,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-01T05:51:07.796Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d2808bc8abaee0dad929-fc41d695b6352d648853",
+          "file": "lab-04/responsive.visual.spec.ts",
+          "line": 5,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "lab-04\\ticket-resolution.spec.ts",
+      "file": "lab-04/ticket-resolution.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "enforces the resolution gate and supports a confirmed reopen",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 5236,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-01T05:47:26.997Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "901d9f42b451fe84ae1a-cbf48b517b3bb2f84501",
+          "file": "lab-04/ticket-resolution.spec.ts",
+          "line": 5,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-01T05:45:54.427Z",
+    "duration": 319842.804,
+    "expected": 36,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

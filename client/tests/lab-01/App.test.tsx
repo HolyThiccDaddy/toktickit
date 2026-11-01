@@ -16,7 +16,7 @@ describe("Lab 1 App regression inside the authenticated requester workspace", ()
 
   it("renders the TokTickIT IT Service Desk heading after session restoration", async () => {
     await enterWorkspace();
-    expect(screen.getByText(/IT Service Desk/i)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "TokTickIT IT Service Desk" })).toBeInTheDocument();
   });
 
   it("shows Online and the seeded categories on success", async () => {

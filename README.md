@@ -1,4 +1,4 @@
-# TokTickIT — Lab 3 Authenticated IT Ticketing
+# TokTickIT — Lab 4 Service Desk
 
 TokTickIT is a full-stack IT service-desk application. Lab 3 replaces Lab 2's temporary Development Requester selector with authenticated sessions and adds the complete requester, IT Staff, and Administrator workflows. Requesters manage only their own tickets and attachments, IT Staff and Administrators operate the shared queue, and Administrators manage users safely.
 
@@ -10,7 +10,7 @@ TokTickIT is a full-stack IT service-desk application. Lab 3 replaces Lab 2's te
 - **Testing:** Vitest, Supertest, React Testing Library, Playwright
 - **Architecture:** Monorepo with `client/`, `server/`, and repository-root E2E specs
 
-The released application includes the approved Lab 3 queue, ticket-detail, communication, and user-management workflows described in `docs/lab-03/`.
+The application retains the Lab 3 queue, ticket-detail, communication and user-management workflows and adds Lab 4 Actions Taken, versioned Ticket workflow/resolution gates, and ownership-scoped Requester/Staff/Admin dashboards. Contracts are in `docs/lab-04/`. The local Issue #63 UI rework preserves those rules; its current verification and publication boundary are recorded in [UI verification](docs/ux-ui-rework/verification.md).
 
 ## Repository structure
 
@@ -21,8 +21,11 @@ toktickit/
 ├── e2e/                        # Playwright journeys and deterministic setup/teardown
 ├── docs/lab-02/                # Lab 2 contract, test plan, AI log, and review record
 ├── docs/lab-03/                # Lab 3 contract, test plan, AI log, and review record
+├── docs/lab-04/                # Actions, workflow, dashboards and regression contracts
+├── docs/ux-ui-rework/          # Shared-shell inventory and current local verification
 ├── artifacts/lab-02/           # Lab 2 test output and responsive/visual evidence
 ├── artifacts/lab-03/           # Lab 3 responsive/visual evidence
+├── artifacts/lab-04/           # Lab 4 release and separately versioned UI evidence
 └── output/pdf/                 # Final submission reports
 ```
 
@@ -52,17 +55,19 @@ PORT=3000
 TOKTICKIT_UPLOAD_ROOT=uploads
 ```
 
-Create the dedicated test database before running destructive suites:
+Create the dedicated test database before running destructive suites. Run this block from the repository root, fill in the ignored `.env.test` with your local test connection, then run the guarded verifier:
 
 ```bash
 createdb -U toktickit toktickit_test
 cd server
 copy .env.test.example .env.test
-npx prisma migrate deploy
-npm run prisma:seed
+# Set DATABASE_URL in .env.test to the dedicated toktickit_test database.
+npm run build
+cd ..
+node scripts/verify-ui-rework-test-db.mjs
 ```
 
-`server/.env.test` is local-only and ignored by Git. Test setup requires a database name ending in `_test` and writes attachments beneath a test-only temporary directory.
+`server/.env.test` is local-only and ignored by Git. The verifier reads only that file, checks the parsed PostgreSQL database name ends in `_test`, deploys committed migrations and runs the compiled seed twice. It compares operational rows, including IDs, credentials and workflow/audit records; the inherited account upserts refresh `User.updatedAt` and `RequesterUser.updatedAt`, so those two metadata fields are explicitly excluded. Bare `npm run prisma:seed` does not contain this guard and uses the environment configured for that shell. Test setup writes attachments beneath a test-only temporary directory.
 
 ## Run the application
 

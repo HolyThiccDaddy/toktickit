@@ -1,9 +1,6 @@
 import { execFile } from "node:child_process";
 import { readFile, rm } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { resolve } from "node:path";
-
-const statePath = resolve(tmpdir(), "toktickit-e2e-processes.json");
+import { statePath } from "./support/runtime.mjs";
 
 function killTree(pid) {
   return new Promise((resolveKill) => {

@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import App from "../../src/App.js";
 import * as api from "../../src/api.js";
@@ -23,7 +23,7 @@ describe("Lab 3 authenticated requester shell", () => {
     fireEvent.change(screen.getByLabelText("Email"), { target: { value: user.email } });
     fireEvent.change(screen.getByLabelText("Password"), { target: { value: "RequesterOne!2026" } });
     fireEvent.click(screen.getByRole("button", { name: "Sign in" }));
-    await waitFor(() => expect(screen.getByText("Jennifer Anderson")).toBeInTheDocument());
+    await waitFor(() => expect(within(screen.getByRole("banner")).getByText("Jennifer Anderson")).toBeInTheDocument());
     expect(screen.getByRole("button", { name: "My Tickets" })).toBeInTheDocument();
   });
 

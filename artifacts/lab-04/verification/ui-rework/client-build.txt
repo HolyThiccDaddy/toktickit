@@ -1,0 +1,13 @@
+
+> toktickit-client@1.0.0 build
+> tsc && vite build
+
+vite v6.4.3 building for production...
+transforming...
+✓ 42 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.41 kB │ gzip:  0.28 kB
+dist/assets/index-DzcJvOQq.css  265.76 kB │ gzip: 38.42 kB
+dist/assets/index-BODzvK9m.js   261.38 kB │ gzip: 71.91 kB
+✓ built in 2.19s

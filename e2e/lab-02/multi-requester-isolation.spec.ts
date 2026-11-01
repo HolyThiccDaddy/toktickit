@@ -1,10 +1,11 @@
+import { navigateTo } from "../support/auth.js";
 import { expect, test } from "../playwright.js";
 import { e2eAccounts, signInAs, signOut } from "../support/auth.js";
 
 test.describe("Issue #37 multi-requester isolation", () => {
   test("keeps requester A tickets invisible to requester B", async ({ page }) => {
     await signInAs(page, e2eAccounts.jennifer);
-    await page.getByRole("button", { name: "+ Create Ticket" }).click();
+    await navigateTo(page, "+ Create Ticket");
     await page.getByLabel("Category").selectOption({ label: "Network" });
     await page.getByLabel("Related System").selectOption({ label: "VPN" });
     await page.getByLabel("Ticket Summary").fill("Authenticated ownership isolation");
@@ -17,7 +18,7 @@ test.describe("Issue #37 multi-requester isolation", () => {
 
     await signOut(page);
     await signInAs(page, e2eAccounts.michael);
-    await page.getByRole("button", { name: "My Tickets" }).click();
+    await navigateTo(page, "My Tickets");
     await expect(page.getByRole("heading", { name: "My Tickets" })).toBeVisible();
     await expect(page.getByText(ticketNumber!, { exact: true })).toHaveCount(0);
     await expect(page.getByText("Authenticated ownership isolation", { exact: true })).toHaveCount(0);

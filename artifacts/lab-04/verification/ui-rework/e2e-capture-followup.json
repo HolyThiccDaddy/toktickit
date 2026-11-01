@@ -1,0 +1,326 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "C:\\Users\\KEN\\.codex\\worktrees\\ux-ui-implementation\\toktickit\\client\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "../e2e/lab-04/compliance-responsive.visual.spec.ts"
+    ],
+    "configFile": "C:\\Users\\KEN\\.codex\\worktrees\\ux-ui-implementation\\toktickit\\client\\playwright.config.ts",
+    "rootDir": "C:/Users/KEN/.codex/worktrees/ux-ui-implementation/toktickit/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": "C:\\Users\\KEN\\.codex\\worktrees\\ux-ui-implementation\\toktickit\\e2e\\global-setup.mjs",
+    "globalTeardown": "C:\\Users\\KEN\\.codex\\worktrees\\ux-ui-implementation\\toktickit\\e2e\\global-teardown.mjs",
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "backendUrl": "http://127.0.0.1:3011",
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/KEN/.codex/worktrees/ux-ui-implementation/toktickit/client/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "backendUrl": "http://127.0.0.1:3011",
+          "actualWorkers": 1
+        },
+        "id": "desktop",
+        "name": "desktop",
+        "testDir": "C:/Users/KEN/.codex/worktrees/ux-ui-implementation/toktickit/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "C:/Users/KEN/.codex/worktrees/ux-ui-implementation/toktickit/client/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "backendUrl": "http://127.0.0.1:3011",
+          "actualWorkers": 1
+        },
+        "id": "tablet",
+        "name": "tablet",
+        "testDir": "C:/Users/KEN/.codex/worktrees/ux-ui-implementation/toktickit/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "/(?:responsive|release-evidence)\\.visual\\.spec\\.ts/"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "C:/Users/KEN/.codex/worktrees/ux-ui-implementation/toktickit/client/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "backendUrl": "http://127.0.0.1:3011",
+          "actualWorkers": 1
+        },
+        "id": "mobile",
+        "name": "mobile",
+        "testDir": "C:/Users/KEN/.codex/worktrees/ux-ui-implementation/toktickit/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "/(?:responsive|release-evidence)\\.visual\\.spec\\.ts/"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "C:/Users/KEN/.codex/worktrees/ux-ui-implementation/toktickit/artifacts/lab-04/verification/ui-rework/e2e-capture-followup.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.62.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "lab-04\\compliance-responsive.visual.spec.ts",
+      "file": "lab-04/compliance-responsive.visual.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "preserves sticky navigation, keyboard access, and reduced motion at each breakpoint",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3546,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-01T05:51:28.133Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4f4cdcff85e9c30ff7bb-525031e868e3126bb5fe",
+          "file": "lab-04/compliance-responsive.visual.spec.ts",
+          "line": 23,
+          "column": 1
+        },
+        {
+          "title": "preserves real Action create/edit and requester read-only views at each breakpoint",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6972,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-01T05:51:31.799Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4f4cdcff85e9c30ff7bb-61506d6744de1f038b69",
+          "file": "lab-04/compliance-responsive.visual.spec.ts",
+          "line": 59,
+          "column": 1
+        },
+        {
+          "title": "preserves sticky navigation, keyboard access, and reduced motion at each breakpoint",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6631,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-01T05:51:39.414Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4f4cdcff85e9c30ff7bb-72aef4f7f33bd6890b51",
+          "file": "lab-04/compliance-responsive.visual.spec.ts",
+          "line": 23,
+          "column": 1
+        },
+        {
+          "title": "preserves real Action create/edit and requester read-only views at each breakpoint",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 20683,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-01T05:51:46.167Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4f4cdcff85e9c30ff7bb-80c84af1ac29027c0b54",
+          "file": "lab-04/compliance-responsive.visual.spec.ts",
+          "line": 59,
+          "column": 1
+        },
+        {
+          "title": "preserves sticky navigation, keyboard access, and reduced motion at each breakpoint",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 7265,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-01T05:52:07.415Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4f4cdcff85e9c30ff7bb-6a4f372d58e791a5c5f5",
+          "file": "lab-04/compliance-responsive.visual.spec.ts",
+          "line": 23,
+          "column": 1
+        },
+        {
+          "title": "preserves real Action create/edit and requester read-only views at each breakpoint",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 25735,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-01T05:52:14.803Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4f4cdcff85e9c30ff7bb-58d7efb97df22aae2db4",
+          "file": "lab-04/compliance-responsive.visual.spec.ts",
+          "line": 59,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-01T05:51:22.573Z",
+    "duration": 78387.17199999999,
+    "expected": 6,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

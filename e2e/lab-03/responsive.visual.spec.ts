@@ -1,3 +1,5 @@
+import { navigateTo } from "../support/auth.js";
+import { evidencePath } from "../support/evidence.js";
 import { expect, test } from "../playwright.js";
 import { e2eAccounts, signInAs, signInAsAdmin, signInAsStaff, signOut } from "../support/auth.js";
 
@@ -12,16 +14,16 @@ test.describe("Issue #39 responsive release evidence", () => {
     await page.goto("/");
     await expect(page.getByRole("heading", { name: "Sign in to IT Service Desk" })).toBeVisible();
     await expectNoPageOverflow(page);
-    await page.screenshot({ path: `artifacts/lab-03/screenshots/authentication/${viewport}.png`, fullPage: true });
+    await page.screenshot({ path: evidencePath(`artifacts/lab-03/screenshots/authentication/${viewport}.png`), fullPage: true });
 
     await signInAsAdmin(page, e2eAccounts.administrator);
     await expect(page.getByRole("heading", { name: "User Management" })).toBeVisible();
     await expectNoPageOverflow(page);
-    await page.screenshot({ path: `artifacts/lab-03/screenshots/user-management/${viewport}.png`, fullPage: true });
+    await page.screenshot({ path: evidencePath(`artifacts/lab-03/screenshots/user-management/${viewport}.png`), fullPage: true });
 
     await signOut(page);
     await signInAs(page, e2eAccounts.sarah);
-    await page.getByRole("button", { name: "+ Create Ticket" }).click();
+    await navigateTo(page, "+ Create Ticket");
     await page.getByLabel("Category").selectOption({ label: "Network" });
     await page.getByLabel("Related System").selectOption({ label: "VPN" });
     await page.getByLabel("Ticket Summary").fill(`Issue 39 visual ${viewport}`);
@@ -35,7 +37,7 @@ test.describe("Issue #39 responsive release evidence", () => {
     await signInAsStaff(page, e2eAccounts.alexStaff);
     await expect(page.getByRole("heading", { name: "Ticket Queue" })).toBeVisible();
     await expectNoPageOverflow(page);
-    await page.screenshot({ path: `artifacts/lab-03/screenshots/staff-queue/${viewport}.png`, fullPage: true });
+    await page.screenshot({ path: evidencePath(`artifacts/lab-03/screenshots/staff-queue/${viewport}.png`), fullPage: true });
     await page.getByLabel("Search queue").fill(`Issue 39 visual ${viewport}`);
     if (viewport === "mobile") {
       const card = page.getByTestId("staff-ticket-card-list").getByRole("article").filter({ hasText: `Issue 39 visual ${viewport}` });
@@ -48,6 +50,6 @@ test.describe("Issue #39 responsive release evidence", () => {
     }
     await expect(page.getByRole("heading", { name: /TKT-\d{4}-\d{6}/ })).toBeVisible();
     await expectNoPageOverflow(page);
-    await page.screenshot({ path: `artifacts/lab-03/screenshots/staff-ticket-detail/${viewport}.png`, fullPage: true });
+    await page.screenshot({ path: evidencePath(`artifacts/lab-03/screenshots/staff-ticket-detail/${viewport}.png`), fullPage: true });
   });
 });

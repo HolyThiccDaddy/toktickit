@@ -29,7 +29,7 @@ export default function StaffQueue({ user, onView, initialHref }: { user: UserSu
   const [categories, setCategories] = useState<Category[]>([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [categoryError, setCategoryError] = useState("");
-  const [q, setQ] = useState("");
+  const [q, setQ] = useState(initialParams.get("q") ?? "");
   const [status, setStatus] = useState<TicketStatus | "">((initialParams.get("status") as TicketStatus | "") || "");
   const [statusesFilter, setStatusesFilter] = useState<TicketStatus[]>(initialParams.get("statuses")?.split(",").filter(Boolean) as TicketStatus[] ?? []);
   const [itPriority, setItPriority] = useState<TicketPriority | "">("");

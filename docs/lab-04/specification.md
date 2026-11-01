@@ -97,6 +97,8 @@ Any unlisted transition, Requester transition, or terminal-state transition is r
 
 The detailed screen contract is in [ui-spec.md](ui-spec.md). The application continues the Lab 2/3 Zen Green language, shared controls, visible focus, semantic labels, and no page-level horizontal overflow. Desktop is `>= 992px`, tablet is `768–991px`, and mobile is `< 768px`.
 
+Issue #63 maintains this contract with a shared responsive shell, locally bundled typography, progressive continuous-corner styling, and reduced-motion-aware feedback. The [screen inventory](../ux-ui-rework/inventory.md) records the presentation decisions. The recent-ticket board groups only the bounded dashboard response and labels its scope; it introduces no new status transition, assignment, reporting, or notification behavior. Final release acceptance still requires current regression evidence and peer-reviewed integration, not only a successful visual preview.
+
 - The authenticated shell adds role-aware Dashboard navigation while preserving Login, Change Password, My Tickets, Staff Queue, Staff Detail, and User Management behavior.
 - Staff Ticket Detail adds an Actions Taken list, create mode, view/edit mode, validation, retry-safe failures, and a read-only requester rendering.
 - Status controls display only permitted transitions, show confirmation/evidence requirements, and refresh the Ticket summary after success.

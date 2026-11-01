@@ -1,9 +1,11 @@
+import { navigateTo } from "../support/auth.js";
+import { evidencePath } from "../support/evidence.js";
 import { expect, test } from "../playwright.js";
 import { mkdir } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { e2eAccounts, signInAsAdmin } from "../support/auth.js";
 
-const evidenceDir = fileURLToPath(new URL("../../artifacts/lab-03/screenshots/user-management/states/", import.meta.url));
+const evidenceDir = evidencePath(fileURLToPath(new URL("../../artifacts/lab-03/screenshots/user-management/states/", import.meta.url)));
 async function capture(page: any, name: string) {
   await mkdir(evidenceDir, { recursive: true });
   await page.screenshot({ path: `${evidenceDir}/${name}.png`, fullPage: true });
@@ -79,7 +81,7 @@ test.describe("Issue #39 Administrator user management", () => {
     await page.getByRole("button", { name: "Cancel" }).click();
     await updatedRow.getByRole("button", { name: "Activate" }).click();
     await expect(updatedRow.getByRole("button", { name: "Deactivate" })).toBeVisible();
-    await page.getByRole("button", { name: "Sign out" }).click();
+    await navigateTo(page, "Sign out");
     await expect(page.getByRole("heading", { name: "Sign in to IT Service Desk" })).toBeVisible();
     await page.getByLabel("Email").fill("e2e-admin-updated@example.com");
     await page.getByRole("textbox", { name: "Password" }).fill("E2EAdminReset!2026");

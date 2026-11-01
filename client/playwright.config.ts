@@ -2,15 +2,14 @@ import { defineConfig, devices } from "@playwright/test";
 import Module from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { frontendUrl, backendUrl } from "../e2e/support/runtime.mjs";
 
 // Specs live at the repository root while Playwright is intentionally installed in client/.
 // Add the client dependency directory to CommonJS resolution before specs are loaded.
 process.env.NODE_PATH = [path.resolve(process.cwd(), "node_modules"), process.env.NODE_PATH].filter(Boolean).join(path.delimiter);
 Module._initPaths();
 
-const frontendUrl = "http://127.0.0.1:5173";
-const backendUrl = "http://127.0.0.1:3002";
-const e2eResultsPath = fileURLToPath(new URL("../artifacts/lab-02/e2e-results.json", import.meta.url));
+const e2eResultsPath = process.env.TOKTICKIT_E2E_RESULTS ?? fileURLToPath(new URL("../artifacts/lab-02/e2e-results.json", import.meta.url));
 
 export default defineConfig({
   testDir: "../e2e",

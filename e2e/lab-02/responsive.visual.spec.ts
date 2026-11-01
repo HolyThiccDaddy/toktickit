@@ -1,10 +1,12 @@
+import { navigateTo } from "../support/auth.js";
+import { evidencePath } from "../support/evidence.js";
 import { expect, test } from "../playwright.js";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { e2eAccounts, signInAs } from "../support/auth.js";
 
-const outputDirectory = fileURLToPath(new URL("../../artifacts/lab-02/screenshots/release/", import.meta.url));
+const outputDirectory = evidencePath(fileURLToPath(new URL("../../artifacts/lab-02/screenshots/release/", import.meta.url)));
 
 async function assertNoHorizontalOverflow(page: any) {
   const hasHorizontalOverflow = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
@@ -33,7 +35,7 @@ test("covers the requester journey across Create Ticket, My Tickets, and Ticket 
   await assertNoHorizontalOverflow(page);
   await capture(page, testInfo, "requester_workspace");
 
-  await page.getByRole("button", { name: "+ Create Ticket" }).click();
+  await navigateTo(page, "+ Create Ticket");
   await expect(page.getByRole("heading", { name: "Create Ticket" })).toBeVisible();
   await assertNoHorizontalOverflow(page);
   await capture(page, testInfo, "create_ticket");

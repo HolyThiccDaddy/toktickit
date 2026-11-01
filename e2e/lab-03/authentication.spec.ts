@@ -1,9 +1,11 @@
+import { navigateTo } from "../support/auth.js";
+import { evidencePath } from "../support/evidence.js";
 import { mkdir } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { expect, test } from "../playwright.js";
 import { e2eAccounts } from "../support/auth.js";
 
-const evidenceDir = fileURLToPath(new URL("../../artifacts/lab-03/screenshots/authentication/states/", import.meta.url));
+const evidenceDir = evidencePath(fileURLToPath(new URL("../../artifacts/lab-03/screenshots/authentication/states/", import.meta.url)));
 
 test.describe("Issue #39 authenticated release journey", () => {
   test("completes first-login password setup and shows the Administrator shell", async ({ page }) => {
@@ -46,7 +48,7 @@ test.describe("Issue #39 authenticated release journey", () => {
     await page.setViewportSize({ width: 1000, height: 750 });
     await page.screenshot({ path: `${evidenceDir}06_login_and_change_success.png`, clip: { x: 0, y: 0, width: 1000, height: 480 } });
 
-    await page.getByRole("button", { name: "Sign out" }).click();
+    await navigateTo(page, "Sign out");
     await expect(page.getByRole("heading", { name: "Sign in to IT Service Desk" })).toBeVisible();
     await page.goto("/");
     await expect(page.getByRole("heading", { name: "Sign in to IT Service Desk" })).toBeVisible();

@@ -19,14 +19,16 @@ This is a post-Lab-4 enhancement: use one dedicated feature branch and a Draft P
 - Mobile navigation, touch targets, long content, keyboard interaction and visible focus.
 
 ## Acceptance criteria
+
+Checks below describe local implementation. Release/publishing criteria remain open until their real GitHub events occur.
 - [ ] AC-01: Document screen inventory, role permissions, current flows and approved visual direction before implementation.
-- [ ] AC-02: All roles use a coherent shared shell with clear active navigation and account controls.
-- [ ] AC-03: Dashboards, lists and forms share consistent tokens and readable visual hierarchy.
-- [ ] AC-04: Ticket/Action workflows retain authorization, ownership, validation, confirmation, resolution gates, idempotency and stale-update handling.
-- [ ] AC-05: Public replies and internal notes are unmistakable before submission; requester views never expose staff-only data.
-- [ ] AC-06: Loading, empty, no-results, submitting, success, failure/retry, forbidden, not-found and conflict states are covered where applicable.
-- [ ] AC-07: Desktop >=992px, tablet 768–991px and mobile <768px have no clipped content, overlapping controls or page-level horizontal overflow.
-- [ ] AC-08: Keyboard operation, field labels/errors, live feedback, focus and reduced-motion behavior are verified.
+- [x] AC-02: All roles use a coherent shared shell with clear active navigation and account controls.
+- [x] AC-03: Dashboards, lists and forms share consistent tokens and readable visual hierarchy.
+- [x] AC-04: Ticket/Action workflows retain authorization, ownership, validation, confirmation, resolution gates, idempotency and stale-update handling.
+- [x] AC-05: Public replies and internal notes are unmistakable before submission; requester views never expose staff-only data.
+- [x] AC-06: Loading, empty, no-results, submitting, success, failure/retry, forbidden, not-found and conflict states are covered where applicable.
+- [x] AC-07: Desktop >=992px, tablet 768–991px and mobile <768px have no clipped content, overlapping controls or page-level horizontal overflow.
+- [x] AC-08: Keyboard operation, field labels/errors, live feedback, focus and reduced-motion behavior are verified.
 - [ ] AC-09: Relevant server/client/build/E2E regression checks pass with real SHA-bound evidence and screenshots.
 - [ ] AC-10: Peer approval and teammate merge are required before completion.
 
@@ -41,7 +43,7 @@ This is a post-Lab-4 enhancement: use one dedicated feature branch and a Draft P
 ## Workflow gates
 Keep this Issue open while the PR is draft. Move the project card to Started before UI coding, and PR Review only when implementation and evidence are ready. Use Fixing for actionable review changes. Mark Done after formal peer approval and verified teammate merge.
 
-## Initial status
+## Initial status (historical planning commit)
 Planning only. UI implementation and verification are pending; no completed redesign or passing new test results are claimed.
 
 ## Current architecture
@@ -53,5 +55,13 @@ Requester starts on Home and can navigate to Dashboard, My Tickets, Create Ticke
 ## Proposed direction for review
 Use a quiet neutral canvas with Zen Green primary actions, consistent type/spacing and restrained borders. Explore a shared desktop sidebar and mobile drawer; reduce repeated headers, excessive stacked cards and ambiguous primary actions. Preserve all existing business rules. Route/default-page changes are proposals until implemented and verified.
 
-## Validation status
+## Validation status (historical planning commit)
 This commit adds planning documentation only. No application code changed; no runtime tests were run for this documentation-only commit. UI implementation, visual verification and regression evidence remain pending.
+
+## Local implementation status — 1 November 2026
+
+The initial plan and role-flow outline above existed at `1cfa768860691c93e8349dff5e217f103cf992ce` before UI implementation. The expanded [screen inventory](inventory.md) was maintained during the current conformance pass; it is not backdated as a pre-implementation artifact.
+
+AC-02 through AC-08 are implemented locally: all roles share the shell, exact Zen Green tokens and inherited entry views remain, toolbar searches preserve owned/staff filters, original backend permissions/workflow rules are unchanged, modal/mobile focus is protected, and transitions respect reduced motion. Existing regression assertions are retained. The [verification record](verification.md) gives exact commands, results, artifact provenance and remaining limits.
+
+AC-09 requires the implementation SHA and a match between committed blobs and tested source hashes; publication records that binding. AC-10 remains pending peer approval and teammate merge. Issue #63 stays open until then. On 1 November 2026 the student authorized delivery through the waiting-for-review stage, superseding the earlier no-push instruction; no approval, merge or Project Done state is inferred.

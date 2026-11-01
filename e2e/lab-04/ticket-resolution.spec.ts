@@ -1,10 +1,11 @@
+import { navigateTo } from "../support/auth.js";
 import { expect, test } from "../playwright.js";
 import { e2eAccounts, signInAs, signInAsStaff } from "../support/auth.js";
 
 test("enforces the resolution gate and supports a confirmed reopen", async ({ page }) => {
   const summary = "Lab 4 ticket resolution gate E2E";
   await signInAs(page, e2eAccounts.jennifer);
-  await page.getByRole("button", { name: "+ Create Ticket" }).click();
+  await navigateTo(page, "+ Create Ticket");
   await page.getByLabel("Category").selectOption({ label: "Network" });
   await page.getByLabel("Related System").selectOption({ label: "VPN" });
   await page.getByLabel("Ticket Summary").fill(summary);
@@ -13,7 +14,7 @@ test("enforces the resolution gate and supports a confirmed reopen", async ({ pa
   await page.getByRole("button", { name: "Submit Ticket" }).click();
   await expect(page.getByRole("heading", { name: "Ticket created successfully" })).toBeVisible();
   await page.getByRole("button", { name: "Back" }).click();
-  await page.getByRole("button", { name: "Sign out" }).click();
+  await navigateTo(page, "Sign out");
 
   await signInAsStaff(page, e2eAccounts.alexStaff);
   await page.getByLabel("Search queue").fill(summary);

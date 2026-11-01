@@ -13,7 +13,7 @@ export default function MyTickets({ user, onCreate, onView, initialHref }: { use
   const [categories, setCategories] = useState<Category[]>([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [categoryError, setCategoryError] = useState("");
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(initialParams.get("search") ?? "");
   const [categoryId, setCategoryId] = useState("");
   const [priority, setPriority] = useState("");
   const [status, setStatus] = useState(initialParams.get("currentStatus") ?? "");
