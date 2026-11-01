@@ -1,0 +1,19 @@
+{
+  "sourceCommit": "ca82049e16816729c8883c98c105659625696464",
+  "finalMainCommit": "a76ee09dc558aa2efcd6f4ef3f3bd759ba3bed7e",
+  "testCommand": "npm test -- --reporter=json --outputFile=../artifacts/lab-04/verification/ui-rework/final-server-results.json",
+  "testExitCode": 0,
+  "testSuites": 44,
+  "passedSuites": 44,
+  "failedSuites": 0,
+  "tests": 136,
+  "passedTests": 136,
+  "failedTests": 0,
+  "testSuccess": true,
+  "testStartedUtc": "2026-11-01T15:30:05.6730000+00:00",
+  "buildCommand": "npm run build",
+  "buildExitCode": 0,
+  "buildOutput": "toktickit-server@1.0.0 build > tsc",
+  "sourceEquivalence": "GitHub PR #66 diff contains only client/src/StaffTicketDetail.tsx and e2e/lab-04/compliance-responsive.visual.spec.ts; no server files changed between this server source commit and final main.",
+  "githubChecks": "0 statuses and 0 workflow runs queried; no CI pass claimed."
+}
