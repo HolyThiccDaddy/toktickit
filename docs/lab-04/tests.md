@@ -1,6 +1,6 @@
 # Lab 4 Test Driven Development Plan
 
-Status: Historical release evidence below was prepared from `lab4-staging` at merge SHA `026ba36348b553449bc2e5b4fda799110ddad4e6`. The Issue #63 UI rework is validated separately in [verification.md](../ux-ui-rework/verification.md); historical pass counts and screenshots do not certify the current local working tree. Rows below name the executable test or the approved Lab 1–3 replacement used by the original release run.
+Status: The original Lab 4 integration run below remains historical evidence from `lab4-staging` at `026ba36348b553449bc2e5b4fda799110ddad4e6`. UI rework PR #64 merged at `e22a50e3a93250567e9722e3ce4c4c6402458c81`; tablet correction PR #66 then merged at `a76ee09dc558aa2efcd6f4ef3f3bd759ba3bed7e`, the verified current `main` tip. After that merge, the server suite (44 files / 136 tests) and TypeScript build were freshly rerun at server source commit `ca82049e16816729c8883c98c105659625696464`. GitHub's PR #66 diff contains only client and E2E files, so the tested server source is unchanged at final main. Client/E2E results for the responsive correction are separately recorded in §4.1. These are local/PR-recorded results, not GitHub CI results. Rows below name the executable test or approved Lab 1–3 replacement used by the release run.
 
 ## 1. Test policy
 
@@ -57,18 +57,44 @@ The final run must keep every approved Lab 1–3 suite, including health/categor
 
 ## 4. Final verification commands
 
-From the final integration checkout, the focused and complete server/client suites, production builds, migration plus guarded test-database seed twice, Playwright desktop/tablet/mobile projects, accessibility/responsive checks, `git diff --check`, and credential-pattern scan were run. Exact commands and results are recorded in `docs/lab-04/LAB_04_FINAL_SUBMISSION_REPORT.md`; the final integration PR head SHA is the release evidence commit.
+The post-merge UI regression commands and results below are bound to PR #64 head `ca82049e16816729c8883c98c105659625696464`, whose source tree matches the then-current `main` merge `e22a50e3a93250567e9722e3ce4c4c6402458c81`. A later, separately tracked tablet-overlap follow-up is recorded in §4.1:
+
+| Check | Command / evidence | Result |
+|---|---|---|
+| Server tests | `npm test -- --reporter=json --outputFile=../artifacts/lab-04/verification/ui-rework/post-merge-server-results.json` | 44 files; 136 passed; 0 failed |
+| Client tests | `npm test -- --reporter=json --outputFile=../artifacts/lab-04/verification/ui-rework/post-merge-client-results.json` | 46 files; 73 passed; 0 failed |
+| Playwright | `npx playwright test` | 36 passed; 0 failed; 0 skipped across desktop, tablet and mobile |
+| Builds | Server TypeScript build; client TypeScript and Vite production build | Passed |
+| Migration / guarded seed | Recorded in the original release evidence; PR #64 changed no database schema or backend behavior | No pending migrations; guarded seed verification passed |
+| GitHub checks | Merge SHA status and workflow-run queries | 0 status checks; 0 workflow runs returned; no CI success claimed |
+
+Full per-test JSON output is in `artifacts/lab-04/verification/ui-rework/post-merge-server-results.json`, `post-merge-client-results.json`, and `post-merge-e2e-results.json`. The 128-image screenshot inventory and hashes are in `post-merge-screenshot-manifest.json`; that manifest identifies capture source commit `ca82049e16816729c8883c98c105659625696464` and main merge `e22a50e3a93250567e9722e3ce4c4c6402458c81`.
+
+### 4.1 Final responsive follow-up — Issue #65 / PR #66
+
+The responsive review found Ticket-operation controls overlapping at the tablet boundary. PR #66 changed only `client/src/StaffTicketDetail.tsx` and `e2e/lab-04/compliance-responsive.visual.spec.ts`; GitHub confirms it was merged to `main` at `a76ee09dc558aa2efcd6f4ef3f3bd759ba3bed7e`, and the current `main` branch points to that SHA. Issue #65 is closed. The PR head was `097cdca6ba6e47b64ae053c034604a069bedb440`.
+
+| Check | Recorded result | Evidence and boundary |
+|---|---|---|
+| Client tests | 46 files; 73 passed; 0 failed | `responsive-fix-client-results.json`; PR #66 verification record |
+| Client production build | Passed | PR #66 verification record |
+| Full Playwright suite | 36 passed; 0 failed; 0 skipped; desktop/tablet/mobile | `responsive-fix-e2e-results.json`; includes the 768px, 991px and 992px overlap assertions |
+| Server tests/build | 44 files; 136 passed; build passed, freshly rerun after merge at server source commit `ca82049e16816729c8883c98c105659625696464` | `final-server-results.json` and `final-server-run.json`; PR #66 changed no server files, so tested server source is unchanged at `a76ee09` |
+| GitHub status/workflow checks | 0 statuses; 0 workflow runs | Queried against merge SHA `a76ee09dc558aa2efcd6f4ef3f3bd759ba3bed7e`; no CI success is claimed |
+
+The client and E2E JSON files preserve the local output; the PR #66 verification record ties those result counts to the reviewed follow-up. The fresh server JSON and run manifest preserve the rerun counts, commands, exit codes, and source commit. The tested server source matches final main because PR #66 contained no server changes. GitHub still returned no status checks or workflow runs, so these local results are not presented as CI.
 
 ## 5. Release evidence checklist
 
 - [x] Contract files existed before implementation PRs were completed.
 - [x] Every AC maps to at least one named executable test or an explicitly named Lab 1–3 replacement.
 - [x] All required test files exist at their documented paths or are mapped to the approved replacement file.
-- [x] Results are green from the final Lab 4 integration checkout; skipped visual workflow variants are documented and do not count as passing tests.
+- [x] Client and E2E results cover the merged PR #66 responsive correction; server tests/build were freshly rerun after merge, and the tested server source is unchanged at final main.
+- [x] Skipped visual workflow variants are counted as skipped, not passed; PR #66 reports 36 E2E passes and 0 skips.
 - [x] Migration and guarded compiled seed output proves the database is a `_test` database and the seed is idempotent.
 - [x] Screenshots cover dashboards, Actions Taken, workflow, loading/empty/error/forbidden, and desktop/tablet/mobile.
 - [x] Final PDF uses exactly `Answer Part 1` through `Answer Part 9` and links to the committed documents.
 
 ## 6. Final evidence source
 
-The release evidence is generated from the `lab4-staging` merge base `026ba36348b553449bc2e5b4fda799110ddad4e6` and the final integration branch head recorded on PR #62. The PDF and Markdown report are updated together; no result is copied from an uncommitted working tree.
+The original Lab 4 release was integrated by PR #62 at `96a34538efcb6675ac8129fd7e7b7c63e619e724`. The separately reviewed UI rework PR #64 was merged at `e22a50e3a93250567e9722e3ce4c4c6402458c81`; the responsive follow-up PR #66 was reviewed and merged to the current `main` tip `a76ee09dc558aa2efcd6f4ef3f3bd759ba3bed7e`. The evidence sections tie each run to its source revision. Server tests/build were freshly rerun after PR #66, and no GitHub CI pass is claimed.
