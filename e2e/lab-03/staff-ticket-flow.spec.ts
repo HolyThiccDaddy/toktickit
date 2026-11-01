@@ -1,9 +1,12 @@
+import { backendUrl, frontendUrl } from "../support/runtime.mjs";
+import { navigateTo } from "../support/auth.js";
+import { evidencePath } from "../support/evidence.js";
 import { expect, test } from "../playwright.js";
 import { mkdir } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { e2eAccounts, signInAs, signInAsStaff } from "../support/auth.js";
 
-const evidenceDir = fileURLToPath(new URL("../../artifacts/lab-03/screenshots/staff-flow/states/", import.meta.url));
+const evidenceDir = evidencePath(fileURLToPath(new URL("../../artifacts/lab-03/screenshots/staff-flow/states/", import.meta.url)));
 const attachmentFixture = fileURLToPath(new URL("../../artifacts/lab-02/screenshots/ticket-detail/01_ticket_detail_readonly.png", import.meta.url));
 async function capture(page: any, name: string) {
   await mkdir(evidenceDir, { recursive: true });
@@ -17,7 +20,7 @@ async function captureDetailCard(page: any, index: number, name: string) {
 test.describe("Issue #38 IT Staff queue and ticket operations", () => {
   test("opens the shared queue and staff ticket detail with safe communication controls", async ({ page }) => {
     await signInAs(page, e2eAccounts.sarah);
-    await page.getByRole("button", { name: "+ Create Ticket" }).click();
+    await navigateTo(page, "+ Create Ticket");
     await page.getByLabel("Category").selectOption({ label: "Network" });
     await page.getByLabel("Related System").selectOption({ label: "VPN" });
     const categoryId = await page.getByLabel("Category").inputValue();
@@ -30,11 +33,11 @@ test.describe("Issue #38 IT Staff queue and ticket operations", () => {
     await expect(page.getByRole("heading", { name: "Ticket created successfully" })).toBeVisible();
     // Create additional real tickets through the authenticated API so the
     // queue's second page is evidence from the running app, not a mock-up.
-    const csrfResponse = await page.request.get("http://127.0.0.1:3002/api/auth/csrf");
+    const csrfResponse = await page.request.get(`${backendUrl}/api/auth/csrf`);
     expect(csrfResponse.ok()).toBeTruthy();
     const { data: { csrfToken } } = await csrfResponse.json();
     for (let index = 1; index <= 21; index += 1) {
-      const response = await page.request.post("http://127.0.0.1:3002/api/tickets", {
+      const response = await page.request.post(`${backendUrl}/api/tickets`, {
         headers: { "X-CSRF-Token": csrfToken },
         multipart: {
           categoryId,
@@ -51,7 +54,7 @@ test.describe("Issue #38 IT Staff queue and ticket operations", () => {
     // that token instead of retaining its earlier one for Sign out.
     await page.reload();
     await expect(page.getByRole("heading", { name: /TokTickIT IT Service Desk/ })).toBeVisible();
-    await page.getByRole("button", { name: "Sign out" }).click();
+    await navigateTo(page, "Sign out");
     await expect(page.getByRole("heading", { name: "Sign in to IT Service Desk" })).toBeVisible();
 
     await signInAsStaff(page, e2eAccounts.alexStaff);
@@ -103,17 +106,17 @@ test.describe("Issue #38 IT Staff queue and ticket operations", () => {
 
     // Resolve the second staff member's ID from their authenticated session.
     // The tested reassignment is a real operation against the test database.
-    const secondContext = await page.context().browser()!.newContext({ baseURL: "http://127.0.0.1:5173" });
+    const secondContext = await page.context().browser()!.newContext({ baseURL: frontendUrl });
     try {
       const secondPage = await secondContext.newPage();
       await signInAsStaff(secondPage, e2eAccounts.caseyStaff);
-      const meResponse = await secondPage.request.get("http://127.0.0.1:3002/api/auth/me");
+      const meResponse = await secondPage.request.get(`${backendUrl}/api/auth/me`);
       expect(meResponse.ok()).toBeTruthy();
       const { data: secondStaff } = await meResponse.json();
       await page.getByLabel("Assignee ID").fill(String(secondStaff.id));
       await page.getByRole("button", { name: "Save assignment" }).click();
       await expect.poll(async () => {
-        const response = await page.request.get("http://127.0.0.1:3002/api/staff/tickets?q=Staff%20queue%20E2E%20regression");
+        const response = await page.request.get(`${backendUrl}/api/staff/tickets?q=Staff%20queue%20E2E%20regression`);
         const { data } = await response.json();
         return data.items[0]?.owner?.displayName;
       }).toBe("Casey Staff");
@@ -189,13 +192,13 @@ test.describe("Issue #38 IT Staff queue and ticket operations", () => {
     await expect(page.getByRole("row").filter({ hasText: "Evidence queue ticket 01" })).toContainText("Unassigned");
     await page.screenshot({ path: `${evidenceDir}/07_queue_assigned_unassigned.png` });
 
-    await page.getByRole("button", { name: "Sign out" }).click();
+    await navigateTo(page, "Sign out");
     await signInAs(page, e2eAccounts.sarah);
     await expect(page.getByRole("button", { name: "Ticket Queue" })).not.toBeVisible();
-    const forbidden = await page.request.get("http://127.0.0.1:3002/api/staff/tickets");
+    const forbidden = await page.request.get(`${backendUrl}/api/staff/tickets`);
     expect(forbidden.status()).toBe(403);
     await page.screenshot({ path: `${evidenceDir}/17_requester_staff_access_denied.png` });
-    const forbiddenPage = await page.goto("http://127.0.0.1:3002/api/staff/tickets");
+    const forbiddenPage = await page.goto(`${backendUrl}/api/staff/tickets`);
     expect(forbiddenPage?.status()).toBe(403);
     await page.screenshot({ path: `${evidenceDir}/19_requester_staff_403_response.png` });
   });
@@ -211,10 +214,10 @@ test.describe("Issue #38 IT Staff queue and ticket operations", () => {
     await page.getByLabel("Sort direction").selectOption("asc");
     await expect(page.getByLabel("Sort by", { exact: true })).toHaveValue("itPriority");
     await expect(page.getByLabel("Sort direction")).toHaveValue("asc");
-    const forbidden = await page.request.get("http://127.0.0.1:3002/api/admin/users");
+    const forbidden = await page.request.get(`${backendUrl}/api/admin/users`);
     expect(forbidden.status()).toBe(403);
     await page.screenshot({ path: `${evidenceDir}/18_staff_admin_access_denied.png` });
-    const forbiddenPage = await page.goto("http://127.0.0.1:3002/api/admin/users");
+    const forbiddenPage = await page.goto(`${backendUrl}/api/admin/users`);
     expect(forbiddenPage?.status()).toBe(403);
     await page.screenshot({ path: `${evidenceDir}/20_staff_admin_403_response.png` });
   });

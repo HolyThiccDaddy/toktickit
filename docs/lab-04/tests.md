@@ -1,10 +1,23 @@
 # Lab 4 Test Driven Development Plan
 
-Status: Final evidence is prepared from `lab4-staging` at merge SHA `026ba36348b553449bc2e5b4fda799110ddad4e6`. Rows below name the executable test or the approved Lab 1–3 replacement used by the final release run.
+Status: Historical release evidence below was prepared from `lab4-staging` at merge SHA `026ba36348b553449bc2e5b4fda799110ddad4e6`. The Issue #63 UI rework is validated separately in [verification.md](../ux-ui-rework/verification.md); historical pass counts and screenshots do not certify the current local working tree. Rows below name the executable test or the approved Lab 1–3 replacement used by the original release run.
 
 ## 1. Test policy
 
 Write a failing focused test before each implementation slice. Keep the Lab 1–3 suites as a required regression gate. Destructive tests load `server/.env.test`, verify that `DATABASE_URL` names a database ending in `_test`, and use isolated deterministic fixtures. Every result in the final evidence must include the exact commit SHA and command actually run.
+
+### Issue #63 additional regression coverage
+
+| Coverage | Executable file | Requirement |
+|---|---|---|
+| Repeated toolbar searches while a queue/list is already mounted; requester/staff permission-specific shell | `client/tests/lab-04/WorkspaceShell.test.tsx` | Preserve exact drill-down/search predicates and role boundaries |
+| Mobile closed-navigation inert state, Escape and focus restoration | `client/tests/lab-04/WorkspaceShell.test.tsx` | AC-13/14 and Lab 3 keyboard/focus regression |
+| Attachment dialog focus trapping, Escape and return to trigger | `client/tests/lab-02/TicketDetail.test.tsx` | Preserve attachment behavior and accessible dialogs |
+| Actual sticky positions, reduced motion and real Action create/edit/requester read-only flows at desktop/tablet/mobile | `e2e/lab-04/compliance-responsive.visual.spec.ts` | AC-02/03/04/12/13/14 and final visual evidence |
+
+The attachment component tests mock their unrelated Actions history requests, so they cannot accidentally consume the local preview API. No test assertion is removed to conceal a product failure. Navigation helpers open the responsive disclosure before selecting a destination, preserving the same role and workflow assertions.
+
+For isolated E2E runs set `TOKTICKIT_E2E_FRONTEND_PORT` and `TOKTICKIT_E2E_BACKEND_PORT`; the runner configures the backend's allowed `CLIENT_ORIGIN` to that exact frontend. `TOKTICKIT_E2E_RESULTS` and `TOKTICKIT_E2E_SCREENSHOTS` isolate the new evidence without replacing earlier-lab captures. Vite uses strict-port mode, and cleanup only stops the PIDs recorded for that port pair. Database reset still requires the actual database name to end in `_test`.
 
 ## 2. Acceptance-criterion traceability
 

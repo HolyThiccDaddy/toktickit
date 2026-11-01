@@ -1,3 +1,4 @@
+import { navigateTo } from "../support/auth.js";
 import { expect, test } from "../playwright.js";
 import { e2eAccounts, signInAs, signInAsAdmin, signInAsStaff } from "../support/auth.js";
 
@@ -6,7 +7,7 @@ test.describe("Lab 4 Actions Taken UI", () => {
     const summary = "Lab 4 Actions Taken UI E2E";
 
     await signInAs(page, e2eAccounts.jennifer);
-    await page.getByRole("button", { name: "+ Create Ticket" }).click();
+    await navigateTo(page, "+ Create Ticket");
     await page.getByLabel("Category").selectOption({ label: "Network" });
     await page.getByLabel("Related System").selectOption({ label: "VPN" });
     await page.getByLabel("Ticket Summary").fill(summary);
@@ -16,7 +17,7 @@ test.describe("Lab 4 Actions Taken UI", () => {
     await expect(page.getByRole("heading", { name: "Ticket created successfully" })).toBeVisible();
     await page.getByRole("button", { name: "Back" }).click();
     await expect(page.getByRole("heading", { name: "My Tickets" })).toBeVisible();
-    await page.getByRole("button", { name: "Sign out" }).click();
+    await navigateTo(page, "Sign out");
     await expect(page.getByRole("heading", { name: "Sign in to IT Service Desk" })).toBeVisible();
 
     await signInAsStaff(page, e2eAccounts.alexStaff);
@@ -58,11 +59,11 @@ test.describe("Lab 4 Actions Taken UI", () => {
     await expect(page.getByText("The requester can connect successfully after the route change and validation.")).toBeVisible();
     await page.getByRole("button", { name: "View edit history" }).click();
     await expect(page.getByText("Prior result:")).toBeVisible();
-    await page.getByRole("button", { name: "Sign out" }).click();
+    await navigateTo(page, "Sign out");
     await expect(page.getByRole("heading", { name: "Sign in to IT Service Desk" })).toBeVisible();
 
     await signInAs(page, e2eAccounts.jennifer);
-    await page.getByRole("button", { name: "My Tickets" }).click();
+    await navigateTo(page, "My Tickets");
     const requesterRow = page.getByRole("row").filter({ hasText: summary });
     await expect(requesterRow).toBeVisible();
     await requesterRow.getByRole("button", { name: "View", exact: true }).click();
@@ -73,11 +74,11 @@ test.describe("Lab 4 Actions Taken UI", () => {
     await page.getByRole("button", { name: "View edit history" }).click();
     await expect(page.getByText("Prior result:")).toBeVisible();
     await expect(page.getByText("The requester can connect successfully after the route change.")).toBeVisible();
-    await page.getByRole("button", { name: "Sign out" }).click();
+    await navigateTo(page, "Sign out");
     await expect(page.getByRole("heading", { name: "Sign in to IT Service Desk" })).toBeVisible();
 
     await signInAsAdmin(page, e2eAccounts.administrator);
-    await page.getByRole("button", { name: "Ticket Queue" }).click();
+    await navigateTo(page, "Ticket Queue");
     await page.getByLabel("Search queue").fill(summary);
     const adminRow = page.getByRole("row").filter({ hasText: summary });
     await expect(adminRow).toBeVisible();

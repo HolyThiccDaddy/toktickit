@@ -24,7 +24,10 @@ const detail: api.TicketDetail = {
 };
 
 describe("Requester Ticket Detail conversation actions", () => {
-  beforeEach(() => vi.restoreAllMocks());
+  beforeEach(() => {
+    vi.restoreAllMocks();
+    vi.spyOn(api, "getActions").mockResolvedValue({ items: [], meta: { page: 1, pageSize: 20, total: 0, totalPages: 0 } });
+  });
 
   it("posts an append-only public comment as the authenticated requester", async () => {
     vi.spyOn(api, "getTicket").mockResolvedValue(detail);

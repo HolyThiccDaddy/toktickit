@@ -64,8 +64,16 @@ export async function signInAs(page: any, account: E2EAccount) {
 }
 
 export async function signOut(page: any) {
-  await page.getByRole("button", { name: "Sign out" }).click();
+  await navigateTo(page, "Sign out");
   await expect(page.getByRole("heading", { name: "Sign in to IT Service Desk" })).toBeVisible();
+}
+
+export async function navigateTo(page: any, label: string) {
+  const destination = page.getByRole("button", { name: label, exact: true });
+  if (!await destination.isVisible()) {
+    await page.getByRole("button", { name: "Open navigation", exact: true }).click();
+  }
+  await destination.click();
 }
 
 export async function signInAsStaff(page: any, account: E2EAccount) {

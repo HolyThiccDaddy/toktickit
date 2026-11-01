@@ -1,10 +1,10 @@
 # TokTickIT Lab 4 Final Submission Report
 
-Release evidence for the final Lab 4 integration. This report is tied to the `lab4-staging` merge base `026ba36348b553449bc2e5b4fda799110ddad4e6` and the final integration branch `feature/lab4-issue-6-final-release`. The final PR head SHA is the binding evidence revision recorded by GitHub for the integration review; post-merge `main` verification remains a separate gate.
+Historical release evidence for the final Lab 4 integration. PR #62 was formally approved and merged by @osizk into main at `96a34538efcb6675ac8129fd7e7b7c63e619e724` on 31 October 2026. The published Issue #63 UI rework has separate [verification and screenshots](../ux-ui-rework/verification.md); the original counts and PDF below do not certify that UI revision awaiting peer review. This report is tied to the `lab4-staging` merge base `026ba36348b553449bc2e5b4fda799110ddad4e6` and the final integration branch `feature/lab4-issue-6-final-release`. The final PR head SHA is the binding evidence revision recorded by GitHub for the integration review; post-merge `main` verification remains a separate gate.
 
 ## Answer Part 1 - Git Use with Engineering Workflow
 
-The ordered Lab 4 workflow is recorded in [reviewer.md](https://github.com/HolyThiccDaddy/toktickit/blob/feature/lab4-issue-6-final-release/docs/lab-04/reviewer.md): Issues #51-#55 were implemented on feature branches, reviewed, and merged into `lab4-staging`; the final release branch then targets `main` through [PR #62](https://github.com/HolyThiccDaddy/toktickit/pull/62). The final Issue #56 remains pending formal approval and teammate merge, so no post-merge `main` result is claimed.
+The ordered Lab 4 workflow is recorded in [reviewer.md](https://github.com/HolyThiccDaddy/toktickit/blob/feature/lab4-issue-6-final-release/docs/lab-04/reviewer.md): Issues #51-#55 were implemented on feature branches, reviewed, and merged into `lab4-staging`; the final release branch then targets `main` through [PR #62](https://github.com/HolyThiccDaddy/toktickit/pull/62). Issue #56 was approved and merged through PR #62. The historical candidate test output below is not a claim of a post-merge main rerun.
 
 The report also links the committed [README](https://github.com/HolyThiccDaddy/toktickit/blob/feature/lab4-issue-6-final-release/README.md), [.gitignore](https://github.com/HolyThiccDaddy/toktickit/blob/feature/lab4-issue-6-final-release/.gitignore), repository tree, evidence folders, peer identity, PR links, comments, responses, and approvals. The final Kanban and `main`-branch checks are explicitly a post-merge gate.
 
@@ -72,7 +72,7 @@ The committed [ui-spec.md](https://github.com/HolyThiccDaddy/toktickit/blob/feat
 - [release screenshots](https://github.com/HolyThiccDaddy/toktickit/tree/feature/lab4-issue-6-final-release/artifacts/lab-04/screenshots/release)
 - [final Markdown report](https://github.com/HolyThiccDaddy/toktickit/blob/feature/lab4-issue-6-final-release/docs/lab-04/LAB_04_FINAL_SUBMISSION_REPORT.md)
 
-The final integration gate remains explicit: formal peer approval, teammate merge into `main`, and post-merge verification of the PDF, documents, six Issues, and Kanban board are still required.
+PR #62 approval and teammate merge are verified. The UI rework still needs its own implementation commit, peer review, teammate merge and refreshed main/PDF/Kanban evidence; see the linked verification record.
 
 ## Verification summary
 
@@ -83,4 +83,4 @@ The following commands were run from the final-integration evidence workspace an
 - Playwright full suite: 30 tests total, 28 passed, and 2 documented responsive workflow variants skipped by project guard.
 - Prisma migration: no pending migrations on the guarded `_test` database; compiled seed passed twice with identical deterministic output.
 - `git diff --check`: passed; credential-pattern scan: no matches.
-- Post-merge `main` verification: pending until PR #62 is approved and merged; no final `main` result is claimed yet.
+- PR #62 was approved and merged; the historical candidate runs above remain separate from final-main or Issue #63 UI results. See the current verification record for local rework commands and remaining publication gates.

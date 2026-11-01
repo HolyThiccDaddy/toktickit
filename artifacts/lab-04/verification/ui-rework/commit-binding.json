@@ -1,0 +1,36 @@
+{
+  "implementationCommit": "3eb6535f4658ad96ba2fabdc1620331e00302b3f",
+  "execution": "Tests were executed before commit; unchanged normalized application/test/config content was verified against this exact Git commit. No post-commit rerun or final-main run is claimed.",
+  "verifiedApplicationAndTestFiles": 121,
+  "mismatches": [],
+  "metadataLineEndingCorrections": [
+    {
+      "path": "server/prisma/migrations/migration_lock.toml",
+      "previousRawHash": "74a9137885ce73d3ff088d79d658f8066e05e680fb51c0800a290c91c0c01d48",
+      "normalizedHash": "693566b52c49db47a2b0901d12400aa3d710d13a49f4a2a154b80c0505ed737c",
+      "reason": "CRLF normalized to LF in UTF-8 metadata, matching Git blob content"
+    },
+    {
+      "path": "client/tests/lab-03/.gitkeep",
+      "previousRawHash": "7eb70257593da06f682a3ddda54a9d260d4fc514f645237f5ca74b08f8da61a6",
+      "normalizedHash": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "reason": "CRLF normalized to LF in UTF-8 metadata, matching Git blob content"
+    },
+    {
+      "path": "e2e/lab-03/.gitkeep",
+      "previousRawHash": "7eb70257593da06f682a3ddda54a9d260d4fc514f645237f5ca74b08f8da61a6",
+      "normalizedHash": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "reason": "CRLF normalized to LF in UTF-8 metadata, matching Git blob content"
+    },
+    {
+      "path": "server/tests/lab-03/.gitkeep",
+      "previousRawHash": "7eb70257593da06f682a3ddda54a9d260d4fc514f645237f5ca74b08f8da61a6",
+      "normalizedHash": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "reason": "CRLF normalized to LF in UTF-8 metadata, matching Git blob content"
+    }
+  ],
+  "screenshots": {
+    "count": 129,
+    "allMatchCommittedBlobs": true
+  }
+}

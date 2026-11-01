@@ -1,14 +1,11 @@
 import { execFile as execFileCallback, spawn } from "node:child_process";
 import { access, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
+import { frontendPort, backendPort, frontendUrl, backendUrl, statePath } from "./support/runtime.mjs";
 
 const repoRoot = resolve(fileURLToPath(new URL("..", import.meta.url)));
-const statePath = resolve(tmpdir(), "toktickit-e2e-processes.json");
-const backendUrl = "http://127.0.0.1:3002";
-const frontendUrl = "http://127.0.0.1:5173";
 const execFile = promisify(execFileCallback);
 
 function start(command, args, cwd, env) {
@@ -44,10 +41,11 @@ export default async function globalSetup() {
   await execFile("node", ["e2e/support/reset-test-db.mjs"], { cwd: repoRoot, windowsHide: true });
   const backend = start("node", ["dist/src/index.js"], resolve(repoRoot, "server"), {
     DOTENV_CONFIG_PATH: ".env.test",
-    PORT: "3002",
+    PORT: String(backendPort),
+    CLIENT_ORIGIN: frontendUrl,
     TOKTICKIT_UPLOAD_ROOT: "./tmp/e2e-uploads",
   });
-  const frontend = start("node", ["node_modules/vite/bin/vite.js", "--host", "127.0.0.1"], resolve(repoRoot, "client"), {
+  const frontend = start("node", ["node_modules/vite/bin/vite.js", "--host", "127.0.0.1", "--port", String(frontendPort), "--strictPort", "--configLoader", "runner"], resolve(repoRoot, "client"), {
     VITE_API_URL: backendUrl,
   });
   backend.unref();

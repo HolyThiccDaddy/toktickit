@@ -1,10 +1,11 @@
+import { navigateTo } from "../support/auth.js";
 import { expect, test } from "../playwright.js";
 import { e2eAccounts, signInAs } from "../support/auth.js";
 
 test.describe("Issue #37 requester communication regression", () => {
   test("adds a public comment and records Problem appears resolved without closing the ticket", async ({ page }) => {
     await signInAs(page, e2eAccounts.sarah);
-    await page.getByRole("button", { name: "+ Create Ticket" }).click();
+    await navigateTo(page, "+ Create Ticket");
     await page.getByLabel("Category").selectOption({ label: "Software" });
     await page.getByLabel("Related System").selectOption({ label: "LEB2 App" });
     await page.getByLabel("Ticket Summary").fill("Requester communication regression");
@@ -24,6 +25,6 @@ test.describe("Issue #37 requester communication regression", () => {
 
     await page.getByRole("button", { name: "Problem appears resolved" }).click();
     await expect(page.getByText(/Indicated/)).toBeVisible();
-    await expect(page.getByText("NEW", { selector: ".status-badge" })).toBeVisible();
+    await expect(page.locator(".status-badge").filter({ hasText: /^NEW$/ })).toBeVisible();
   });
 });

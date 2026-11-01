@@ -1,0 +1,1167 @@
+{
+  "status": "implementation-committed",
+  "planningHead": "1cfa768860691c93e8349dff5e217f103cf992ce",
+  "mergedLab4MainBaseline": "96a34538efcb6675ac8129fd7e7b7c63e619e724",
+  "normalization": "Every UTF-8 text file normalizes CRLF to LF, including .gitkeep and .toml; binary bytes remain unchanged. Documentation was finalized after the runs.",
+  "groups": {
+    "application": {
+      "sha256": "5a930fc92429e713973c599a88105c2abf4584f5c1b42bcd665f117101c75ac7",
+      "files": [
+        {
+          "path": "client/public/fonts/Inter-LICENSE.txt",
+          "sha256": "262481e844521b326f5ecd053e59b98c8b2da78c8ee1bdbb6e8174305e54935a"
+        },
+        {
+          "path": "client/public/fonts/InterVariable.woff2",
+          "sha256": "693b77d4f32ee9b8bfc995589b5fad5e99adf2832738661f5402f9978429a8e3"
+        },
+        {
+          "path": "client/src/ActionsTaken.tsx",
+          "sha256": "3928e6af88b324942b0e2d99d6959328415224b3509a7da3e9a7b9c210bd3fc3"
+        },
+        {
+          "path": "client/src/App.tsx",
+          "sha256": "efa7dd638c1a525ffbabb579ea524a12924f033f17823ec62fd66c92a0fd693f"
+        },
+        {
+          "path": "client/src/ChangePassword.tsx",
+          "sha256": "6c3c729c97044fae855625cddd0213b323d2be23787ddb105ac48de28d61b89c"
+        },
+        {
+          "path": "client/src/CreateTicket.tsx",
+          "sha256": "7502fe522541195bfbf5532ff215e31e5e7f11b9006e3e58fe0d848c6a4e3358"
+        },
+        {
+          "path": "client/src/Login.tsx",
+          "sha256": "7b1baef3494e78104052f9a946a66f9ffe12f2e862ec58df0d4864b9495e26c0"
+        },
+        {
+          "path": "client/src/MyTickets.tsx",
+          "sha256": "3c030def58422b15c0c5c9bd96c5cf438386f86cd4002153d2d1c3963638b22c"
+        },
+        {
+          "path": "client/src/RequesterDashboard.tsx",
+          "sha256": "0e2fe77c41de53be5ab7b04d84aba66f616bf22abcd5962a93e54149657b68ac"
+        },
+        {
+          "path": "client/src/StaffActionsList.tsx",
+          "sha256": "9cb310220c39ff74be4f3dad1e73792c5d16c57955085c524e74055107502e39"
+        },
+        {
+          "path": "client/src/StaffDashboard.tsx",
+          "sha256": "d70f31860207dbf20e576788d84c80b0b42cdd2bf13380516b4430a929ae5ffd"
+        },
+        {
+          "path": "client/src/StaffQueue.tsx",
+          "sha256": "fbd1c8269ff4bf33d2ab50d9a0ac07d8c37214ac035e14a18389e054f15d9a11"
+        },
+        {
+          "path": "client/src/StaffTicketDetail.tsx",
+          "sha256": "58c16df8292c4240e767f71f7f76b09a057be0a4f3901aebb33f1e5ed367e91a"
+        },
+        {
+          "path": "client/src/StaffTicketQueue.tsx",
+          "sha256": "6624697d0e300b5b7ea4735eac6f043743f1e20b0bd6a842406adfea585be172"
+        },
+        {
+          "path": "client/src/TicketDetail.tsx",
+          "sha256": "ee8ba914839a6cb6209674ff671e5b96d67e3b90f34c468064e2a343b075442b"
+        },
+        {
+          "path": "client/src/UserManagement.tsx",
+          "sha256": "1427187d41208a291765b5c9c4cab45f1eb292bb5d3e2f2c4f6370adaec5f4ee"
+        },
+        {
+          "path": "client/src/api.ts",
+          "sha256": "7266b1ba08203eed61408eb2cf0a46a193cedc1cf63087ea1f3c72385ac21834"
+        },
+        {
+          "path": "client/src/main.tsx",
+          "sha256": "696c7192e78c45f6db0057be50257a9d52edea3811077e39de657e09841eeac2"
+        },
+        {
+          "path": "client/src/styles.css",
+          "sha256": "ecf0da7b053e8c94e918d04cc862ddc142a97418803cd14fe45f7b15610ab2ba"
+        },
+        {
+          "path": "client/src/useDialogFocus.ts",
+          "sha256": "441c30011191e655aa536a3fd16a4be3fd57e8d12043796a7c90b683ac5635d6"
+        },
+        {
+          "path": "client/src/vite-env.d.ts",
+          "sha256": "65996936fbb042915f7b74a200fcdde7e410f32a669b1ab9597cfaa4b0faddb5"
+        },
+        {
+          "path": "server/prisma/migrations/20260811145821_init/migration.sql",
+          "sha256": "dc8643a639fc77f6a7faef34f12d6d4ab8370feecc7fb31aebb74f38c43c3608"
+        },
+        {
+          "path": "server/prisma/migrations/20260822123430_lab2_schema/migration.sql",
+          "sha256": "1112ddf350f75d318c03b6c38bdf9403b78f15edc9373ef9a685bcb414de3823"
+        },
+        {
+          "path": "server/prisma/migrations/20260822141640_lab2_schema_refinements/migration.sql",
+          "sha256": "3a416c60b8572139c0aa8669af819d0812ff16b8c2b63996d0ffb200d1649ac8"
+        },
+        {
+          "path": "server/prisma/migrations/20260912095108_lab3_authentication/migration.sql",
+          "sha256": "e2e6fa26bfe687b367d793d3369e9f71e93373647bb60ad7bdd8afbab13dbd76"
+        },
+        {
+          "path": "server/prisma/migrations/20260912095900_lab3_user_relationships/migration.sql",
+          "sha256": "e54199fc0b930d2d6799796d7cdf4edd807da11d8a2117861d4f14c3199f49e9"
+        },
+        {
+          "path": "server/prisma/migrations/20261031160000_lab4_actions_taken/migration.sql",
+          "sha256": "df556b0d844b079517a58c3ab0c5333b33a10171c39c71f7f068e473bbeb12ad"
+        },
+        {
+          "path": "server/prisma/migrations/migration_lock.toml",
+          "sha256": "693566b52c49db47a2b0901d12400aa3d710d13a49f4a2a154b80c0505ed737c"
+        },
+        {
+          "path": "server/prisma/schema.prisma",
+          "sha256": "61b52007ba76d45b9e32f3410152d388c350b0da2685ef00de2092d828636993"
+        },
+        {
+          "path": "server/prisma/seed.ts",
+          "sha256": "c6c18b3974865a61becd364619550949028bd6d00b5da2ecd401ba68189bafde"
+        },
+        {
+          "path": "server/src/actions.ts",
+          "sha256": "fff9960deac74ee7d78abc8188bb3bc602e631b6e8b2ec235f7a60b0660fbca7"
+        },
+        {
+          "path": "server/src/admin.ts",
+          "sha256": "95f479ac64b8c789f59198e152960d88c5e2abe4367f72a8a40f5a01eaf18514"
+        },
+        {
+          "path": "server/src/app.ts",
+          "sha256": "482dbafc4fd5f42115fd914fe16fdd17dbffe6ed38c29c64e1ca163605048ea5"
+        },
+        {
+          "path": "server/src/auth.ts",
+          "sha256": "783f89f701a890c7a67e22f903fac5918d343c11c3344b4e63b2398a8984a00f"
+        },
+        {
+          "path": "server/src/dashboard.ts",
+          "sha256": "9637fe17ea9e92a372411bd81446cfa7a8b9f3fae8bda6380f4434c25bc40631"
+        },
+        {
+          "path": "server/src/index.ts",
+          "sha256": "30f8cf2c4b5df801ef9126a92740c3574f6ca2c0b7db91dd02ed4267cf4649b3"
+        },
+        {
+          "path": "server/src/prisma.ts",
+          "sha256": "6ad959d9601456479916cbad8d682e02ba333999e3f499e0c363ff96dc0b698e"
+        },
+        {
+          "path": "server/src/staff.ts",
+          "sha256": "7420d0d0873b9a0310b2912e2983bc132da6506775cf1fba466ccda89694c4eb"
+        },
+        {
+          "path": "server/src/tickets.ts",
+          "sha256": "5868053f7d0b6770832665312293da705e89d5850014865d6ec95fc1b6257202"
+        }
+      ]
+    },
+    "testsAndHarness": {
+      "sha256": "da2ddfcace764e8ecc5b64edc1bcd3824c828b018a754554912c9a52379b73ac",
+      "files": [
+        {
+          "path": "client/package-lock.json",
+          "sha256": "09b7fe094914e53621a3d551336dbc8413a91dd39b9ee6a93e4253971b3ab37e"
+        },
+        {
+          "path": "client/package.json",
+          "sha256": "1b8f42dd1a3ca254e610f1167e5932fb45644aaefcc1d156bd06497760144c4a"
+        },
+        {
+          "path": "client/playwright.config.ts",
+          "sha256": "622110820e0764a4da2a4a659cc3ccb9c4ac2c131fdc558269fda5abf67aab1d"
+        },
+        {
+          "path": "client/tests/lab-01/App.test.tsx",
+          "sha256": "b78c421ae895693c3f30b09009ab25ffc52297377331feb7de41e20025a6f5cb"
+        },
+        {
+          "path": "client/tests/lab-02/.gitkeep",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "client/tests/lab-02/CreateTicket.test.tsx",
+          "sha256": "4822be89a7dcbb92784ba025d80b3d1bbf0a276603f2b1521239258c5d5c3855"
+        },
+        {
+          "path": "client/tests/lab-02/MyTickets.test.tsx",
+          "sha256": "9f13900dda8bcc3fedcba3db35c30f8c1c9179d59a0d20251e21fb4be9c174d9"
+        },
+        {
+          "path": "client/tests/lab-02/RequesterSelector.test.tsx",
+          "sha256": "4eec1981a384123a7a6831f317d9f6c3f34ca0f9556908e31afd83cc0021bb25"
+        },
+        {
+          "path": "client/tests/lab-02/ResponsiveLayout.test.tsx",
+          "sha256": "ea9cb10ff6cc9f98459e6935c5d7e2064c4c554c398c31571fd5063d38e5a543"
+        },
+        {
+          "path": "client/tests/lab-02/ThemeStyles.test.tsx",
+          "sha256": "7ab8c108063b7b3651ec3d99c5592bfcd46389b9d4452842e11338661e4412b1"
+        },
+        {
+          "path": "client/tests/lab-02/TicketDetail.test.tsx",
+          "sha256": "15d293e8d2d397b5cef258f0f5087367a006007e96d2716671d9d71d43be6107"
+        },
+        {
+          "path": "client/tests/lab-02/api.test.tsx",
+          "sha256": "0f631a81bdb8c1f0737495a3c1a0004041c18185435f53179409fe2c23a3ef29"
+        },
+        {
+          "path": "client/tests/lab-03/.gitkeep",
+          "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+        },
+        {
+          "path": "client/tests/lab-03/App.test.tsx",
+          "sha256": "a53f94dfa20ccac8825cbb3657c66d517ec3a971fc5740b8395f6a8de0730fff"
+        },
+        {
+          "path": "client/tests/lab-03/ChangePassword.test.tsx",
+          "sha256": "d5ca0e28bce66caab024f0fa8ae3f15e0436fab93b7278b2120a540fa767c809"
+        },
+        {
+          "path": "client/tests/lab-03/Login.test.tsx",
+          "sha256": "82e4eeae07180849cb14a3cc9c1090ae98b2b093c79ba2aaa5e84ed00bd5647e"
+        },
+        {
+          "path": "client/tests/lab-03/RequesterTicketDetail.test.tsx",
+          "sha256": "1e53ea067c0e794c1c33fe15441fa7a3dff3bcd1ee3b6a0ad28272004ec0b1de"
+        },
+        {
+          "path": "client/tests/lab-03/StaffTicketDetail.test.tsx",
+          "sha256": "b46d17f3ed23cc5d7559ab0ab66b6c6328601e22e8924c94c2cb58ebfafa550a"
+        },
+        {
+          "path": "client/tests/lab-03/StaffTicketQueue.test.tsx",
+          "sha256": "1f5f81e53ebfd9597c709c5b07ceb69fd10f07955d153fe7853e5140804814ee"
+        },
+        {
+          "path": "client/tests/lab-03/UserManagement.test.tsx",
+          "sha256": "8378803d1e09f1e06fddd6df88d018b6b296f042626d7aceec3a59197dbe5dae"
+        },
+        {
+          "path": "client/tests/lab-04/ActionsTaken.test.tsx",
+          "sha256": "29acfd42f0770621bf74b1b91d9ebdf947b340624806e134f10ac2ce600e8cda"
+        },
+        {
+          "path": "client/tests/lab-04/RequesterDashboard.test.tsx",
+          "sha256": "6ced98faebc9910b3a6024587dd619807dab35e0bc9693c166dec5caf5a95d83"
+        },
+        {
+          "path": "client/tests/lab-04/StaffActionsList.test.tsx",
+          "sha256": "410373668e53c47e6a2b1900f2305840f3cc609e72d8b754abefafc67d403a0f"
+        },
+        {
+          "path": "client/tests/lab-04/StaffDashboard.test.tsx",
+          "sha256": "1d17f3664a5552dc1bc8254df64527d7ee63a030e7173f55a9aa1989e50072ac"
+        },
+        {
+          "path": "client/tests/lab-04/TicketWorkflow.test.tsx",
+          "sha256": "fa2966819dee45c2077b92f626488a47e58280365b18f73284e4c46e564f0241"
+        },
+        {
+          "path": "client/tests/lab-04/WorkspaceShell.test.tsx",
+          "sha256": "d091a1975cb60b5f315cc7ff2a4dfe7b7113a36b918d00f8a115cc7acbea6f5f"
+        },
+        {
+          "path": "client/tests/setup.ts",
+          "sha256": "17f002171774cf7788bb5ee05d3642dcd36224ce98651921aae4b4acc7bfbaa7"
+        },
+        {
+          "path": "client/tsconfig.json",
+          "sha256": "c5cceaac4758dd26457bc1b996f3bf4d9cba9cd6cef34ac476174a6fe552e1a4"
+        },
+        {
+          "path": "e2e/global-setup.mjs",
+          "sha256": "59335d6bfadaeea4e895c365593056bd91a79e30d9913a14992cf0e7db52ed14"
+        },
+        {
+          "path": "e2e/global-teardown.mjs",
+          "sha256": "cc5e7c2f845495209d73b3955d4ff5b54ff42b8dee2b492d9e4c0e3c44f7b658"
+        },
+        {
+          "path": "e2e/lab-02/.gitkeep",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "e2e/lab-02/multi-requester-isolation.spec.ts",
+          "sha256": "a1408e447aa5611620677eaf99cbdb6ca14e62b40affb74006f147a9990fffb9"
+        },
+        {
+          "path": "e2e/lab-02/requester-ticket-flow.spec.ts",
+          "sha256": "ad957da1259d9d5781283b11d0e4376abbb731d6c32a018b4eac4852fe1dee08"
+        },
+        {
+          "path": "e2e/lab-02/responsive.visual.spec.ts",
+          "sha256": "196323e24a1e7f61155eea7f266ee62f2b4959f451b98d24d3c63935662d2bf3"
+        },
+        {
+          "path": "e2e/lab-03/.gitkeep",
+          "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+        },
+        {
+          "path": "e2e/lab-03/authentication.spec.ts",
+          "sha256": "5d8365abb34996cde2a2b6fad3efb65dd6027321022952e63e083c516e8c1ff2"
+        },
+        {
+          "path": "e2e/lab-03/requester-regression.spec.ts",
+          "sha256": "30b0bdf7b2ac8741d512a367375c6168339bbc9f23932e6e8b62de3d87cceee9"
+        },
+        {
+          "path": "e2e/lab-03/responsive.visual.spec.ts",
+          "sha256": "0726185c97d91dedf4c053f9dc30b8d3257b5ba4b6e6863d9e6c3374763b8de0"
+        },
+        {
+          "path": "e2e/lab-03/staff-ticket-flow.spec.ts",
+          "sha256": "366a2b3e48dce9150b39d219f52f2c59f42acb60576e05abfc435d4fca621cf4"
+        },
+        {
+          "path": "e2e/lab-03/user-administration.spec.ts",
+          "sha256": "686a11414889ff866fa37f44b85a30eaa840ca8fdea56db95d85aa17abebcb47"
+        },
+        {
+          "path": "e2e/lab-04/actions-taken-flow.spec.ts",
+          "sha256": "09867df2e71fbc4f826de51feaf0a79b1406f7717af788489df162e49e6954a2"
+        },
+        {
+          "path": "e2e/lab-04/compliance-responsive.visual.spec.ts",
+          "sha256": "064312cbffaf871c5e74b4373d69ca78a2a6d74cf1e63a509f4aaaba7ad58dfb"
+        },
+        {
+          "path": "e2e/lab-04/dashboard-performance-smoke.spec.ts",
+          "sha256": "ca1191a08df9bfec60e7daddb0fd856db57db7106c18256f222c9a91e359026e"
+        },
+        {
+          "path": "e2e/lab-04/dashboards.spec.ts",
+          "sha256": "7a88b1a7c1f6d97e3fc762808e2c952b98849693dab06f64c738c88bc3020683"
+        },
+        {
+          "path": "e2e/lab-04/release-evidence.visual.spec.ts",
+          "sha256": "ffac92f011f8d92fc3060880c9fd671784c2c18b215b9db386e5dfa22fc55eeb"
+        },
+        {
+          "path": "e2e/lab-04/responsive.visual.spec.ts",
+          "sha256": "8151d6d020de1780c98e2f449a905c1c8f722a2c9f028385c3be71c676c61da1"
+        },
+        {
+          "path": "e2e/lab-04/ticket-resolution.spec.ts",
+          "sha256": "e5f81f0e552f6eb706405e663d92436ecc7b774fa95222867096f778eb6ec212"
+        },
+        {
+          "path": "e2e/playwright.ts",
+          "sha256": "3394cf6e6a6c5ff88c0c8f02cf2bf265911a16659cf0647113b7772adbdcbbf3"
+        },
+        {
+          "path": "e2e/support/auth.ts",
+          "sha256": "4ba56977f88bfae074291418eb8d7ff7937027be09852fc235b0d3fa98a70ce1"
+        },
+        {
+          "path": "e2e/support/evidence.ts",
+          "sha256": "1bd7d6210e3a6e2e854207a8c378db19a3b0df06f1890c7a48a8c99c423e247f"
+        },
+        {
+          "path": "e2e/support/reset-test-db.mjs",
+          "sha256": "b50074df84bc256400086578b7b29779144105bfe13c948f82280c69683a8417"
+        },
+        {
+          "path": "e2e/support/runtime.mjs",
+          "sha256": "0651d666ac8739c412950d831c02353e7323dec9b444d3a7e6b6949bd5efe65f"
+        },
+        {
+          "path": "server/package-lock.json",
+          "sha256": "5932cd3ca1d0e6f6a9f89c0725c3cb94282597caa20e6bc617a6cb5b3d2c750d"
+        },
+        {
+          "path": "server/package.json",
+          "sha256": "cb1c08547bc64c4c10d24db95326a4b61fe69f922ab51be11e3f573e4aec83f1"
+        },
+        {
+          "path": "server/tests/auth-helper.ts",
+          "sha256": "78a47d0ab3fae6c6c556eb26433a2a7ab20c59ba65b06e12e7b7cb7ebb894cc4"
+        },
+        {
+          "path": "server/tests/global-setup.ts",
+          "sha256": "37c65c1bcb4b80a8f513a2bafd319c8b667d8a9bc9cbfab22a155c0c82f84089"
+        },
+        {
+          "path": "server/tests/lab-01/categories.test.ts",
+          "sha256": "9b6229baf1e1ab8ba712ed9da8491e78cae90622f14ffaa49b527785be9d9edb"
+        },
+        {
+          "path": "server/tests/lab-01/health.test.ts",
+          "sha256": "c534c01edf79039888876fa857c6a942dd8a18646dac464be61ac5af2dba2e6d"
+        },
+        {
+          "path": "server/tests/lab-02/.gitkeep",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "server/tests/lab-02/attachment-validator.unit.test.ts",
+          "sha256": "a15a06ad35428d32f9bf7797d10dfc61cb9ebdfbf8d9adf5fc7ed457a5bcb4ea"
+        },
+        {
+          "path": "server/tests/lab-02/create-ticket.api.test.ts",
+          "sha256": "fe0e89cb533a5a7b741327e5c601cc0e8b19b13ff32cb78a5636b1eed4cbce74"
+        },
+        {
+          "path": "server/tests/lab-02/my-tickets.api.test.ts",
+          "sha256": "18e11608176b440b68908894b0322898466c05642e1ad59cbb078326c7068fe5"
+        },
+        {
+          "path": "server/tests/lab-02/requesters.api.test.ts",
+          "sha256": "4c1d12a2abc6f876159e25973a0716d212dbd3562009aff3b8cae1ad5a6dee02"
+        },
+        {
+          "path": "server/tests/lab-02/seed.test.ts",
+          "sha256": "65cbec7f40972c7ae45ba1cc526adfb92e6127152f145718d15b1f66171c9693"
+        },
+        {
+          "path": "server/tests/lab-02/ticket-detail.api.test.ts",
+          "sha256": "3ecab34ff3b2c47569034c08d12fde10791edeceb38b7b4184bf3ad12e4c531c"
+        },
+        {
+          "path": "server/tests/lab-02/ticket-number.unit.test.ts",
+          "sha256": "a91d11118e50c3952057824534b2d2d7fff8c171213e012ffa8dcc70ebe31433"
+        },
+        {
+          "path": "server/tests/lab-03/.gitkeep",
+          "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+        },
+        {
+          "path": "server/tests/lab-03/auth.api.test.ts",
+          "sha256": "b78d503240fe7020c2da9a3dee1723be59a7bdccb56b00c49fcb4545987dbc60"
+        },
+        {
+          "path": "server/tests/lab-03/authorization.api.test.ts",
+          "sha256": "bff2f9b99cbe57f149b02483b0e97429d554d1ddec1c54f49d9c3598cf9d5a17"
+        },
+        {
+          "path": "server/tests/lab-03/comments-notes.api.test.ts",
+          "sha256": "1b4b6efb441b0632f3ba7fab4e8c16a629b72233198baecbaced32e1057c1eeb"
+        },
+        {
+          "path": "server/tests/lab-03/migration-regression.api.test.ts",
+          "sha256": "257426955b2dc016526f55badbb53fd12a01b434161e5b91aac4ccdc68787312"
+        },
+        {
+          "path": "server/tests/lab-03/staff-queue.api.test.ts",
+          "sha256": "825b8bc6f2413b46952620df71ff98a9bf665c1e638541e6870cc3b8a757b723"
+        },
+        {
+          "path": "server/tests/lab-03/staff-ticket-detail.api.test.ts",
+          "sha256": "7c7970c069890e5955230f98dac36db2d531ae9d8cc76093a03789b58ee6aaf3"
+        },
+        {
+          "path": "server/tests/lab-03/staff-ticket-fixtures.ts",
+          "sha256": "86a07343100c080515203ff1e255b3fd2597eeda9d8b57c0101fe6784e693373"
+        },
+        {
+          "path": "server/tests/lab-03/users-admin.api.test.ts",
+          "sha256": "e45c297db2bd8118af8947d83ab4aabdb791d4384e874eeb9f739ed8457b14ec"
+        },
+        {
+          "path": "server/tests/lab-04/actions-seed.test.ts",
+          "sha256": "28de0f81490170a8b3b7d90ce2e0dbe1301502b64c1f3228d3de68900a7220f1"
+        },
+        {
+          "path": "server/tests/lab-04/actions-taken.api.test.ts",
+          "sha256": "aa3e713aa3956055b27f3055deb8a40d794a50aa59d54d1219bef913fd99f3a0"
+        },
+        {
+          "path": "server/tests/lab-04/contract-docs.test.ts",
+          "sha256": "efe9a2f2cfd2f8df32f4d8b726a6f102ae7db5709ff8dd26da2a307ba4b3d3e8"
+        },
+        {
+          "path": "server/tests/lab-04/requester-dashboard.api.test.ts",
+          "sha256": "2332377edefbe694879d522453f0a3e53f527ae2c90490246ece006c4d3bf69a"
+        },
+        {
+          "path": "server/tests/lab-04/staff-dashboard.api.test.ts",
+          "sha256": "c48c5c9e00df3c32340d3f0f7cf081ee9163d90260610048950cb7c17405db41"
+        },
+        {
+          "path": "server/tests/lab-04/ticket-workflow.api.test.ts",
+          "sha256": "371ebe94f528b70c8ad7a8eb3e507d11a0a4a755e6e4fd1772e88157379f8252"
+        },
+        {
+          "path": "server/tsconfig.json",
+          "sha256": "9375b01352f406a3b747b4cccb17d7857b83b3693f423cd4cdfa583f1cc424d6"
+        }
+      ]
+    },
+    "documentationAndTools": {
+      "sha256": "ab0ad94903bc3d0356d6da4710c9423a96976f6ac2501bfe0ed395b461525d9a",
+      "files": [
+        {
+          "path": "README.md",
+          "sha256": "ec4524b4d357ad319a860fa8075f3e7f538aa827e92395e6af3daa7314c290db"
+        },
+        {
+          "path": "docs/lab-04/LAB_04_FINAL_SUBMISSION_REPORT.md",
+          "sha256": "5a23c6d45ecd9eeaec717f54d7c2152e83c58d6f47f7b46b7a1f9aaaa524e30d"
+        },
+        {
+          "path": "docs/lab-04/ai-use.md",
+          "sha256": "a4b4994d84ba06b1713c2577f74a96a7cdefe2880d7aba666731039a302d4bfb"
+        },
+        {
+          "path": "docs/lab-04/api-spec.md",
+          "sha256": "0c562af6b846546f20bd4dc253ad170045b11327a61924bb4c9b6b4b6d4ecb07"
+        },
+        {
+          "path": "docs/lab-04/reviewer.md",
+          "sha256": "f3b620187ddac38d20bd49f42241a1a245751957435ff28ede3ccb1ddb2492b7"
+        },
+        {
+          "path": "docs/lab-04/specification.md",
+          "sha256": "9fa08769e42aa10d938da75eecd7f7211a7fe4dd2940b8e82ea4473af3cc7a22"
+        },
+        {
+          "path": "docs/lab-04/tests.md",
+          "sha256": "95a29e0969d3db0729ff45dafbd899e1c085bb2ae127dc84695b7fac3911b209"
+        },
+        {
+          "path": "docs/lab-04/ui-spec.md",
+          "sha256": "77a5877a49038f8c084d45e7cd70ebfa018ae45a605f33d27fe9dd8bda0c484c"
+        },
+        {
+          "path": "docs/ux-ui-rework/inventory.md",
+          "sha256": "04ff4062627a13b1cee6401c1fc46fcb13b13878b9b45c0bc4f44cae8e491d10"
+        },
+        {
+          "path": "docs/ux-ui-rework/plan.md",
+          "sha256": "5c65f5a85acb8ec4497fc9d98ed0f40eeea30d5769acc2c2f0693b45547f84b7"
+        },
+        {
+          "path": "docs/ux-ui-rework/verification.md",
+          "sha256": "201375d1cf70deaf7baa9585877fd02264cf1cf57aef9ae705f2e27c6a703285"
+        },
+        {
+          "path": "scripts/build_lab4_report.py",
+          "sha256": "0a8481d4463c42c2460a73452127de082cab415c7302adb1b421f94d07c568fd"
+        },
+        {
+          "path": "scripts/verify-ui-rework-test-db.mjs",
+          "sha256": "36932be4c3f857d65c40e0bbe4c4c1aafac97e1f1212c2a88cae2dda1e059c57"
+        }
+      ]
+    }
+  },
+  "results": {
+    "client-results.json": {
+      "numTotalTests": 70,
+      "numPassedTests": 70,
+      "numFailedTests": 0,
+      "numPendingTests": 0,
+      "success": true
+    },
+    "server-results.json": {
+      "numTotalTests": 136,
+      "numPassedTests": 136,
+      "numFailedTests": 0,
+      "numPendingTests": 0,
+      "success": true
+    },
+    "e2e-results.json": {
+      "startTime": "2026-11-01T05:45:54.427Z",
+      "duration": 319842.804,
+      "expected": 36,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "e2e-capture-followup.json": {
+      "startTime": "2026-11-01T05:51:22.573Z",
+      "duration": 78387.17199999999,
+      "expected": 6,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "e2e-release-captures.json": {
+      "startTime": "2026-11-01T05:54:34.597Z",
+      "duration": 101239.639,
+      "expected": 9,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    }
+  },
+  "screenshots": [
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-02/screenshots/release/desktop_create_success.png",
+      "sha256": "a1e1413217ea83eb907c9c2eb79064b4865bb3d67989d94571bad9989b9368f0"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-02/screenshots/release/desktop_create_ticket.png",
+      "sha256": "a2f768fef189ccc4a87ab1768aea30d0610522704d28da581c09888cff3e1773"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-02/screenshots/release/desktop_my_tickets.png",
+      "sha256": "e9d65f68cc00cfe5fcdb7278a8dcf2994f9e1ae18aefaf939f81b2363811a2b3"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-02/screenshots/release/desktop_requester_workspace.png",
+      "sha256": "e3a02969e59b1e19968892888fbd738c0d784fddb1543b5c241cbe584b39a527"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-02/screenshots/release/desktop_ticket_detail.png",
+      "sha256": "b3dfd0461e96e7946915f865803bf0f3fbe76b23906119dfd9a34ea5363d9f98"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-02/screenshots/release/desktop_ticket_detail_removed.png",
+      "sha256": "dad6787d1a50d1aa61fbbd784c516a9f0240f96b732eac064d6b4083d186ee8f"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-02/screenshots/release/mobile_create_success.png",
+      "sha256": "36c3ab3abfb76f4e7784e10eb435ea5a4479b4516efd7d56cb42f24a3fad11d0"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-02/screenshots/release/mobile_create_ticket.png",
+      "sha256": "c138560963a57d95c2568984787a6d6606d43a65f8d08e7657593eb451aa3752"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-02/screenshots/release/mobile_my_tickets.png",
+      "sha256": "c477ef76d354616603ad7f88a1edf16defc1c0f3a281a7259596b1c1ffcd78f6"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-02/screenshots/release/mobile_requester_workspace.png",
+      "sha256": "b15e1ac6f847c3ea62f363420e7e81f5786b96ca860a37391f5165ba2090528e"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-02/screenshots/release/mobile_ticket_detail.png",
+      "sha256": "c78f6fa7edbbe489ef4241773968784304297070d8095d31c615cca35b320154"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-02/screenshots/release/tablet_create_success.png",
+      "sha256": "7ac5febcb80d05584a4ef59b4c6e1a69ae0ca071c415efc9f714ca6383df8758"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-02/screenshots/release/tablet_create_ticket.png",
+      "sha256": "eafd362fbc297db9e2032b5b44c6b6b77c4b2ea32dc164a77e44c372bfe64080"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-02/screenshots/release/tablet_my_tickets.png",
+      "sha256": "6f8d7e0821edbc0e1bde4b97deaa9436e95873c93e0e8dd51cff2c9a699f8d6b"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-02/screenshots/release/tablet_requester_workspace.png",
+      "sha256": "36e67afc0eaf184f599ad12407fb905d1752602465b505e805123fb5041df6cf"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-02/screenshots/release/tablet_ticket_detail.png",
+      "sha256": "1ece0ee750abdef2999f4005f64a04a71b54652aae84d1e776df16cd02c13711"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-03/screenshots/authentication/desktop.png",
+      "sha256": "f675d55d158583c088101a3d26dc5d5226feafd7650feb7ef773c9d71eb8f2bd"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-03/screenshots/authentication/mobile.png",
+      "sha256": "d29c7c8acad894e0e5a524e79a819eb380dbd7312becdddb3a61d2a6fe640e66"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-03/screenshots/authentication/states/01_invalid_login.png",
+      "sha256": "d1ad9464c6027a4402566c41a0507f04bd0d6d1ffb65277d526ce102c67a314c"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-03/screenshots/authentication/states/02_inactive_account.png",
+      "sha256": "3848c8a0e5b396899772b2248b4ac70579d38d38e8c905762c93ce7a4b2aa218"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-03/screenshots/authentication/states/03_valid_login_filled.png",
+      "sha256": "8c4727701f221bcbf8ed012a60f0e1785d9fc0913516773df4a751403dfe1fcd"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-03/screenshots/authentication/states/04_first_login_gate.png",
+      "sha256": "4d2680285fcd9ada2f3b315dabb4788891be5d65ad235f4ea2acab9ec410ae10"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-03/screenshots/authentication/states/05_password_change_form.png",
+      "sha256": "a7aa09a4ccdce8b41aef4a117518dda52f86f09c4f4136938e105eeb4df40762"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-03/screenshots/authentication/states/06_login_and_change_success.png",
+      "sha256": "aebc6aeeaca2fbb657ca0d2a0779930dbf4064ce3e131f78f9d6a7d71784625f"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-03/screenshots/authentication/states/07_after_logout_protected.png",
+      "sha256": "822c66e106ef9efd0aaf5405c18c20860cace6bba8d2927611c2de3ff4d4235c"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-03/screenshots/authentication/tablet.png",
+      "sha256": "c307a416c3d2db7b3f26cd18bd36f9bbddb0b75a80b2f7f4c3c94913b23f2a8a"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-03/screenshots/staff-flow/states/01_queue_loaded.png",
+      "sha256": "3028ff8227f0fcb064ba5b88325cc61405ef264e8074a90f00ab88f9ad128e02"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-03/screenshots/staff-flow/states/02_queue_filter_sort.png",
+      "sha256": "96e8e049220d7f7a3c9d63e83d4685a57446aed51b23d1f8885e5782efed566c"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-03/screenshots/staff-flow/states/03_queue_no_results.png",
+      "sha256": "d4099dd630a008744a8d12218f5a1b5eb1a99879022a8b870675fa98e9b1f401"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-03/screenshots/staff-flow/states/04_queue_retry_simulated_api_failure.png",
+      "sha256": "dddfdfb531f53b8526cc3b4474bb443089fee4a0a48a9ea58e64c1525ce28e0f"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-03/screenshots/staff-flow/states/05_detail_unassigned_attachment.png",
+      "sha256": "b2811fda8028c269d643460621f6945cc98b7733bcf88649d25231646c39c48e"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-03/screenshots/staff-flow/states/05_queue_page_1_of_2.png",
+      "sha256": "721fbfa93108f3df6a8790a58604525aba9c401ee220fc1e7ca3b5b370a8822c"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-03/screenshots/staff-flow/states/06_detail_claimed.png",
+      "sha256": "84985ea92d7d77f8317e5927b751aa254b76e8aa0325256b6ada0a67dcd4f2d1"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-03/screenshots/staff-flow/states/06_queue_page_2_of_2.png",
+      "sha256": "ccb13add56c366461d291e9297162d014d03b127185060cd8e78e3009d5df93e"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-03/screenshots/staff-flow/states/07_detail_confirmation_required.png",
+      "sha256": "e428c2510caa184fc54f207bccde28de1019e9d70836d950dd4162468b01c544"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-03/screenshots/staff-flow/states/07_queue_assigned_unassigned.png",
+      "sha256": "806615e76a9e0abb8aefe266f1830c5f8ed4aaf1465d352e372bc443f4627f1f"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-03/screenshots/staff-flow/states/08_detail_resolved.png",
+      "sha256": "a8e659bc7efe4d6c5c4ffbad5197e50ff56223a7f55264181b88a58a9e21c9f5"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-03/screenshots/staff-flow/states/09_detail_communication.png",
+      "sha256": "45342e4b05de791786f3be6782c0b978581551f2a56e44637745fbf693e25064"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-03/screenshots/staff-flow/states/10_attachment_continuity.png",
+      "sha256": "117e4b4b6495ce87278c9e606783df54f111fa80dadcd2117d058d024a6b1be4"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-03/screenshots/staff-flow/states/11_claimed_operation.png",
+      "sha256": "a7a18e8b6002b3b441b7cd8aa0fe50c026cfce1e6dddc6df27239c7b0433c142"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-03/screenshots/staff-flow/states/12_confirm_required_operation.png",
+      "sha256": "4a23a10644988eb049834b92e3848be7fe9fd0daba99aa49324bf8088b6ba372"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-03/screenshots/staff-flow/states/13_resolved_operation.png",
+      "sha256": "1386aa65a7ebd5cb67a9a9b911e001496d5689c730fed5bb8b15e68f267bea5f"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-03/screenshots/staff-flow/states/14_public_comment.png",
+      "sha256": "5535abc40cb6228cf68bbf6b6b65692c307632c879dcda3f57dbdf2f8dcfbb99"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-03/screenshots/staff-flow/states/15_internal_note.png",
+      "sha256": "2c39164eba38651479e9d544f46351883c963c070bd3f611208f977f4b361f80"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-03/screenshots/staff-flow/states/16_reassigned_operation.png",
+      "sha256": "aa1cfbad2f0837beba3e048b0a9eaf096cebe13ba4d435fc216d21335dc30f83"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-03/screenshots/staff-flow/states/17_requester_staff_access_denied.png",
+      "sha256": "5d6f28929bdf6992af5177763ec10fe26459e58e7e06340119218e7b691acad3"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-03/screenshots/staff-flow/states/18_staff_admin_access_denied.png",
+      "sha256": "3b3672d6eef3469687a167e9ca4b680347daec7f0367a6441420434e7c8bfed9"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-03/screenshots/staff-flow/states/19_requester_staff_403_response.png",
+      "sha256": "a1ebd875995e6512ed0ba64bd85e546294bdef365f9e475b71faeda014dcc715"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-03/screenshots/staff-flow/states/20_staff_admin_403_response.png",
+      "sha256": "b5f269e635d3cdf766b89de5f73e7ed97d2d7667815b19261a94b380642fffc1"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-03/screenshots/staff-queue/desktop.png",
+      "sha256": "69d2efb836c9e8947df5ccbed31dff959bcd29f04cdee0e967853745ac98eedb"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-03/screenshots/staff-queue/mobile.png",
+      "sha256": "697b77577fa942275cd5be3868223849be6863e6f9fc4f356da91d9ce44c04a9"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-03/screenshots/staff-queue/tablet.png",
+      "sha256": "68e96d25bf48eb28d9d5db069379d092942d8bfa8fb7655d13ce9783dda880f8"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-03/screenshots/staff-ticket-detail/desktop.png",
+      "sha256": "720ba35778c981fd43ab4d878297f662047f5e8c6d5573dc32c5710e487335d8"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-03/screenshots/staff-ticket-detail/mobile.png",
+      "sha256": "4c227aefb861b386bc2ae8c39c1e40d4dc5db2cf01f352a2c43d635edd233d64"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-03/screenshots/staff-ticket-detail/tablet.png",
+      "sha256": "a6292edfd2f1b37a52229eac4a3830005c675787617b8561fdcb367cfa19f0d2"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-03/screenshots/user-management/desktop.png",
+      "sha256": "08eaa9347a14ee8fb51ab4a715dcfdf35ccf5cbef3467095f6e55eed8842e87a"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-03/screenshots/user-management/mobile.png",
+      "sha256": "0c296b56dc68a76e36ab56aa6439183303b54da75458122a3a63171b813ed1e6"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-03/screenshots/user-management/states/01_user_list.png",
+      "sha256": "eb8d45fb7836a5d2f266fdc8836fc67130d86f0bbac12d3e4042bfc3b34e9704"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-03/screenshots/user-management/states/02_user_search.png",
+      "sha256": "02d377d167a2e158f500a96414c2b3d95f1a36a973008ae9aa3b9da2e23c859b"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-03/screenshots/user-management/states/03_user_role_filter.png",
+      "sha256": "8d48f09c71e53a3b7000fb9aa1278f1ff7d9518dc78dac4a3e2dc9aed5c22294"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-03/screenshots/user-management/states/04_create_form.png",
+      "sha256": "f3e7daa551aa286613eda67376b87bc479f70a36bd06560db44cce5dfa89baf1"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-03/screenshots/user-management/states/04_invalid_input_blocked.png",
+      "sha256": "386ffa84c06c8f31c65a1ec04e5ff848416b0d4bc4e9e2e300bdf718184171ef"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-03/screenshots/user-management/states/05_create_filled.png",
+      "sha256": "7b040a2ef8553ba227b7d3a76dd6e6d580434d08bdcc4d4e0d51f8a3358a6ad5"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-03/screenshots/user-management/states/06_created_success.png",
+      "sha256": "506bb7c109e035a1a31c8e817d8405c557731f4976f32ad8490dac55d9d4fb35"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-03/screenshots/user-management/states/07_edit_form.png",
+      "sha256": "9ad98f12748de2a0598dfb77f5577e0cba03c8c075738ea7bab7816c146fd536"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-03/screenshots/user-management/states/08_updated_success.png",
+      "sha256": "0c5d99d79c441f510f38b4d42c613e6888f6bc1c373f1bd4148170c979bc96f2"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-03/screenshots/user-management/states/09_deactivated.png",
+      "sha256": "bb19908ee91e8e123150125dfb7a831f569550ba44ba995dc41a6a67101e7fe0"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-03/screenshots/user-management/states/10_reset_form.png",
+      "sha256": "8d48df78d8a5ef0aadd0914625211053a84c21a110142b14dcb3e528c5c86dc4"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-03/screenshots/user-management/states/11_reset_success.png",
+      "sha256": "a62630fa7341a7063fd5007df84fe7802b14876c3e5429c90fd3923246d55582"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-03/screenshots/user-management/states/12_self_deactivation_rejected.png",
+      "sha256": "c1a54bf90b5267380ed8b5b8e892f2a373d5d61ee121e99ea83e75f84a36a308"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-03/screenshots/user-management/states/13_duplicate_email_rejected.png",
+      "sha256": "f4104616b575b649773748931ac1d39db570f23c1ea4f1668b963a2263fac567"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-03/screenshots/user-management/states/14_reset_requires_change_on_next_login.png",
+      "sha256": "dc99da9d348cabc64b64cf917412569eb6338197bae8568c00ec85dd8c841625"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-03/screenshots/user-management/tablet.png",
+      "sha256": "b3f7a40736eda8224fe2d01a84c2f4784a3bbaec7a34f72eded61833fb9e74eb"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-04/screenshots/compliance/breakpoints/1440px-dashboard.png",
+      "sha256": "363d87ae1e8ee5cd3fdeb2f1a03de6f1d9f4883ddb41520ea8eb5b4ec5cecfc7"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-04/screenshots/compliance/breakpoints/320px-dashboard.png",
+      "sha256": "b2a1cef6228a29bea276573d8e2e5fec94b84bb13f49e42dc36e87b89b74a01b"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-04/screenshots/compliance/breakpoints/390px-dashboard.png",
+      "sha256": "87e4200bfb2f3a35a684ea5edd325e663dcbb360ba83ba6af68b40494da37332"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-04/screenshots/compliance/breakpoints/767px-dashboard.png",
+      "sha256": "7ba570c318b6d23fe364bf08e092d5be3bc140bb94817154ae7201998c9041b9"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-04/screenshots/compliance/breakpoints/768px-dashboard.png",
+      "sha256": "21e291adaa0a64d32465657532ac7b59094420d1f7f78baa2a10c8c72bd29b54"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-04/screenshots/compliance/breakpoints/991px-dashboard.png",
+      "sha256": "c31f4d34855af44fd88c163c3d2af610e3df81ab9f4f3d7befc12eee81f81784"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-04/screenshots/compliance/breakpoints/992px-dashboard.png",
+      "sha256": "4467fc0126f1705a772e287a363750231079f2814031b53e626263cea6f596f8"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-04/screenshots/compliance/desktop/action-create-filled-form.png",
+      "sha256": "87e51395b2d74867df869c1a18f056308d8e94b1cd512d7f9b3de5a397d09390"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-04/screenshots/compliance/desktop/action-create-filled.png",
+      "sha256": "601d5fa088b932dfb1d3b9362231a15390b9d01e1649f92e1f3c82efcd6d2bb6"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-04/screenshots/compliance/desktop/action-edit-filled-form.png",
+      "sha256": "628c1bcc95a6d165a46e706eee67398baaa2bb840dd28a419e04b83b56c4b711"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-04/screenshots/compliance/desktop/action-edit-filled.png",
+      "sha256": "3b60060ddac0dd9cb36d8974720ed1fa3a76efdfde6747be412050cf02b4ee1a"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-04/screenshots/compliance/desktop/action-list.png",
+      "sha256": "b1655fd8b58ca1814f6927b8eb2a489c7859b6519a996fc333198a43e5c9708b"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-04/screenshots/compliance/desktop/action-requester-read-only.png",
+      "sha256": "8f9094793c339a246332ad241598aff05f9f84885e45e185cd13e62a62966c1f"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-04/screenshots/compliance/desktop/sticky-shell-reduced-motion.png",
+      "sha256": "472600778d6522b654f17f22024def6fe436745cb11d8b13f2cb02449499b461"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-04/screenshots/compliance/mobile/action-create-filled-form.png",
+      "sha256": "fe07190311358c3a9016df479ff505ed86e03da90606309f772091b9275a82e7"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-04/screenshots/compliance/mobile/action-create-filled.png",
+      "sha256": "81e6f34eae69ac52561fc98fcfe71fcf13217f68035aef41e30d5a28b64403ff"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-04/screenshots/compliance/mobile/action-edit-filled-form.png",
+      "sha256": "02da6eaaca9f1ebe97663e8cb6aa678a9f6cebc67d99845b36c8326aeb0b4a53"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-04/screenshots/compliance/mobile/action-edit-filled.png",
+      "sha256": "eafddabcdb71be5f321700929beee4bbd3978989667d6ddb84d12c25d5b2353a"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-04/screenshots/compliance/mobile/action-list.png",
+      "sha256": "1ae4388b1c0629968f33d1cf36fe1e92c0c6042fe15992fa38b49194b9ab8d0b"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-04/screenshots/compliance/mobile/action-requester-read-only.png",
+      "sha256": "0f2825da6d2d3107443ff105d58d779d73bb09375461eecec4d4b146973184b2"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-04/screenshots/compliance/mobile/sticky-shell-reduced-motion.png",
+      "sha256": "621610a3889cc27ca7343b604fc9d247d92ac7525f92180ca682f6acf41f0997"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-04/screenshots/compliance/tablet/action-create-filled-form.png",
+      "sha256": "b445699676481e11d8722fd91b6e7b2fbc49fc5260444d4269e7bbdcda948d45"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-04/screenshots/compliance/tablet/action-create-filled.png",
+      "sha256": "28f2f8fe516ba732c2e2b8fde155b168abd82e0b5f0eee0f2ed49b97a1143646"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-04/screenshots/compliance/tablet/action-edit-filled-form.png",
+      "sha256": "cfe29844c34047d78fba1a689dda9b61b8da8b39112ce8e700db284b0941dce3"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-04/screenshots/compliance/tablet/action-edit-filled.png",
+      "sha256": "4eadd3b472375554391e7e3270aacd0beba7d09c4424287f45533aef20867146"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-04/screenshots/compliance/tablet/action-list.png",
+      "sha256": "ce0319dbc66ee55db16f7f8e66d01c3d0d2fbb1be9c720c10b369e88d694e577"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-04/screenshots/compliance/tablet/action-requester-read-only.png",
+      "sha256": "45b3a4fc66c629afd855c11eef07163148cdb28e5900022d42b5e19b8d439aae"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-04/screenshots/compliance/tablet/sticky-shell-reduced-motion.png",
+      "sha256": "8494689ed8417b8283706b312a8c57d4fcd00ea7b0426c5604c2f224c2804e14"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-04/screenshots/release/desktop/01_requester_dashboard.png",
+      "sha256": "23ced3ebd7bade38ecf63015973209267104a5219a0df6db53174841ed7762a1"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-04/screenshots/release/desktop/02_staff_dashboard.png",
+      "sha256": "ce9640d795f1a9c8f7b8990d3e1a23cf51c718b8e794844dac5e2dc0581721bd"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-04/screenshots/release/desktop/03_staff_actions.png",
+      "sha256": "0120ba34d10332fe2fd606a136cc7ed81ae0a528e796a3e081b480f948992cfb"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-04/screenshots/release/desktop/04_admin_dashboard.png",
+      "sha256": "882300019e5a3b0e3c7f9dbd5340c8ec51e8dc6f882e293e388cfa52b82c2144"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-04/screenshots/release/desktop/05_requester_loading.png",
+      "sha256": "3f0df18cc076ee15f1b67cefc5509d97b554824a25b3a7d97609b5f8a694aceb"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-04/screenshots/release/desktop/06_requester_empty.png",
+      "sha256": "1a3266b9d85833317bfa87b3bc2713888a3018d8ec1337fdec90815108fa4104"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-04/screenshots/release/desktop/07_requester_error_retry.png",
+      "sha256": "5a867eaf1c19d3968185abfd63ca7d1e3c554f4596bab911a10e49e7010e7adf"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-04/screenshots/release/desktop/08_staff_forbidden.png",
+      "sha256": "1e69d4a6721e25f02a9cbd5a3d10048182092914f59bb0b52aff3c8df1f0bc2c"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-04/screenshots/release/desktop/09_staff_ticket_resolution_gate.png",
+      "sha256": "653e49797223da8a5c6ec14a696e62e0ca837b645b7631cf28675d46893f7ee0"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-04/screenshots/release/mobile/01_requester_dashboard.png",
+      "sha256": "437fdeb39d7abfd6efe97db29ebc333bea0563547493e07f02b4955f6eb2e63c"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-04/screenshots/release/mobile/02_staff_dashboard.png",
+      "sha256": "5e7e8f86319d1e2dd9a22018b421fa3df1fdf6af96471c70c2d956a888b79ba3"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-04/screenshots/release/mobile/03_staff_actions.png",
+      "sha256": "317cf1982785fa346cc44a4c2ca74c02932848cdd95d8b5f5fb70eab1ba5cc85"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-04/screenshots/release/mobile/04_admin_dashboard.png",
+      "sha256": "f12dc4d499551a0fe2cf74d210e6820daa9ec0a807ff9f2adb7b96cbd2a3b3e3"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-04/screenshots/release/mobile/05_requester_loading.png",
+      "sha256": "5e49168f1cb7c482fed7134621fb8acac823d7cb6d2169e685e7489867f9973d"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-04/screenshots/release/mobile/06_requester_empty.png",
+      "sha256": "1609dfdbd939a65a492ceaa133ffde5c57dce869884dd58764b6dd017e8234ee"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-04/screenshots/release/mobile/07_requester_error_retry.png",
+      "sha256": "04e3f73b91e19c0c34e9088749d21368bb8a78892c2fdc7c959a9d9d0687949e"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-04/screenshots/release/mobile/08_staff_forbidden.png",
+      "sha256": "e8784ad7a2c0a96d9bfcf9a239f313ccfc550ce445105399561db296a9fb670c"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-04/screenshots/release/mobile/09_staff_ticket_resolution_gate.png",
+      "sha256": "ba52d94cc7513ed2f3fe0504de90ab7fcc86dca3f5de599196ad7ea317301d50"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-04/screenshots/release/tablet/01_requester_dashboard.png",
+      "sha256": "c6ea0cdb442902e217e60b86f72d873f1980d6d16fb364db2d418f8698a8a868"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-04/screenshots/release/tablet/02_staff_dashboard.png",
+      "sha256": "032e359773d89da0485f7d209948a6c23677dc976c948c527a1622b63699ebd1"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-04/screenshots/release/tablet/03_staff_actions.png",
+      "sha256": "4e0a71668fc587b12468630ef45ab12b75e198627b131ea75938a42ffd3b1e53"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-04/screenshots/release/tablet/04_admin_dashboard.png",
+      "sha256": "9d998162d5654c0ec2e7722991d4ef6a3ab97cb2f18536bc8c2ab8b00c1d654d"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-04/screenshots/release/tablet/05_requester_loading.png",
+      "sha256": "d42398d341bb8ca5b5f9651d77bf122aa65a2a5d0b14b54e6f84ce8d24ff7b39"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-04/screenshots/release/tablet/06_requester_empty.png",
+      "sha256": "dd063f8bc57fcff0ca3e6415e105a43235854e619f033ae92b137e784f2dae85"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-04/screenshots/release/tablet/07_requester_error_retry.png",
+      "sha256": "a881fdfa992a30e34c7687786724f489071cdb2107e80563fa66c244cce01482"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-04/screenshots/release/tablet/08_staff_forbidden.png",
+      "sha256": "94f11c3a8be16446182cb57a2299764ce183836bf2264f29178271c8b8363a1c"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/lab-04/screenshots/release/tablet/09_staff_ticket_resolution_gate.png",
+      "sha256": "7730b0ba3815de97ccd41c2dfc60e10926d6b32fc3c5b9ded62d726caa4cd072"
+    },
+    {
+      "path": "artifacts/lab-04/screenshots/ui-rework/preview-desktop.png",
+      "sha256": "e9e35a492dd37b7c5c3183dd7495e91fd0db76c4ee0205128f7e87649e03aeb5"
+    }
+  ],
+  "unchangedReports": [
+    {
+      "path": "output/pdf/LAB_02_FINAL_SUBMISSION_REPORT.pdf",
+      "unchangedFromPlanningHead": true,
+      "sha256": "98803399220766fef9b67ab0ced72a1ddb837ad0560bce015025f19697e22d54"
+    },
+    {
+      "path": "output/pdf/LAB_03_FINAL_SUBMISSION_REPORT.pdf",
+      "unchangedFromPlanningHead": true,
+      "sha256": "1b480d999461c3e6c0d6b8e9e40aa9c616bf1add14de24da79deee7bd5420a59"
+    },
+    {
+      "path": "output/pdf/LAB_03_FINAL_SUBMISSION_REPORT_10-10.pdf",
+      "unchangedFromPlanningHead": true,
+      "sha256": "cbe7bd3b8d7a5f4ea3fef12a1f79524bcadb5e1321b42ab52ab8bfc2635ec496"
+    },
+    {
+      "path": "output/pdf/LAB_04_FINAL_SUBMISSION_REPORT.pdf",
+      "unchangedFromPlanningHead": true,
+      "sha256": "106fc39ff3df85739fa33d02bbb2d283315f40885224ebad741a7a76c8468b2f"
+    }
+  ],
+  "implementationCommit": "3eb6535f4658ad96ba2fabdc1620331e00302b3f",
+  "metadataNormalizationCorrections": [
+    {
+      "path": "server/prisma/migrations/migration_lock.toml",
+      "previousRawHash": "74a9137885ce73d3ff088d79d658f8066e05e680fb51c0800a290c91c0c01d48",
+      "normalizedHash": "693566b52c49db47a2b0901d12400aa3d710d13a49f4a2a154b80c0505ed737c",
+      "reason": "CRLF normalized to LF in UTF-8 metadata, matching Git blob content"
+    },
+    {
+      "path": "client/tests/lab-03/.gitkeep",
+      "previousRawHash": "7eb70257593da06f682a3ddda54a9d260d4fc514f645237f5ca74b08f8da61a6",
+      "normalizedHash": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "reason": "CRLF normalized to LF in UTF-8 metadata, matching Git blob content"
+    },
+    {
+      "path": "e2e/lab-03/.gitkeep",
+      "previousRawHash": "7eb70257593da06f682a3ddda54a9d260d4fc514f645237f5ca74b08f8da61a6",
+      "normalizedHash": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "reason": "CRLF normalized to LF in UTF-8 metadata, matching Git blob content"
+    },
+    {
+      "path": "server/tests/lab-03/.gitkeep",
+      "previousRawHash": "7eb70257593da06f682a3ddda54a9d260d4fc514f645237f5ca74b08f8da61a6",
+      "normalizedHash": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "reason": "CRLF normalized to LF in UTF-8 metadata, matching Git blob content"
+    }
+  ],
+  "documentationScope": "The documentationAndTools group records the implementation commit snapshot. Later publication/review documentation is intentionally recorded by its own Git commit rather than relabeled as pre-commit test source."
+}

@@ -1,6 +1,6 @@
 # Lab 4 UI Specification
 
-Status: Draft companion contract for Issue #51. This document defines the visible behavior before implementation and extends the Lab 2/3 Zen Green system.
+Status: Sprint contract from Issue #51, maintained for the Issue #63 UI rework. The original Lab 2/3 Zen Green tokens and business behavior remain authoritative. The rework is a local implementation pending peer review; historical release captures do not prove the current working tree.
 
 ## 1. Shared visual and responsive rules
 
@@ -10,9 +10,23 @@ Status: Draft companion contract for Issue #51. This document defines the visibl
 - Use readable contrast, a visible two-pixel focus ring, semantic headings, labels above controls, and non-color status cues.
 - Shared states are loading, empty/no-results, validation, submitting, success, forbidden, not-found, conflict, and retryable failure. Preserve entered form values after recoverable API failures.
 
+### 1.1 Rework presentation decisions
+
+- Primary `#006B3C`, hover/focus `#0B7A46`, pale `#EAF6EF`, canvas `#F5F7F6`, white surfaces, primary text `#1B2E24`, secondary text `#52665A`, and neutral border `#D1DDD6` continue the Lab 2 palette. Red is reserved for errors/destructive or urgent states; amber and teal distinguish other priorities. Status/priority text remains visible in addition to color.
+- A locally bundled Inter variable font is a readable sans-serif extension of the existing type system, with the original system stack as fallback. Page headings are 24px, section headings 18px, card subheadings 15px, body 14px, and secondary information 12px. Inter's license ships beside the font.
+- Native `corner-shape: squircle` progressively enhances shared cards, fields and menu items. Existing rounded corners are the fallback; capsules and avatars retain their intended shape. Borders, shadows and visible focus remain available.
+- The same full-width shell is used by Requester, IT Staff and Administrator. At `>=768px`, the sidebar occupies its own column and stays at the top of the viewport; it scrolls internally on short screens. The toolbar is sticky without covering focused controls. Below 768px, a compact sticky masthead and toolbar replace the sidebar; a labeled disclosure opens navigation, closes on Escape/backdrop/selection, and restores focus to its toggle. Closed navigation is inert. Account identity and role remain in the toolbar; logout is available in the menu.
+- Desktop layouts use three overview panels and four recent-ticket columns; tablet layouts use two columns; mobile layouts stack panels and ticket groups. Detailed ticket tables switch to cards only below 768px. No duplicate desktop/mobile list is visible at the same width.
+- Motion uses short transform/opacity transitions for navigation, disclosure and action feedback. Inputs remain usable immediately. `prefers-reduced-motion: reduce` disables transform animations and staggered entrances. Closed disclosures cannot receive keyboard focus during exit transitions.
+- The attachment-removal dialog traps Tab/Shift+Tab, accepts Escape when no removal is pending, and restores focus after closing. Required markers, invalid/disabled/read-only fields, bounded modal content and mobile touch targets are shared across roles.
+
+Screen inventory and release boundaries: [UI rework inventory](../ux-ui-rework/inventory.md). Current local verification is recorded separately from historical release results.
+
 ## 2. Authenticated shell and navigation
 
 The shell shows the authenticated display name and role, a clear active-page indicator, role-permitted links, and logout. Requesters see Dashboard, My Tickets, and allowed Ticket Detail. IT Staff see Dashboard, Staff Queue, and Ticket Detail. Administrators additionally see User Management while retaining staff capabilities. A first-login password-change gate takes precedence over normal navigation, and direct protected URLs after logout return to Login without exposing protected data.
+
+Entry views remain Home for Requester, Ticket Queue for IT Staff, and User Management for Administrator. Dashboard is explicitly available in each role's navigation. Toolbar searches are passed to the corresponding owned-ticket or staff-queue API filter, including successive searches while a list is already open; client input never substitutes for server ownership enforcement.
 
 ## 3. Requester Dashboard
 

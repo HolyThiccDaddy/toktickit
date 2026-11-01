@@ -1,0 +1,84 @@
+Guard passed: server/.env.test contains a PostgreSQL database whose parsed name ends in _test; URL hidden.
+Prisma schema loaded from prisma\schema.prisma
+Datasource "db": PostgreSQL database "toktickit_test", schema "public" at "localhost:5432"
+
+6 migrations found in prisma/migrations
+
+
+No pending migrations to apply.
+
+Seed run 1:
+Seeded 4 categories.
+Seeded 7 related systems.
+Seeded 5 development requesters (4 active, 1 inactive).
+Initialized ticket counter.
+
+Seed run 2:
+Seeded 4 categories.
+Seeded 7 related systems.
+Seeded 5 development requesters (4 active, 1 inactive).
+Initialized ticket counter.
+
+{
+  "repeatedSeed": "PASS",
+  "unchangedOperationalTables": 13,
+  "excludedAuditFields": [
+    "User.updatedAt",
+    "RequesterUser.updatedAt"
+  ],
+  "rowCounts": [
+    {
+      "table": "ActionRevision",
+      "count": 0
+    },
+    {
+      "table": "ActionTaken",
+      "count": 8
+    },
+    {
+      "table": "Attachment",
+      "count": 0
+    },
+    {
+      "table": "AuthSession",
+      "count": 1
+    },
+    {
+      "table": "Category",
+      "count": 4
+    },
+    {
+      "table": "InternalNote",
+      "count": 0
+    },
+    {
+      "table": "PublicComment",
+      "count": 0
+    },
+    {
+      "table": "RelatedSystem",
+      "count": 7
+    },
+    {
+      "table": "RequesterUser",
+      "count": 5
+    },
+    {
+      "table": "Ticket",
+      "count": 8
+    },
+    {
+      "table": "TicketCounter",
+      "count": 1
+    },
+    {
+      "table": "User",
+      "count": 10
+    },
+    {
+      "table": "_prisma_migrations",
+      "count": 6
+    }
+  ],
+  "stateSha256": "03a6ae01dc92f913229b2cecaac1236657519cc687cf09ea13c9b3d90077392e"
+}

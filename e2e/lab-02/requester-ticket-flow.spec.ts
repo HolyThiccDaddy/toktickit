@@ -1,3 +1,5 @@
+import { navigateTo } from "../support/auth.js";
+import { evidencePath } from "../support/evidence.js";
 import { expect, test } from "../playwright.js";
 import { fileURLToPath } from "node:url";
 import { e2eAccounts, signInAs } from "../support/auth.js";
@@ -9,7 +11,7 @@ test.describe("Issue #37 authenticated requester ticket flow", () => {
     await signInAs(page, e2eAccounts.david);
     await expect(page.getByText("David Lee", { exact: true })).toBeVisible();
 
-    await page.getByRole("button", { name: "+ Create Ticket" }).click();
+    await navigateTo(page, "+ Create Ticket");
     await expect(page.getByRole("heading", { name: "Create Ticket" })).toBeVisible();
     await page.getByLabel("Category").selectOption({ label: "Hardware" });
     await page.getByLabel("Related System").selectOption({ label: "Email" });
@@ -40,6 +42,6 @@ test.describe("Issue #37 authenticated requester ticket flow", () => {
 
     await expect(page.getByRole("heading", { name: "Removed attachments" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Download unavailable" })).toBeDisabled();
-    await page.screenshot({ path: fileURLToPath(new URL("../../artifacts/lab-02/screenshots/release/desktop_ticket_detail_removed.png", import.meta.url)), fullPage: true });
+    await page.screenshot({ path: evidencePath(fileURLToPath(new URL("../../artifacts/lab-02/screenshots/release/desktop_ticket_detail_removed.png", import.meta.url))), fullPage: true });
   });
 });

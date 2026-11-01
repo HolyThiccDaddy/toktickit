@@ -14,7 +14,10 @@ const detail: api.TicketDetail = {
 };
 
 describe("Ticket Detail", () => {
-  beforeEach(() => { vi.restoreAllMocks(); });
+  beforeEach(() => {
+    vi.restoreAllMocks();
+    vi.spyOn(api, "getActions").mockResolvedValue({ items: [], meta: { page: 1, pageSize: 20, total: 0, totalPages: 0 } });
+  });
 
   it("renders read-only ticket data and active/removed attachment states", async () => {
     vi.spyOn(api, "getTicket").mockResolvedValue(detail);
@@ -85,5 +88,25 @@ describe("Ticket Detail", () => {
     fireEvent.change(screen.getByLabelText("Reason"), { target: { value: "No longer needed" } });
     fireEvent.click(screen.getByRole("button", { name: "Remove attachment" }));
     await waitFor(() => expect(remove).toHaveBeenCalledWith(1, "No longer needed"));
+  });
+
+  it("keeps keyboard focus inside attachment removal and returns it on Escape", async () => {
+    vi.spyOn(api, "getTicket").mockResolvedValue(detail);
+    render(<TicketDetail user={user} ticketId={101} onBack={vi.fn()} />);
+    await screen.findByText("VPN access fails");
+    const trigger = screen.getByRole("button", { name: /^Remove$/ });
+    trigger.focus();
+    fireEvent.click(trigger);
+    const reason = screen.getByLabelText("Reason");
+    expect(reason).toHaveFocus();
+    const last = screen.getByRole("button", { name: "Remove attachment" });
+    last.focus();
+    fireEvent.keyDown(last, { key: "Tab" });
+    expect(reason).toHaveFocus();
+    fireEvent.keyDown(reason, { key: "Tab", shiftKey: true });
+    expect(last).toHaveFocus();
+    fireEvent.keyDown(last, { key: "Escape" });
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(trigger).toHaveFocus();
   });
 });

@@ -1,8 +1,8 @@
 # Lab 4 AI Use and Reflection
 
-Status: Draft for Issue #51. This record names the specification and coding assistants and will be updated with the final implementation and review evidence without inventing prompts or results.
+Status: The ten selected prompts below are the historical Lab 4 contract record. Issue #63 adds a local UI conformance pass, recorded separately below; its peer review and publication remain pending.
 
-**LLM used:** OpenAI Codex (GPT-5).
+**LLM used:** The original contract recorded OpenAI Codex (GPT-5). The current UI conformance pass uses OpenAI Codex (GPT-6); this does not retrospectively verify the earlier model label.
 
 ## Selected prompt record
 
@@ -22,3 +22,9 @@ Status: Draft for Issue #51. This record names the specification and coding assi
 ## My Reflection
 
 The specification agent is useful for turning the handout into a bounded, traceable contract; the coding agent must still treat the contract, existing code, tests, and peer review as authoritative. I will reject suggestions that weaken server-side authorization, silently overwrite work, expose credentials, count unexecuted tests, or add features excluded by the handout. Final claims will be accepted only after the named tests, migration/seed checks, visual evidence, and merged-branch SHAs are verified.
+
+## Issue #63 UI conformance record
+
+The student requested a shared sidebar/toolbar layout, readable typography, full-screen use, continuous corners, clearer borders, responsive sticky navigation and interaction transitions, then explicitly requested compliance with every assignment criterion. The original `SE+Lab+4.pdf` was read in full; sections 7 and 8.6 require continuity with Zen Green and earlier responsive/accessibility rules. The conformance pass restores those tokens and breakpoints while retaining the approved layout. This is an additional implementation record, not an invented eleventh selected contract prompt.
+
+The agent corrected missing inherited styles and test-environment mismatches rather than treating a visual preview as proof. Real API-backed browser journeys, component/API regressions, production builds and the guarded repeat-seed check are recorded in [UI verification](../ux-ui-rework/verification.md). Controlled failure screenshots are labeled; unchanged historical results are not relabeled as current-main evidence. The student must review the reflection and final report before submission.

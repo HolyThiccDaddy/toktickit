@@ -1,0 +1,7 @@
+{
+  "localLinksChecked": 30,
+  "missingLocalLinks": [],
+  "highConfidenceSecretFindings": [],
+  "scope": "Changed and untracked text sources, documentation and evidence. Public development fixture credentials and README local connection examples are not represented as private secrets.",
+  "diffCheckExitCode": 0
+}
