@@ -73,6 +73,34 @@ test("preserves real Action create/edit and requester read-only views at each br
   const mobile = page.viewportSize()!.width < 768;
   const staffTicket = mobile ? page.getByTestId("staff-ticket-card-list").getByRole("article").filter({ hasText: summary }) : page.getByRole("row").filter({ hasText: summary });
   await staffTicket.getByRole("button", { name: mobile ? "Open ticket" : "Open", exact: true }).click();
+  if (info.project.name === "tablet") {
+    const controls = [
+      page.locator("#staff-assignee-id"),
+      page.getByRole("button", { name: "Claim for me", exact: true }),
+      page.getByRole("button", { name: "Save assignment", exact: true }),
+      page.locator("#staff-it-priority"),
+      page.getByRole("button", { name: "Save", exact: true }),
+    ];
+    const originalViewport = page.viewportSize()!;
+    for (const width of [768, 991, 992]) {
+      await page.setViewportSize({ width, height: originalViewport.height });
+      await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      const boxes = await Promise.all(controls.map((control) => control.boundingBox()));
+      expect(boxes.every(Boolean), `all Ticket operation controls are visible at ${width}px`).toBe(true);
+      for (let i = 0; i < boxes.length; i += 1) {
+        for (let j = i + 1; j < boxes.length; j += 1) {
+          const left = boxes[i]!;
+          const right = boxes[j]!;
+          const overlaps = left.x < right.x + right.width - 1
+            && left.x + left.width > right.x + 1
+            && left.y < right.y + right.height - 1
+            && left.y + left.height > right.y + 1;
+          expect(overlaps, `Ticket operation controls ${i + 1} and ${j + 1} do not overlap at ${width}px`).toBe(false);
+        }
+      }
+    }
+    await page.setViewportSize(originalViewport);
+  }
   await page.getByRole("button", { name: "Create Action", exact: true }).click();
   await page.getByLabel("Action date and time").fill(new Date(Date.now() - 86_400_000).toISOString().slice(0, 16));
   await page.getByLabel("Description", { exact: true }).fill("Verified the VPN route and restored normal service.");
