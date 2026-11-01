@@ -1,11 +1,11 @@
 {
-  "status": "local-uncommitted",
+  "status": "implementation-committed",
   "planningHead": "1cfa768860691c93e8349dff5e217f103cf992ce",
   "mergedLab4MainBaseline": "96a34538efcb6675ac8129fd7e7b7c63e619e724",
-  "normalization": "Text CRLF normalized to LF; binary bytes unchanged. Documentation was finalized after test runs.",
+  "normalization": "Every UTF-8 text file normalizes CRLF to LF, including .gitkeep and .toml; binary bytes remain unchanged. Documentation was finalized after the runs.",
   "groups": {
     "application": {
-      "sha256": "ec0cbdf614f5f72babfb1bc96235a2c24e448cbc8a12285983e9210f1d011d10",
+      "sha256": "5a930fc92429e713973c599a88105c2abf4584f5c1b42bcd665f117101c75ac7",
       "files": [
         {
           "path": "client/public/fonts/Inter-LICENSE.txt",
@@ -117,7 +117,7 @@
         },
         {
           "path": "server/prisma/migrations/migration_lock.toml",
-          "sha256": "74a9137885ce73d3ff088d79d658f8066e05e680fb51c0800a290c91c0c01d48"
+          "sha256": "693566b52c49db47a2b0901d12400aa3d710d13a49f4a2a154b80c0505ed737c"
         },
         {
           "path": "server/prisma/schema.prisma",
@@ -166,7 +166,7 @@
       ]
     },
     "testsAndHarness": {
-      "sha256": "966057aee46f97950bae9fcb283927e8ed748796a4bc366e7e18f697d7764ef5",
+      "sha256": "da2ddfcace764e8ecc5b64edc1bcd3824c828b018a754554912c9a52379b73ac",
       "files": [
         {
           "path": "client/package-lock.json",
@@ -218,7 +218,7 @@
         },
         {
           "path": "client/tests/lab-03/.gitkeep",
-          "sha256": "7eb70257593da06f682a3ddda54a9d260d4fc514f645237f5ca74b08f8da61a6"
+          "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
         },
         {
           "path": "client/tests/lab-03/App.test.tsx",
@@ -306,7 +306,7 @@
         },
         {
           "path": "e2e/lab-03/.gitkeep",
-          "sha256": "7eb70257593da06f682a3ddda54a9d260d4fc514f645237f5ca74b08f8da61a6"
+          "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
         },
         {
           "path": "e2e/lab-03/authentication.spec.ts",
@@ -434,7 +434,7 @@
         },
         {
           "path": "server/tests/lab-03/.gitkeep",
-          "sha256": "7eb70257593da06f682a3ddda54a9d260d4fc514f645237f5ca74b08f8da61a6"
+          "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
         },
         {
           "path": "server/tests/lab-03/auth.api.test.ts",
@@ -1135,5 +1135,33 @@
       "unchangedFromPlanningHead": true,
       "sha256": "106fc39ff3df85739fa33d02bbb2d283315f40885224ebad741a7a76c8468b2f"
     }
-  ]
+  ],
+  "implementationCommit": "3eb6535f4658ad96ba2fabdc1620331e00302b3f",
+  "metadataNormalizationCorrections": [
+    {
+      "path": "server/prisma/migrations/migration_lock.toml",
+      "previousRawHash": "74a9137885ce73d3ff088d79d658f8066e05e680fb51c0800a290c91c0c01d48",
+      "normalizedHash": "693566b52c49db47a2b0901d12400aa3d710d13a49f4a2a154b80c0505ed737c",
+      "reason": "CRLF normalized to LF in UTF-8 metadata, matching Git blob content"
+    },
+    {
+      "path": "client/tests/lab-03/.gitkeep",
+      "previousRawHash": "7eb70257593da06f682a3ddda54a9d260d4fc514f645237f5ca74b08f8da61a6",
+      "normalizedHash": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "reason": "CRLF normalized to LF in UTF-8 metadata, matching Git blob content"
+    },
+    {
+      "path": "e2e/lab-03/.gitkeep",
+      "previousRawHash": "7eb70257593da06f682a3ddda54a9d260d4fc514f645237f5ca74b08f8da61a6",
+      "normalizedHash": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "reason": "CRLF normalized to LF in UTF-8 metadata, matching Git blob content"
+    },
+    {
+      "path": "server/tests/lab-03/.gitkeep",
+      "previousRawHash": "7eb70257593da06f682a3ddda54a9d260d4fc514f645237f5ca74b08f8da61a6",
+      "normalizedHash": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "reason": "CRLF normalized to LF in UTF-8 metadata, matching Git blob content"
+    }
+  ],
+  "documentationScope": "The documentationAndTools group records the implementation commit snapshot. Later publication/review documentation is intentionally recorded by its own Git commit rather than relabeled as pre-commit test source."
 }

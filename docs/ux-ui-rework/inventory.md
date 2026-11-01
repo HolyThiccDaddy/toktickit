@@ -36,4 +36,4 @@ Updated 2026-11-01 during the conformance pass. The earlier plan at `1cfa7688606
 
 ## Evidence and release boundary
 
-Current results and source binding belong in [verification.md](verification.md). Earlier release screenshots and tests describe their original revision. The local rework must receive peer approval and teammate merge, followed by final main/PDF/Kanban verification, before its delivery is marked complete.
+Current results and source binding belong in [verification.md](verification.md). Earlier release screenshots and tests describe their original revision. The published rework must receive peer approval and teammate merge, followed by final main/PDF/Kanban verification, before its delivery is marked complete.

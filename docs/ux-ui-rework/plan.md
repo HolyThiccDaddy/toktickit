@@ -29,7 +29,7 @@ Checks below describe local implementation. Release/publishing criteria remain o
 - [x] AC-06: Loading, empty, no-results, submitting, success, failure/retry, forbidden, not-found and conflict states are covered where applicable.
 - [x] AC-07: Desktop >=992px, tablet 768–991px and mobile <768px have no clipped content, overlapping controls or page-level horizontal overflow.
 - [x] AC-08: Keyboard operation, field labels/errors, live feedback, focus and reduced-motion behavior are verified.
-- [ ] AC-09: Relevant server/client/build/E2E regression checks pass with real SHA-bound evidence and screenshots.
+- [x] AC-09: Relevant server/client/build/E2E regression checks pass with real SHA-bound evidence and screenshots.
 - [ ] AC-10: Peer approval and teammate merge are required before completion.
 
 ## Delivery order
@@ -64,4 +64,4 @@ The initial plan and role-flow outline above existed at `1cfa768860691c93e8349df
 
 AC-02 through AC-08 are implemented locally: all roles share the shell, exact Zen Green tokens and inherited entry views remain, toolbar searches preserve owned/staff filters, original backend permissions/workflow rules are unchanged, modal/mobile focus is protected, and transitions respect reduced motion. Existing regression assertions are retained. The [verification record](verification.md) gives exact commands, results, artifact provenance and remaining limits.
 
-AC-09 requires the implementation SHA and a match between committed blobs and tested source hashes; publication records that binding. AC-10 remains pending peer approval and teammate merge. Issue #63 stays open until then. On 1 November 2026 the student authorized delivery through the waiting-for-review stage, superseding the earlier no-push instruction; no approval, merge or Project Done state is inferred.
+AC-09 is bound to implementation `3eb6535f4658ad96ba2fabdc1620331e00302b3f`; normalized committed application/test blobs match the tested content and screenshots. The PR page remains authoritative for the current head after documentation follow-ups. AC-10 remains pending peer approval and teammate merge. Issue #63 stays open until then. On 1 November 2026 the student authorized delivery through the waiting-for-review stage, superseding the earlier no-push instruction; no approval, merge or Project Done state is inferred.

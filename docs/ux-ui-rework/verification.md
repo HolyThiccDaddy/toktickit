@@ -2,6 +2,14 @@
 
 Updated 1 November 2026. Assignment: the instructor-provided `SE+Lab+4.pdf`, sections 7, 8.1–8.6, 10 and Answer Parts 5–9. Lab 2/3 contracts remain applicable, including desktop >=992px, tablet 768–991px and mobile <768px.
 
+## Published implementation binding
+
+Implementation commit: [`3eb6535f4658ad96ba2fabdc1620331e00302b3f`](https://github.com/HolyThiccDaddy/toktickit/commit/3eb6535f4658ad96ba2fabdc1620331e00302b3f), pushed to `codex/63-ux-ui-rework` for [PR #64](https://github.com/HolyThiccDaddy/toktickit/pull/64), targeting `main`. The publication audit compared 121 application/test/harness files and all 129 screenshots with that exact Git tree: no content mismatches. See [commit-binding.json](../../artifacts/lab-04/verification/ui-rework/commit-binding.json).
+
+The existing passing runs occurred before committing; the normalized source is identical to the implementation commit. No post-commit test execution is claimed. Four metadata hashes were corrected to normalize CRLF/LF consistently (`migration_lock.toml` and three empty `.gitkeep` files); code and test logic did not change. This follow-up changes evidence/documentation only. The PR page provides its current head; the implementation SHA above intentionally remains stable across documentation follow-ups.
+
+GitHub Project access is blocked by the CLI credential lacking `project` scope; do not infer a board status. The student has been asked to authorize computer use for this step or move the card. Formal review and merge remain pending.
+
 ## Revision and release boundary
 
 - Original Lab 4 integration: [PR #62](https://github.com/HolyThiccDaddy/toktickit/pull/62), formally approved by osizk on `3058a6751d3ef2081d41847e844e3ad21efaee24` and merged by osizk into main at `96a34538efcb6675ac8129fd7e7b7c63e619e724` on 31 October 2026. These events were checked using GitHub's PR/review API.
@@ -71,7 +79,7 @@ Browse the selected captures in the local [evidence index](../../artifacts/lab-0
 
 ## Review and release gates
 
-- Record the implementation commit and verify its application/test blobs match the existing source manifest; rerun affected checks when source content changes.
+- Implementation commit and content equality are recorded above. Rerun affected checks if application or test logic changes.
 - Obtain the teammate's formal review and authorized merge of the UI PR. Do not mark Issue #63 Done while implementation remains local or review is pending.
 - Verify the merged main SHA, final Kanban state and the single readable nine-part PDF using the agreed template. New local screenshots alone do not complete those steps.
 - Human screen-reader announcements and actual touch-device behavior are not claimed from Chromium/DOM assertions alone.

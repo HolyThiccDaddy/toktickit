@@ -10,7 +10,7 @@ TokTickIT is a full-stack IT service-desk application. Lab 3 replaces Lab 2's te
 - **Testing:** Vitest, Supertest, React Testing Library, Playwright
 - **Architecture:** Monorepo with `client/`, `server/`, and repository-root E2E specs
 
-The application retains the Lab 3 queue, ticket-detail, communication and user-management workflows and adds Lab 4 Actions Taken, versioned Ticket workflow/resolution gates, and ownership-scoped Requester/Staff/Admin dashboards. Contracts are in `docs/lab-04/`. The local Issue #63 UI rework preserves those rules; its current verification and publication boundary are recorded in [UI verification](docs/ux-ui-rework/verification.md).
+The application retains the Lab 3 queue, ticket-detail, communication and user-management workflows and adds Lab 4 Actions Taken, versioned Ticket workflow/resolution gates, and ownership-scoped Requester/Staff/Admin dashboards. Contracts are in `docs/lab-04/`. The Issue #63 UI rework published in PR #64 preserves those rules; its current verification and publication boundary are recorded in [UI verification](docs/ux-ui-rework/verification.md).
 
 ## Repository structure
 
